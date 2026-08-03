@@ -15,10 +15,10 @@ e la riproduzione in corso reali.
 
 ## Configurazione Spotify
 
-1. Vai su [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard) e crea un'app.
-2. In **Redirect URIs** aggiungi l'URL della tua app + `/callback`, ad es.:
-   - `http://127.0.0.1:5173/callback` per lo sviluppo locale
-   - `https://tuo-dominio.com/callback` in produzione
+1. Vai su [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard) e crea un'app (o riusa quella esistente).
+2. In **Redirect URIs** devono essere presenti, esattamente:
+   - `http://127.0.0.1:3000/api/spotify/callback` per lo sviluppo locale
+   - `https://meter-audiophile-app.vercel.app/api/spotify/callback` per la produzione su Vercel
 3. Copia il **Client ID** e crea un file `.env` nella root del progetto:
 
    ```bash
@@ -46,13 +46,20 @@ npm install
 npm run dev
 ```
 
-Apri `http://127.0.0.1:5173`.
+Apri `http://127.0.0.1:3000`.
 
 ## Build
 
 ```bash
 npm run build
 ```
+
+## Deploy su Vercel
+
+Il progetto è una SPA statica (nessun backend/serverless): `vercel.json`
+contiene un rewrite che instrada ogni percorso (incluso
+`/api/spotify/callback`) su `index.html`, così React Router gestisce la
+route di callback lato client dopo il redirect di Spotify.
 
 ## Struttura
 

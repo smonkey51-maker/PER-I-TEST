@@ -25,7 +25,7 @@ function AppShell() {
   if (!loggedIn) {
     return (
       <Routes>
-        <Route path="/callback" element={<Callback />} />
+        <Route path="/api/spotify/callback" element={<Callback />} />
         <Route path="*" element={<Login />} />
       </Routes>
     );
@@ -43,7 +43,7 @@ function AppShell() {
             <Route path="/search" element={<Search />} />
             <Route path="/library" element={<Library />} />
             <Route path="/playlist/:id" element={<PlaylistDetail />} />
-            <Route path="/callback" element={<Navigate to="/" replace />} />
+            <Route path="/api/spotify/callback" element={<Navigate to="/" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
