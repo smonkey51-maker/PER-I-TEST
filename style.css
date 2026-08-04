@@ -229,7 +229,7 @@ em{
   width: 100%;
   height: auto;
   overflow: visible;
-  filter: drop-shadow(0 10px 22px rgba(0,0,0,0.45));
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.3));
 }
 .drink-glass-svg .glass-outline{
   stroke: rgba(242,237,228,0.4);
@@ -240,13 +240,34 @@ em{
   stroke-width: 1.4;
 }
 .drink-glass-svg .drink-liquid{
-  opacity: 0.88;
+  opacity: 0.9;
+}
+.drink-glass-svg .drink-liquid-surface{
+  fill: rgba(255,255,255,0.16);
 }
 .drink-glass-svg .glass-stem,
 .drink-glass-svg .glass-base,
 .drink-glass-svg .glass-handle{
   stroke: rgba(242,237,228,0.4);
   stroke-width: 1.4;
+}
+.drink-glass-svg .glass-highlight{
+  stroke: rgba(255,255,255,0.28);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+}
+.drink-glass-svg .ice-cube{
+  fill: rgba(255,255,255,0.16);
+  stroke: rgba(255,255,255,0.45);
+  stroke-width: 0.7;
+}
+.drink-glass-svg .bubble{
+  fill: none;
+  stroke: rgba(255,255,255,0.55);
+  stroke-width: 0.5;
+}
+.drink-glass-svg .drink-shadow{
+  fill: rgba(0,0,0,0.5);
 }
 
 /* --- Recipe / composizione --- */

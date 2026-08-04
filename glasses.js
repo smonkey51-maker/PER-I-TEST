@@ -1,5 +1,6 @@
-// Illustrazioni SVG minimali (stesso stile line-art del bicchiere decorativo) per la schermata
-// risultato. Sfondo sempre trasparente: nessun rettangolo di sfondo viene disegnato.
+// Illustrazioni SVG (stesso stile line-art del bicchiere decorativo, ma più curato: sfumature
+// del liquido, riflessi sul vetro, ghiaccio e bollicine) per la schermata risultato.
+// Sfondo sempre trasparente: nessun rettangolo di sfondo viene disegnato.
 
 const GLASS_CONFIG = {
   rocks: {
@@ -8,6 +9,9 @@ const GLASS_CONFIG = {
     liquid: { baseY: 123, maxHeight: 60 },
     fill: 0.62,
     garnishAnchor: { x: 78, y: 50 },
+    highlight: "M35,63 C33,80 33,101 36,118",
+    ice: [{ x: 37, y: 64, w: 15, h: 15, rot: -8 }, { x: 52, y: 78, w: 13, h: 13, rot: 10 }],
+    shadow: { cy: 128, rx: 24, ry: 4 },
   },
   coupe: {
     outline: "M14,18 C14,42 34,54 50,54 C66,54 86,42 86,18 Z",
@@ -16,6 +20,8 @@ const GLASS_CONFIG = {
     liquid: { baseY: 52, maxHeight: 34 },
     fill: 0.82,
     garnishAnchor: { x: 84, y: 16 },
+    highlight: "M28,24 C24,34 26,44 34,50",
+    shadow: { cy: 120, rx: 16, ry: 3 },
   },
   highball: {
     outline: "M30,18 L70,18 L66,125 L34,125 Z",
@@ -23,6 +29,9 @@ const GLASS_CONFIG = {
     liquid: { baseY: 123, maxHeight: 95 },
     fill: 0.75,
     garnishAnchor: { x: 76, y: 15 },
+    highlight: "M40,25 C38,55 38,92 41,118",
+    ice: [{ x: 42, y: 38, w: 13, h: 13, rot: -6 }, { x: 52, y: 58, w: 12, h: 12, rot: 12 }],
+    shadow: { cy: 128, rx: 20, ry: 4 },
   },
   flute: {
     outline: "M42,15 L58,15 L55,78 Q50,84 45,78 Z",
@@ -31,6 +40,9 @@ const GLASS_CONFIG = {
     liquid: { baseY: 79, maxHeight: 60 },
     fill: 0.7,
     garnishAnchor: { x: 58, y: 12 },
+    highlight: "M46,20 C45,40 45,58 47,72",
+    bubbles: [{ cx: 48, cy: 70, r: 1 }, { cx: 51, cy: 60, r: 0.8 }, { cx: 47, cy: 48, r: 0.9 }, { cx: 52, cy: 36, r: 0.7 }, { cx: 48, cy: 24, r: 0.8 }],
+    shadow: { cy: 120, rx: 14, ry: 3 },
   },
   mug: {
     outline: "M28,35 L72,35 L67,122 L33,122 Z",
@@ -39,6 +51,9 @@ const GLASS_CONFIG = {
     liquid: { baseY: 120, maxHeight: 82 },
     fill: 0.72,
     garnishAnchor: { x: 74, y: 32 },
+    highlight: "M40,42 C38,70 38,96 41,116",
+    ice: [{ x: 40, y: 53, w: 13, h: 13, rot: -5 }, { x: 52, y: 68, w: 12, h: 12, rot: 8 }],
+    shadow: { cy: 125, rx: 22, ry: 4 },
   },
   tiki: {
     outline: "M35,20 Q18,42 24,72 Q28,108 50,122 Q72,108 76,72 Q82,42 65,20 Z",
@@ -46,6 +61,9 @@ const GLASS_CONFIG = {
     liquid: { baseY: 120, maxHeight: 95 },
     fill: 0.68,
     garnishAnchor: { x: 70, y: 18 },
+    highlight: "M38,30 C30,50 30,80 40,105",
+    ice: [{ x: 40, y: 58, w: 13, h: 13, rot: -10 }, { x: 54, y: 78, w: 12, h: 12, rot: 6 }],
+    shadow: { cy: 125, rx: 20, ry: 4 },
   },
   wine: {
     outline: "M20,26 Q18,54 50,60 Q82,54 80,26 Q80,14 50,14 Q20,14 20,26 Z",
@@ -53,8 +71,24 @@ const GLASS_CONFIG = {
     liquid: { baseY: 58, maxHeight: 42 },
     fill: 0.55,
     garnishAnchor: { x: 76, y: 14 },
+    highlight: "M28,22 C24,32 28,44 38,52",
+    bubbles: [{ cx: 40, cy: 48, r: 0.9 }, { cx: 46, cy: 38, r: 0.7 }, { cx: 36, cy: 32, r: 0.8 }, { cx: 44, cy: 22, r: 0.6 }],
+    shadow: { cy: 118, rx: 22, ry: 4 },
   },
 };
+
+function hexToRgb(hex) {
+  let h = hex.replace("#", "");
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  const num = parseInt(h, 16);
+  return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+}
+
+function shade(hex, amount) {
+  const [r, g, b] = hexToRgb(hex);
+  const clamp = (v) => Math.max(0, Math.min(255, Math.round(v)));
+  return `rgb(${clamp(r + amount)},${clamp(g + amount)},${clamp(b + amount)})`;
+}
 
 function garnishSVG(type, anchor) {
   const { x, y } = anchor;
@@ -110,6 +144,10 @@ function buildDrinkGlassSVG(drink) {
   const { baseY, maxHeight } = config.liquid;
   const h = maxHeight * config.fill;
   const y = baseY - h;
+  const uid = `${drink.name.replace(/[^a-zA-Z0-9]/g, "")}-${Math.random().toString(36).slice(2, 8)}`;
+  const clipId = `clip-${uid}`;
+  const gradId = `grad-${uid}`;
+  const shadowId = `shadow-${uid}`;
 
   const rim = config.rim
     ? config.rim.d
@@ -121,8 +159,23 @@ function buildDrinkGlassSVG(drink) {
     .map((p) => `<path class="glass-outline ${p.cls}" d="${p.d}" fill="none" />`)
     .join("");
 
+  const highlight = config.highlight
+    ? `<path class="glass-highlight" d="${config.highlight}" fill="none" />`
+    : "";
+
+  const ice = (config.ice || [])
+    .map((c) => `<rect class="ice-cube" x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" rx="2.2" transform="rotate(${c.rot} ${c.x + c.w / 2} ${c.y + c.h / 2})" />`)
+    .join("");
+
+  const bubbles = (config.bubbles || [])
+    .map((b) => `<circle class="bubble" cx="${b.cx}" cy="${b.cy}" r="${b.r}" />`)
+    .join("");
+
+  const shadow = config.shadow
+    ? `<ellipse class="drink-shadow" cx="50" cy="${config.shadow.cy}" rx="${config.shadow.rx}" ry="${config.shadow.ry}" filter="url(#${shadowId})" />`
+    : "";
+
   const garnish = garnishSVG(drink.garnish, config.garnishAnchor);
-  const clipId = `drinkClip-${drink.name.replace(/[^a-zA-Z0-9]/g, "")}-${Math.random().toString(36).slice(2, 8)}`;
 
   return `
     <svg viewBox="0 0 100 140" class="drink-glass-svg" role="img" aria-label="${drink.name}">
@@ -130,11 +183,25 @@ function buildDrinkGlassSVG(drink) {
         <clipPath id="${clipId}">
           <path d="${config.outline}" />
         </clipPath>
+        <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${shade(drink.color, 45)}" />
+          <stop offset="100%" stop-color="${shade(drink.color, -30)}" />
+        </linearGradient>
+        <filter id="${shadowId}" x="-60%" y="-200%" width="220%" height="500%">
+          <feGaussianBlur stdDeviation="2.2" />
+        </filter>
       </defs>
-      <rect class="drink-liquid" x="0" y="${y}" width="100" height="${h}" clip-path="url(#${clipId})" fill="${drink.color}" />
+      ${shadow}
+      <g clip-path="url(#${clipId})">
+        <rect class="drink-liquid" x="0" y="${y}" width="100" height="${h}" fill="url(#${gradId})" />
+        <ellipse class="drink-liquid-surface" cx="50" cy="${y}" rx="30" ry="1.6" />
+        ${ice}
+        ${bubbles}
+      </g>
       <path class="glass-outline" d="${config.outline}" fill="none" />
       ${rim}
       ${extra}
+      ${highlight}
       ${garnish}
     </svg>
   `;
