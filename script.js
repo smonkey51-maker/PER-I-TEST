@@ -10,8 +10,10 @@
   const questionText = document.getElementById('questionText');
   const optionsContainer = document.getElementById('optionsContainer');
   const resultEyebrow = document.getElementById('resultEyebrow');
+  const resultGlass = document.getElementById('resultGlass');
   const resultName = document.getElementById('resultName');
   const resultDesc = document.getElementById('resultDesc');
+  const resultIngredients = document.getElementById('resultIngredients');
   const resultAxes = document.getElementById('resultAxes');
   const restartBtn = document.getElementById('restartBtn');
   const liquid = document.getElementById('liquid');
@@ -109,6 +111,16 @@
     resultName.textContent = drink.name;
     resultName.style.color = state.testType === 'standard' ? 'var(--amber)' : 'var(--olive)';
     resultDesc.textContent = drink.desc;
+
+    resultGlass.innerHTML = buildDrinkGlassSVG(drink);
+
+    resultIngredients.innerHTML = '';
+    drink.ingredients.forEach(ing => {
+      const chip = document.createElement('span');
+      chip.className = 'ingredient-chip';
+      chip.textContent = ing;
+      resultIngredients.appendChild(chip);
+    });
 
     resultAxes.innerHTML = '';
     const clamped = state.profile.map(v => Math.max(0, Math.min(10, v)));

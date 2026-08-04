@@ -1,6 +1,6 @@
 # Quale drink sei davvero?
 
-Sito statico, zero build step. File: `index.html`, `style.css`, `script.js`, `data.js`.
+Sito statico, zero build step. File: `index.html`, `style.css`, `script.js`, `data.js`, `glasses.js`.
 
 ## Deploy su Vercel
 
@@ -16,6 +16,7 @@ Sito statico, zero build step. File: `index.html`, `style.css`, `script.js`, `da
 4. Deploy
 
 ## Modificare i contenuti
-- Drink e domande: `data.js` — ogni drink ha `axes: [Intensità, Dolcezza, Classico-Sperimentale, Sociale-Intimo]` da 0 a 10
+- Drink e domande: `data.js` — ogni drink ha `axes: [Intensità, Dolcezza, Classico-Sperimentale, Sociale-Intimo]` da 0 a 10, `ingredients` (composizione mostrata nel risultato), e `glass`/`color`/`garnish` per l'illustrazione
+- Illustrazioni bicchieri: `glasses.js` — forme SVG line-art (rocks, coupe, highball, flute, mug, tiki, wine) e guarnizioni, sfondo sempre trasparente
 - Testi/colori: `style.css` (variabili in `:root`)
 - Logica: `script.js` — il match usa la distanza euclidea tra il profilo utente e le coordinate di ogni drink

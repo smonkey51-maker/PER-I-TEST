@@ -59,8 +59,14 @@
   <!-- SCREEN: Result -->
   <section class="screen" id="screen-result">
     <p class="eyebrow" id="resultEyebrow">il tuo profilo</p>
+    <div class="drink-visual" id="resultGlass" aria-hidden="true"></div>
     <h1 class="result-name" id="resultName"></h1>
     <p class="result-desc" id="resultDesc"></p>
+
+    <div class="recipe-block">
+      <p class="recipe-label">Composizione</p>
+      <div class="recipe-ingredients" id="resultIngredients"></div>
+    </div>
 
     <div class="axes" id="resultAxes"></div>
 
@@ -70,6 +76,7 @@
 </main>
 
 <script src="data.js"></script>
+<script src="glasses.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
