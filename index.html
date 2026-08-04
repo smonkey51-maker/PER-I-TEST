@@ -1,13 +1,75 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Music</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quale drink sei davvero?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="glass-fixed" id="glassFixed" aria-hidden="true">
+  <svg viewBox="0 0 100 140" class="glass-svg">
+    <defs>
+      <clipPath id="glassClip">
+        <path d="M20,10 L80,10 L68,120 Q50,132 32,120 Z" />
+      </clipPath>
+    </defs>
+    <rect id="liquid" class="liquid" x="10" y="140" width="80" height="0" clip-path="url(#glassClip)" />
+    <path class="glass-outline" d="M20,10 L80,10 L68,120 Q50,132 32,120 Z" />
+    <line class="glass-rim" x1="16" y1="10" x2="84" y2="10" />
+  </svg>
+</div>
+
+<main id="app">
+
+  <!-- SCREEN: Landing -->
+  <section class="screen active" id="screen-landing">
+    <p class="eyebrow">un test, due anime</p>
+    <h1 class="hero-title">Quale drink<br><em>sei davvero?</em></h1>
+    <p class="hero-sub">Scegli il tuo percorso. Rispondi con istinto: il bicchiere si riempirà con te.</p>
+
+    <div class="path-cards">
+      <button class="path-card path-standard" data-test="standard">
+        <span class="path-label">Test Classico</span>
+        <span class="path-count">30 drink più amati al mondo</span>
+        <span class="path-cta">Inizia →</span>
+      </button>
+      <button class="path-card path-special" data-test="special">
+        <span class="path-label">Test Riservato</span>
+        <span class="path-count">35 drink da veri intenditori</span>
+        <span class="path-cta">Inizia →</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- SCREEN: Quiz -->
+  <section class="screen" id="screen-quiz">
+    <div class="quiz-top">
+      <span class="quiz-progress-label" id="progressLabel">1 / 8</span>
+      <div class="quiz-progress-track"><div class="quiz-progress-fill" id="progressFill"></div></div>
+    </div>
+    <h2 class="quiz-question" id="questionText"></h2>
+    <div class="options" id="optionsContainer"></div>
+  </section>
+
+  <!-- SCREEN: Result -->
+  <section class="screen" id="screen-result">
+    <p class="eyebrow" id="resultEyebrow">il tuo profilo</p>
+    <h1 class="result-name" id="resultName"></h1>
+    <p class="result-desc" id="resultDesc"></p>
+
+    <div class="axes" id="resultAxes"></div>
+
+    <button class="restart-btn" id="restartBtn">Rifai il test</button>
+  </section>
+
+</main>
+
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
 </html>
