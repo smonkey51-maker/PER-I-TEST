@@ -33,6 +33,15 @@
     screens[name].classList.add('active');
   }
 
+  // Riflesso speculare "liquid glass" che segue il puntatore sui pannelli di vetro.
+  function attachGlassGlow(el){
+    el.addEventListener('pointermove', (e) => {
+      const rect = el.getBoundingClientRect();
+      el.style.setProperty('--px', `${((e.clientX - rect.left) / rect.width) * 100}%`);
+      el.style.setProperty('--py', `${((e.clientY - rect.top) / rect.height) * 100}%`);
+    });
+  }
+
   function startTest(type){
     state.testType = type;
     state.questions = type === 'standard' ? STANDARD_QUESTIONS : SPECIAL_QUESTIONS;
@@ -58,6 +67,7 @@
       btn.className = 'option-btn';
       btn.textContent = opt.t;
       btn.addEventListener('click', () => selectOption(opt.d));
+      attachGlassGlow(btn);
       optionsContainer.appendChild(btn);
     });
 
@@ -139,7 +149,9 @@
 
   document.querySelectorAll('.path-card').forEach(card => {
     card.addEventListener('click', () => startTest(card.dataset.test));
+    attachGlassGlow(card);
   });
+  attachGlassGlow(restartBtn);
 
   restartBtn.addEventListener('click', () => {
     updateGlass(0);
