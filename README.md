@@ -1,22 +1,11 @@
-# Quale drink sei davvero?
+# ATELIER
 
-Sito statico, zero build step. File: `index.html`, `style.css`, `script.js`, `data.js`, `glasses.js`.
+Guardaroba AI personale. Caricamento multiplo, riconoscimento visivo individuale e revisione prima del salvataggio.
 
-## Deploy su Vercel
+## Deploy
 
-**Opzione rapida (drag & drop):**
-1. Vai su vercel.com → New Project → "Deploy" tramite drag & drop
-2. Trascina la cartella `drink-quiz` (o il suo contenuto)
-3. Vercel rileva automaticamente che è un sito statico, nessuna config necessaria
+Importa la repository in Vercel e imposta `OPENAI_API_KEY` come variabile d'ambiente server-side. Il backend `/api/analyze` usa un modello multimodale per classificare i capi. Senza chiave, puoi compilare manualmente le schede; non viene simulato alcun riconoscimento.
 
-**Opzione via Git (consigliata per aggiornamenti futuri):**
-1. Crea un repo GitHub con questi file nella root (o in una sotto-cartella, impostando la "Root Directory" nelle impostazioni Vercel)
-2. Su vercel.com → New Project → importa il repo
-3. Framework Preset: "Other" — nessun build command necessario
-4. Deploy
+Le foto e i metadati approvati sono conservati nel browser con IndexedDB. Per sincronizzare dispositivi servono autenticazione e storage privato.
 
-## Modificare i contenuti
-- Drink e domande: `data.js` — ogni drink ha `axes: [Intensità, Dolcezza, Classico-Sperimentale, Sociale-Intimo]` da 0 a 10, `ingredients` (composizione mostrata nel risultato), e `glass`/`color`/`garnish` per l'illustrazione
-- Illustrazioni bicchieri: `glasses.js` — forme SVG line-art (rocks, coupe, highball, flute, mug, tiki, wine) e guarnizioni, sfondo sempre trasparente
-- Testi/colori: `style.css` (variabili in `:root`)
-- Logica: `script.js` — il match usa la distanza euclidea tra il profilo utente e le coordinate di ogni drink
+Style DNA: Smart Casual × Relaxed Sophistication; 70% sartoria rilassata, 20% colore, 10% sperimentazione.
