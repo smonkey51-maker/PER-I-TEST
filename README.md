@@ -31,6 +31,8 @@ Smart Casual × Relaxed Sophistication; 70% sartoria rilassata, 20% carattere cr
 ## Impegni da Google Calendar
 Facoltativo. Al primo accesso Google chiede, oltre a Drive, la **sola lettura degli eventi** del calendario (`calendar.events.readonly`); se la rifiuti, in «Oggi» compare «Collega il calendario». Gli eventi di oggi si leggono nel browser, non vengono salvati e non vanno né al server né all'AI. Gli impegni con parole come riunione, cliente, cena, aperitivo, palestra, volo orientano l'idea del giorno: i capi con quella occasione nel campo «occasioni» hanno più probabilità di essere scelti. Gli eventi segnati come «libero», rifiutati o annullati vengono ignorati.
 
+Un impegno che non è in calendario si aggiunge a mano da «Oggi» (Lavoro, Serata, Sport, Viaggio, oppure una frase libera come «cena con Anna»): conta come quelli del calendario per l'idea del giorno, vale solo per oggi e resta su questo dispositivo.
+
 Da fare una volta su Google Cloud: abilita **Google Calendar API** e, in Google Auth Platform → Accesso ai dati, aggiungi l'ambito `https://www.googleapis.com/auth/calendar.events.readonly`. Chi aveva già fatto l'accesso mantiene Drive senza altre richieste e collega il calendario con il pulsante in «Oggi».
 
 ## Analisi AI e sicurezza

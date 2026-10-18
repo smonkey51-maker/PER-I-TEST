@@ -47,7 +47,22 @@
       <div class="view-head">
         <h1>Oggi</h1>
       </div>
-      <div id="agenda" class="idea-card agenda hidden"></div>
+      <div id="agenda" class="idea-card agenda">
+        <div id="agendaInfo"></div>
+        <div class="manual">
+          <p class="small">Un impegno che non è nel calendario?</p>
+          <div class="chips-inline" role="group" aria-label="Aggiungi un impegno">
+            <button type="button" class="chip" data-occ="lavoro">Lavoro</button>
+            <button type="button" class="chip" data-occ="serata">Serata</button>
+            <button type="button" class="chip" data-occ="sport">Sport</button>
+            <button type="button" class="chip" data-occ="viaggio">Viaggio</button>
+          </div>
+          <form id="manualForm" class="manual-form">
+            <input id="manualText" maxlength="80" autocomplete="off" placeholder="Oppure scrivilo: cena con Anna" aria-label="Descrivi un impegno">
+            <button type="submit" class="btn secondary">Aggiungi</button>
+          </form>
+        </div>
+      </div>
       <div id="todayEmpty" class="empty hidden">
         <h2>Il guardaroba è vuoto</h2>
         <p>Aggiungi i tuoi capi: qui troverai un'idea per ogni giorno e potrai segnare cosa è lavato e cosa è in lavatrice.</p>
