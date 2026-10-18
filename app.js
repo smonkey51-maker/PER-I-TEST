@@ -23,6 +23,9 @@ let detailId = null;
 let editingLookId = null;
 let ideaN = 0;
 let idea = null;
+let todayEvents = null; // null = calendario non collegato
+let eventsError = '';
+let eventsAt = 0;
 
 /* ---------- Archivio locale (IndexedDB) ---------- */
 
@@ -196,6 +199,7 @@ function showTab(name) {
   document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
   try { sessionStorage.setItem('atelier_tab', name); } catch { /* storage non disponibile */ }
   window.scrollTo(0, 0);
+  if (name === 'today') refreshEvents();
 }
 
 const known = v => (v && !/^non determinabile$/i.test(v) ? v : '');
@@ -331,26 +335,53 @@ function seasonFit(g) {
   return s.includes(SEASONS[new Date().getMonth()]) ? 2 : 0;
 }
 
-// Sceglie a caso, ma con più probabilità i capi adatti alla stagione in corso
-function pickOne(pool, strict = false) {
-  const fit = pool.filter(g => seasonFit(g) > 0);
-  const src = fit.length ? fit : (strict ? [] : pool);
+// Occasioni riconosciute dal titolo degli impegni; kw cerca la stessa occasione nel campo «occasioni» dei capi
+const OCCASIONS = [
+  { tag: 'serata', re: /cena|aperitiv|ristorant|festa|party|compleanno|matrimonio|teatro|concerto|cinema|drink|serata|evento/i, kw: /serata|cena|aperitiv|elegan|event|festa|formal/i },
+  { tag: 'lavoro', re: /riunion|meeting|call|cliente|colloquio|presentazion|ufficio|lavoro|workshop|intervist|review|demo/i, kw: /lavoro|ufficio|business|formal|elegan|riunion|smart/i },
+  { tag: 'sport', re: /palestra|corsa|yoga|allenament|sport|calcio|tennis|nuoto|padel|running|pilates|bici/i, kw: /sport|palestra|allenam|attiv/i },
+  { tag: 'viaggio', re: /volo|treno|viaggio|aeroporto|partenza|trasferta/i, kw: /viaggio|comod|casual|trasferta/i }
+];
+
+function dayOccasions(events) {
+  const matched = [];
+  for (const ev of events || []) {
+    const occ = OCCASIONS.find(o => o.re.test(ev.title));
+    if (occ) matched.push({ occ, ev });
+  }
+  return matched;
+}
+
+const eventTime = ev => (ev.allDay ? 'Tutto il giorno' : new Date(ev.start).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }));
+
+function occasionFit(g, tags) {
+  if (!tags.length) return 1;
+  const o = (g.occasioni || '').toLowerCase();
+  if (!o || /non determinabile/.test(o)) return 1;
+  return tags.some(t => t.kw.test(o)) ? 2 : .25;
+}
+
+function weight(g, tags) {
+  const s = seasonFit(g);
+  return s ? (s === 2 ? 3 : 1) * occasionFit(g, tags) : 0;
+}
+
+// Sceglie a caso, ma con più probabilità i capi adatti alla stagione e agli impegni di oggi
+function pickOne(pool, tags, strict = false) {
+  let src = pool.filter(g => weight(g, tags) > 0);
+  if (!src.length) src = strict ? [] : pool;
   if (!src.length) return null;
-  const weights = src.map(g => (seasonFit(g) === 2 ? 3 : 1));
+  const weights = src.map(g => weight(g, tags) || 1);
   let r = Math.random() * weights.reduce((a, b) => a + b, 0);
   for (let i = 0; i < src.length; i++) { r -= weights[i]; if (r <= 0) return src[i]; }
   return src[src.length - 1];
 }
 
-function makeIdea(clean, looks, n) {
-  const ids = new Set(clean.map(g => g.id));
-  const ready = looks.filter(l => l.capi?.length && l.capi.every(id => ids.has(id)));
-  if (n < ready.length) return { title: ready[n].nome, ids: ready[n].capi };
-
+function generateOutfit(clean, tags) {
   const inCats = (...cats) => clean.filter(g => cats.includes(catOf(g)));
-  const top = pickOne(inCats('Maglieria', 'Camicie e T-shirt'));
-  const bottom = pickOne(inCats('Pantaloni e jeans'));
-  const shoes = pickOne(inCats('Scarpe'));
+  const top = pickOne(inCats('Maglieria', 'Camicie e T-shirt'), tags);
+  const bottom = pickOne(inCats('Pantaloni e jeans'), tags);
+  const shoes = pickOne(inCats('Scarpe'), tags);
   const missing = [];
   if (!top) missing.push('un capo sopra');
   if (!bottom) missing.push('pantaloni o jeans');
@@ -358,11 +389,21 @@ function makeIdea(clean, looks, n) {
   if (missing.length) return { missing };
 
   const picked = [top, bottom, shoes];
-  const outer = pickOne(inCats('Giacche e capispalla'), true);
+  const outer = pickOne(inCats('Giacche e capispalla'), tags, true);
   if (outer) picked.push(outer);
-  const extra = Math.random() < .4 ? pickOne(inCats('Accessori')) : null;
+  const extra = Math.random() < .4 ? pickOne(inCats('Accessori'), tags) : null;
   if (extra) picked.push(extra);
   return { title: 'Outfit suggerito', ids: picked.map(g => g.id) };
+}
+
+// Con impegni particolari il primo suggerimento è un outfit su misura; altrimenti vengono prima i look salvati
+function makeIdea(clean, looks, n, tags) {
+  const ids = new Set(clean.map(g => g.id));
+  const ready = looks.filter(l => l.capi?.length && l.capi.every(id => ids.has(id))).map(l => ({ title: l.nome, ids: l.capi }));
+  const slots = tags.length ? ['gen', ...ready] : ready;
+  const slot = slots[n];
+  if (slot && slot !== 'gen') return slot;
+  return generateOutfit(clean, tags);
 }
 
 function miniHtml(d, on) {
@@ -371,19 +412,51 @@ function miniHtml(d, on) {
     '<button class="btn secondary" data-wash="' + d.id + '" data-on="' + on + '">' + (on ? 'In lavatrice' : 'Lavato') + '</button></div></div>';
 }
 
+function renderAgenda(matched) {
+  const box = $('#agenda');
+  const signedIn = !!window.atelierToken?.();
+  if (!signedIn) { box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+  const label = new Map(matched.map(m => [m.ev, m.occ.tag]));
+  if (eventsError) {
+    box.innerHTML = '<h2>Impegni di oggi</h2><p class="muted">' + esc(eventsError) + '</p>';
+  } else if (todayEvents === null && window.atelierCalendarOk?.()) {
+    box.innerHTML = '<h2>Impegni di oggi</h2><p class="muted">Caricamento degli impegni…</p>';
+  } else if (todayEvents === null) {
+    box.innerHTML = '<h2>Impegni di oggi</h2><p class="muted">Collega Google Calendar per avere un\'idea su misura per i tuoi impegni. Gli eventi restano sul tuo dispositivo.</p>' +
+      '<div class="actions"><button class="btn secondary" data-cal="connect">Collega il calendario</button></div>';
+  } else if (!todayEvents.length) {
+    box.innerHTML = '<h2>Impegni di oggi</h2><p class="muted">Nessun impegno in calendario.</p>';
+  } else {
+    box.innerHTML = '<h2>Impegni di oggi</h2><ul class="agenda-list">' + todayEvents.map(ev =>
+      '<li><span class="time">' + esc(eventTime(ev)) + '</span><span>' + esc(ev.title) + '</span>' +
+      (label.get(ev) ? '<span class="occ">' + esc(label.get(ev)) + '</span>' : '') + '</li>').join('') + '</ul>';
+  }
+}
+
 function renderToday(garments, looks) {
   const clean = garments.filter(g => !washing(g));
   const dirty = garments.filter(washing);
   $('#todayEmpty').classList.toggle('hidden', garments.length > 0);
   $('#todayContent').classList.toggle('hidden', !garments.length);
 
+  const matched = dayOccasions(todayEvents);
+  const tags = [...new Map(matched.map(m => [m.occ.tag, m.occ])).values()];
+  const key = tags.map(t => t.tag).join(',');
+  renderAgenda(matched);
+
   const byId = new Map(garments.map(g => [g.id, g]));
-  if (!idea || idea.missing || !idea.ids?.every(id => byId.has(id) && !washing(byId.get(id)))) idea = makeIdea(clean, looks, ideaN);
+  if (!idea || idea.key !== key || idea.missing || !idea.ids?.every(id => byId.has(id) && !washing(byId.get(id)))) {
+    idea = { ...makeIdea(clean, looks, ideaN, tags), key };
+  }
+  const note = matched.length
+    ? '<p class="small">Pensato per ' + matched.slice(0, 3).map(m => esc(m.occ.tag) + ' (' + esc(m.ev.title) + ', ' + esc(eventTime(m.ev)) + ')').join(' e ') + '.</p>'
+    : '';
 
   if (idea.missing) {
     $('#idea').innerHTML = '<p class="muted">Per comporre un outfit servono capi lavati: ti mancano ' + idea.missing.join(', ') + '.</p>';
   } else {
-    $('#idea').innerHTML = '<h3>' + esc(idea.title) + '</h3><div class="strip">' + idea.ids.map(id => {
+    $('#idea').innerHTML = '<h3>' + esc(idea.title) + '</h3>' + note + '<div class="strip">' + idea.ids.map(id => {
       const g = byId.get(id);
       return '<figure>' + photoHtml(id, 'strip-img fade', g.tipo || 'Capo') + '<figcaption>' + esc(g.tipo || 'Capo') + '</figcaption></figure>';
     }).join('') + '</div>';
@@ -398,6 +471,25 @@ function renderToday(garments, looks) {
     : '<p class="small">Nessun capo in lavatrice.</p>';
   $('#washAll').classList.toggle('hidden', !dirty.length);
 }
+
+async function refreshEvents(force = false) {
+  if (!window.atelierToken?.()) return;
+  if (!force && Date.now() - eventsAt < 5 * 60 * 1000) return;
+  eventsAt = Date.now();
+  try {
+    todayEvents = (await window.atelierEvents?.()) ?? null;
+    eventsError = '';
+  } catch (e) {
+    todayEvents = null;
+    eventsError = e.message;
+  }
+  idea = null;
+  await renderAll();
+}
+
+$('#agenda').addEventListener('click', e => {
+  if (e.target.closest('[data-cal=connect]')) window.atelierConnectCalendar?.();
+});
 
 $('#anotherIdea').onclick = async () => {
   ideaN++;
