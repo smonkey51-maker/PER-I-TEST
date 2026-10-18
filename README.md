@@ -25,7 +25,7 @@ Smart Casual × Relaxed Sophistication; 70% sartoria rilassata, 20% carattere cr
 ## Sezioni dell'app
 - **Oggi**: un'idea per la giornata (prima i look salvati con tutti i capi lavati, poi un outfit composto con i capi lavati adatti alla stagione) e le liste dei capi **lavati** e **in lavatrice**.
 - **Guardaroba**: capi per categoria, scheda con tutti i dati, modifica, lavatrice, rimozione.
-- **Looks**: composizioni di capi o descrizioni a parole, modificabili.
+- **Looks**: composizioni di capi o descrizioni a parole, modificabili. I capi descritti nel testo (separati da virgola) vengono collegati al look se nel guardaroba ci sono già, altrimenti aggiunti senza fotografia; l'elenco dei capi riconosciuti si vede mentre scrivi e si può escludere un capo togliendo la spunta. Un capo senza foto si completa dalla sua scheda con «Aggiungi foto».
 - **Aggiungi**: fino a 40 fotografie per volta, analisi automatica e revisione prima di salvare. Le foto vengono portate al formato 4:5 con lo sfondo che prosegue il colore del bordo.
 
 ## Impegni da Google Calendar

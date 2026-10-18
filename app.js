@@ -109,7 +109,8 @@ const photoSrc = id => photoUrls.get(id) || '';
 
 function photoHtml(id, cls, alt) {
   const src = photoSrc(id);
-  return src ? '<img class="' + cls + '" src="' + src + '" alt="' + esc(alt) + '" loading="lazy" decoding="async">' : '<div class="' + cls + ' ph"></div>';
+  if (src) return '<img class="' + cls + '" src="' + src + '" alt="' + esc(alt) + '" loading="lazy" decoding="async">';
+  return '<div class="' + cls.replace(' fade', '') + ' ph"><span>' + esc(alt) + '</span></div>';
 }
 
 // Le fotografie vecchie salvate dentro la scheda passano all'archivio foto
@@ -265,8 +266,11 @@ async function openDetail(id) {
   if (!item) return;
   detailId = id;
   await loadPhotos();
-  $('#detailImg').src = photoSrc(id);
+  const src = photoSrc(id);
+  $('#detailImg').classList.toggle('hidden', !src);
+  if (src) $('#detailImg').src = src;
   $('#detailImg').alt = item.tipo || 'Capo';
+  $('#detailPhotoLabel').classList.toggle('hidden', !!src);
   $('#detailTitle').textContent = item.tipo || 'Capo';
   const rows = [['Categoria', catOf(item)], ...FIELDS.filter(f => f !== 'tipo').map(f => [LABELS[f], known(item[f])])];
   if (washing(item)) rows.unshift(['Stato', 'In lavatrice']);
@@ -285,6 +289,24 @@ function setEditing(on) {
   $('#detailFields').classList.toggle('hidden', on);
   $('#detailActions').classList.toggle('hidden', on);
 }
+
+$('#detailPhoto').onchange = async e => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file || !detailId) return;
+  try {
+    await put({ id: detailId, blob: await photo(file) }, 'photos');
+  } catch {
+    toast('Foto non leggibile');
+    return;
+  }
+  await update('garments', detailId, {});
+  forgetPhoto(detailId);
+  $('#detail').close();
+  await renderAll();
+  toast('Foto aggiunta');
+  await window.atelierDriveSync?.();
+};
 
 $('#detailEdit').onclick = () => setEditing(true);
 $('#editForm').addEventListener('click', e => { if (e.target.id === 'editCancel') setEditing(false); });
@@ -728,10 +750,81 @@ $('#looks').addEventListener('click', async e => {
   await window.atelierDriveSync?.();
 });
 
+/* ---------- Capi descritti nei look: entrano nel guardaroba se mancano ---------- */
+
+const STOPWORDS = new Set(['di', 'in', 'a', 'con', 'e', 'il', 'la', 'lo', 'i', 'gli', 'le', 'un', 'una', 'da', 'del', 'della', 'dei']);
+const norm = s => String(s ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const stem = w => {
+  if (w.length > 4 && w.endsWith('s')) w = w.slice(0, -1);
+  if (w.length > 4 && 'aeio'.includes(w.at(-1))) w = w.slice(0, -1);
+  return w;
+};
+const words = s => norm(s).split(/[^a-z0-9]+/).filter(w => w && !STOPWORDS.has(w)).map(stem);
+
+const CATEGORY_WORDS = {
+  'Maglieria': ['maglione', 'maglia', 'pullover', 'cardigan', 'felpa', 'dolcevita', 'gilet'],
+  'Camicie e T-shirt': ['camicia', 'shirt', 'polo', 'canotta', 'top', 'blusa'],
+  'Pantaloni e jeans': ['pantalone', 'pantaloni', 'jeans', 'gurkha', 'chino', 'bermuda', 'short', 'shorts', 'leggings', 'tuta'],
+  'Giacche e capispalla': ['giacca', 'giubbotto', 'cappotto', 'blazer', 'trench', 'piumino', 'parka', 'impermeabile', 'bomber'],
+  'Scarpe': ['scarpa', 'scarpe', 'sneakers', 'sneaker', 'mocassini', 'mocassino', 'stivali', 'stivaletti', 'sandali', 'stringate', 'derby', 'ciabatte'],
+  'Accessori': ['cintura', 'sciarpa', 'cappello', 'borsa', 'occhiali', 'orologio', 'cravatta', 'guanti', 'zaino', 'portafoglio']
+};
+const WORD_CATEGORY = new Map(Object.entries(CATEGORY_WORDS).flatMap(([cat, ws]) => ws.map(w => [stem(norm(w)), cat])));
+
+function categoryFor(text) {
+  for (const w of words(text)) if (WORD_CATEGORY.has(w)) return WORD_CATEGORY.get(w);
+  return 'Altro';
+}
+
+// «Maglione lilla, gurkha sabbia · sneakers panna» -> tre capi; le negazioni («senza cintura») non sono capi
+function parseComponents(text) {
+  const seen = new Set();
+  return String(text || '').split(/[·;\n,+]/).map(s => s.trim()).filter(s => {
+    if (s.length < 3 || /^senza\b/i.test(s)) return false;
+    const k = norm(s);
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
+// Un capo c'è già se ha lo stesso tipo (prima parola) e almeno metà delle altre parole, come il colore
+function findMatch(component, garments) {
+  const [head, ...rest] = words(component);
+  if (!head) return null;
+  return garments.find(g => {
+    const gw = new Set(words([g.tipo, g.colore, g.materiale].filter(Boolean).join(' ')));
+    if (!gw.has(head)) return false;
+    return !rest.length || rest.filter(w => gw.has(w)).length / rest.length >= .5;
+  }) || null;
+}
+
+let lookGarments = [];
+let parsedTimer;
+
+function renderParsed() {
+  const box = $('#lookParsed');
+  const comps = parseComponents($('#lookParts').value);
+  const unchecked = new Set([...box.querySelectorAll('input[data-new]:not(:checked)')].map(i => i.value));
+  box.classList.toggle('hidden', !comps.length);
+  box.innerHTML = comps.length
+    ? '<p class="small">Capi riconosciuti nel testo</p><ul class="parsed">' + comps.map(c => {
+        const m = findMatch(c, lookGarments);
+        return m
+          ? '<li><span>' + esc(c) + '</span><span class="small">già nel guardaroba</span></li>'
+          : '<li><label class="check"><input type="checkbox" data-new value="' + esc(c) + '"' + (unchecked.has(c) ? '' : ' checked') + '><span>' + esc(c) + '</span></label>' +
+            '<span class="small">' + esc(categoryFor(c)) + ' · verrà aggiunto</span></li>';
+      }).join('') + '</ul>'
+    : '';
+}
+
+$('#lookParts').addEventListener('input', () => { clearTimeout(parsedTimer); parsedTimer = setTimeout(renderParsed, 120); });
+
 async function openLookForm(look) {
   editingLookId = look?.id || null;
   await loadPhotos();
   const garments = await all();
+  lookGarments = garments;
   const chosen = new Set(look?.capi || []);
   $('#lookName').value = look?.nome || '';
   $('#lookParts').value = look?.composizione || '';
@@ -739,6 +832,7 @@ async function openLookForm(look) {
   $('#lookPicker').innerHTML = garments.length
     ? garments.map(g => '<label class="pick"><input type="checkbox" value="' + g.id + '"' + (chosen.has(g.id) ? ' checked' : '') + '>' + photoHtml(g.id, 'pick-img', g.tipo || 'Capo') + '</label>').join('')
     : '<p class="small">Quando avrai salvato dei capi potrai sceglierli qui. Per ora descrivi il look a parole.</p>';
+  renderParsed();
   $('#lookForm').classList.remove('hidden');
   $('#newLook').classList.add('hidden');
   $('#lookName').focus();
@@ -747,6 +841,8 @@ async function openLookForm(look) {
 function closeLookForm() {
   editingLookId = null;
   $('#lookForm').reset();
+  $('#lookParsed').classList.add('hidden');
+  $('#lookParsed').innerHTML = '';
   $('#lookForm').classList.add('hidden');
   $('#newLook').classList.remove('hidden');
 }
@@ -758,17 +854,37 @@ $('#lookForm').onsubmit = async e => {
   e.preventDefault();
   const nome = $('#lookName').value.trim();
   const composizione = $('#lookParts').value.trim();
-  const capi = [...document.querySelectorAll('#lookPicker input:checked')].map(i => i.value);
-  if (!nome || (!composizione && !capi.length)) {
+  const picked = [...document.querySelectorAll('#lookPicker input:checked')].map(i => i.value);
+  if (!nome || (!composizione && !picked.length)) {
     $('#lookStatus').textContent = 'Dai un nome al look e scegli almeno un capo oppure descrivilo.';
     return;
   }
-  if (editingLookId) await update('looks', editingLookId, { nome, composizione, capi });
-  else await put({ id: crypto.randomUUID(), nome, composizione, capi, createdAt: Date.now(), updatedAt: Date.now() }, 'looks');
+
+  // I capi descritti nel testo vengono collegati se ci sono già, altrimenti aggiunti al guardaroba
+  const capi = new Set(picked);
+  const garments = await all();
+  const excluded = new Set([...document.querySelectorAll('#lookParsed input[data-new]:not(:checked)')].map(i => i.value));
+  let added = 0;
+  for (const c of parseComponents(composizione)) {
+    const found = findMatch(c, garments);
+    if (found) { capi.add(found.id); continue; }
+    if (excluded.has(c)) continue;
+    const now = Date.now();
+    const item = { id: crypto.randomUUID(), categoria: categoryFor(c), tipo: c.charAt(0).toUpperCase() + c.slice(1), createdAt: now, updatedAt: now };
+    for (const f of FIELDS) item[f] ??= '';
+    await put(item);
+    garments.push(item);
+    capi.add(item.id);
+    added++;
+  }
+
+  const data = { nome, composizione, capi: [...capi] };
+  if (editingLookId) await update('looks', editingLookId, data);
+  else await put({ id: crypto.randomUUID(), ...data, createdAt: Date.now(), updatedAt: Date.now() }, 'looks');
   $('#lookStatus').textContent = '';
   closeLookForm();
   await renderAll();
-  toast('Look salvato');
+  toast(added ? 'Look salvato · ' + (added === 1 ? '1 capo aggiunto' : added + ' capi aggiunti') + ' al guardaroba' : 'Look salvato');
   await window.atelierDriveSync?.();
 };
 

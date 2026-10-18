@@ -396,3 +396,17 @@ figcaption { font-size: 14px; color: var(--muted); margin-top: 6px; overflow: hi
 .agenda-list li:first-child { border-top: 0; }
 .agenda-list .time { flex: none; width: 112px; color: var(--muted); font-size: 14px; }
 .agenda-list .occ { margin-left: auto; font-size: 14px; color: var(--accent); }
+
+/* Capi senza foto e capi descritti nei look */
+.ph { display: flex; align-items: center; justify-content: center; text-align: center; padding: 8px; overflow: hidden; color: var(--muted); font-size: 14px; line-height: 1.25; }
+.ph span { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.sr-only { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+label.btn { display: inline-flex; align-items: center; justify-content: center; margin: 0; cursor: pointer; font-size: 16px; color: var(--text); }
+label.btn:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hint { margin-top: 6px; }
+.parsed-box { margin-top: 12px; padding: 12px 14px; background: var(--surface-2); border-radius: 10px; }
+.parsed { list-style: none; margin: 8px 0 0; padding: 0; }
+.parsed li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 12px; min-height: 44px; border-top: 1px solid var(--surface-3); }
+.parsed li:first-child { border-top: 0; }
+.check { display: flex; align-items: center; gap: 10px; margin: 0; color: var(--text); font-size: 16px; cursor: pointer; }
+.check input { width: 20px; height: 20px; margin: 0; accent-color: var(--accent); }
