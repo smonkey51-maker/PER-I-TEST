@@ -664,7 +664,7 @@ function renderToday(garments, looks) {
   } else {
     $('#idea').innerHTML = '<h3>' + esc(idea.title) + '</h3>' + note + extra + '<div class="strip">' + idea.ids.map(id => {
       const g = byId.get(id);
-      return '<figure>' + photoHtml(id, 'strip-img fade', g.tipo || 'Capo') + '<figcaption>' + esc(g.tipo || 'Capo') + '</figcaption></figure>';
+      return '<figure>' + photoHtml(id, 'strip-img fade', g.tipo || 'Capo') + (photoSrc(id) ? '<figcaption>' + esc(g.tipo || 'Capo') + '</figcaption>' : '') + '</figure>';
     }).join('') + '</div>';
   }
 
