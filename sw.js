@@ -1,6 +1,6 @@
 /* ATELIER — service worker: apre l'app anche senza rete, i dati restano sul dispositivo */
-const CACHE = 'atelier-v1';
-const SHELL = ['/', '/index.html', '/style.css', '/app.js', '/drive-sync.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
+const CACHE = 'atelier-v2';
+const SHELL = ['/', '/index.html', '/style.css', '/app.js', '/drive-sync.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png', '/fonts/cormorant-garamond-latin-500-normal.woff2', '/fonts/cormorant-garamond-latin-600-normal.woff2'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)));
