@@ -13,6 +13,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="ATELIER">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/cormorant-garamond-latin-600-normal.woff2">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -20,9 +21,10 @@
     <div class="top-inner">
       <span class="brand">ATELIER</span>
       <nav class="tabs" role="tablist" aria-label="Sezioni">
-        <button class="tab" role="tab" data-tab="wardrobe" aria-selected="true">Guardaroba</button>
-        <button class="tab" role="tab" data-tab="add" aria-selected="false">Aggiungi</button>
+        <button class="tab" role="tab" data-tab="today" aria-selected="true">Oggi</button>
+        <button class="tab" role="tab" data-tab="wardrobe" aria-selected="false">Guardaroba</button>
         <button class="tab" role="tab" data-tab="looks" aria-selected="false">Looks</button>
+        <button class="tab" role="tab" data-tab="add" aria-selected="false">Aggiungi</button>
       </nav>
     </div>
   </header>
@@ -41,7 +43,34 @@
   </section>
 
   <main>
-    <section id="view-wardrobe" role="tabpanel">
+    <section id="view-today" role="tabpanel">
+      <div class="view-head">
+        <h1>Oggi</h1>
+      </div>
+      <div id="todayEmpty" class="empty hidden">
+        <h2>Il guardaroba è vuoto</h2>
+        <p>Aggiungi i tuoi capi: qui troverai un'idea per ogni giorno e potrai segnare cosa è lavato e cosa è in lavatrice.</p>
+        <button class="btn" id="goAddToday">Aggiungi i primi capi</button>
+      </div>
+      <div id="todayContent" class="hidden">
+        <div class="idea-card">
+          <h2>Cosa mi metto oggi</h2>
+          <div id="idea"></div>
+          <div class="actions"><button class="btn secondary" id="anotherIdea">Un'altra idea</button></div>
+        </div>
+        <div class="view-head sec">
+          <h2>Lavati <span id="cleanCount" class="muted">0</span></h2>
+        </div>
+        <div id="cleanList"></div>
+        <div class="view-head sec">
+          <h2>In lavatrice <span id="washCount" class="muted">0</span></h2>
+          <button class="btn secondary hidden" id="washAll">Tutti lavati</button>
+        </div>
+        <div id="washList"></div>
+      </div>
+    </section>
+
+    <section id="view-wardrobe" role="tabpanel" class="hidden">
       <div class="view-head">
         <h1>Guardaroba <span id="count" class="muted">0</span></h1>
       </div>
@@ -52,6 +81,33 @@
         <p>Carica le fotografie dei tuoi capi: ATELIER li riconosce e li ordina per categoria.</p>
         <button class="btn" id="goAdd">Aggiungi i primi capi</button>
       </div>
+    </section>
+
+    <section id="view-looks" role="tabpanel" class="hidden">
+      <div class="view-head">
+        <h1>Signature looks <span id="lookCount" class="muted">0</span></h1>
+        <button class="btn secondary" id="newLook">Nuovo look</button>
+      </div>
+      <form id="lookForm" class="look-form hidden">
+        <h2 id="lookFormTitle">Nuovo look</h2>
+        <label for="lookName">Nome del look</label>
+        <input id="lookName" maxlength="60" autocomplete="off">
+        <label for="lookParts">Composizione</label>
+        <input id="lookParts" maxlength="200" autocomplete="off" placeholder="Maglione lilla, gurkha sabbia, sneakers panna">
+        <label id="pickerLabel">Capi dal tuo guardaroba (facoltativo)</label>
+        <div id="lookPicker" class="picker" aria-labelledby="pickerLabel"></div>
+        <div class="actions">
+          <button type="submit" class="btn">Salva look</button>
+          <button type="button" class="btn secondary" id="cancelLook">Annulla</button>
+        </div>
+      </form>
+      <div id="lookStatus" class="status" role="status"></div>
+      <div id="looks"></div>
+      <p id="lookEmpty" class="small hidden">Ancora nessun look. Premi «Nuovo look» per crearne uno.</p>
+      <div class="palette" aria-hidden="true">
+        <i style="background:#788a9a"></i><i style="background:#743b50"></i><i style="background:#b3a0c4"></i><i style="background:#b69a72"></i><i style="background:#747a53"></i><i style="background:#283c58"></i>
+      </div>
+      <p class="small">Smart casual e sartoria rilassata. Estate Soft × Cool, vestibilità comfortable tailored.</p>
     </section>
 
     <section id="view-add" role="tabpanel" class="hidden">
@@ -74,32 +130,6 @@
       <div class="actions"><button class="btn hidden" id="save">Salva i capi</button></div>
     </section>
 
-    <section id="view-looks" role="tabpanel" class="hidden">
-      <div class="view-head">
-        <h1>Signature looks <span id="lookCount" class="muted">0</span></h1>
-        <button class="btn secondary" id="newLook">Nuovo look</button>
-      </div>
-      <form id="lookForm" class="look-form hidden">
-        <label for="lookName">Nome del look</label>
-        <input id="lookName" maxlength="60" autocomplete="off">
-        <label for="lookParts">Composizione</label>
-        <input id="lookParts" maxlength="200" autocomplete="off" placeholder="Maglione lilla, gurkha sabbia, sneakers panna">
-        <label id="pickerLabel">Capi dal tuo guardaroba (facoltativo)</label>
-        <div id="lookPicker" class="picker" aria-labelledby="pickerLabel"></div>
-        <div class="actions">
-          <button type="submit" class="btn">Salva look</button>
-          <button type="button" class="btn secondary" id="cancelLook">Annulla</button>
-        </div>
-      </form>
-      <div id="lookStatus" class="status" role="status"></div>
-      <div id="looks"></div>
-      <p id="lookEmpty" class="small hidden">Ancora nessun look. Premi «Nuovo look» per crearne uno.</p>
-      <div class="palette" aria-hidden="true">
-        <i style="background:#788a9a"></i><i style="background:#743b50"></i><i style="background:#b3a0c4"></i><i style="background:#b69a72"></i><i style="background:#747a53"></i><i style="background:#283c58"></i>
-      </div>
-      <p class="small">Smart casual e sartoria rilassata. Estate Soft × Cool, vestibilità comfortable tailored.</p>
-    </section>
-
     <p class="note">Le immagini approvate vengono salvate sul dispositivo e, dopo l'accesso Google, sincronizzate con Drive. L'analisi automatica richiede il servizio AI configurato sul server; materiale e vestibilità non sono sempre determinabili da una foto.</p>
   </main>
 
@@ -108,7 +138,10 @@
     <div class="dialog-body">
       <h2 id="detailTitle"></h2>
       <dl id="detailFields"></dl>
-      <div class="actions">
+      <form id="editForm" class="hidden"></form>
+      <div id="detailActions" class="actions">
+        <button class="btn" id="detailWash">Metti in lavatrice</button>
+        <button class="btn secondary" id="detailEdit">Modifica</button>
         <button class="btn danger" id="detailDelete">Rimuovi capo</button>
         <button class="btn secondary" id="detailClose">Chiudi</button>
       </div>

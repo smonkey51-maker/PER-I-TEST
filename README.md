@@ -15,15 +15,24 @@ Vercel collegato al branch predefinito della repository. Variabile server-side `
 Permesso richiesto: `https://www.googleapis.com/auth/drive.file`, limitato ai file creati o aperti tramite l'app.
 
 ## Archiviazione
-Su Drive ATELIER usa la cartella `ATELIER` con una sottocartella per sezione: `Guardaroba` (una scheda JSON per capo, con metadati e fotografia JPEG compressa) `Looks` (una scheda JSON per look) ed `Eliminati` (una traccia per ogni capo o look rimosso, così la cancellazione arriva anche agli altri dispositivi). I file salvati in passato direttamente in `ATELIER` vengono spostati nelle sottocartelle alla prima sincronizzazione. Questa è una soluzione personale iniziale: non un database transazionale. Con molti capi può diventare inefficiente. Per una versione avanzata conviene separare foto e metadati, gestire versioni/conflitti e aggiungere un account server-side.
+Su Drive ATELIER usa la cartella `ATELIER` con una sottocartella per sezione: `Guardaroba` (una scheda JSON per capo, senza foto), `Foto` (una fotografia JPEG per capo), `Looks` (una scheda JSON per look) ed `Eliminati` (una traccia per ogni capo o look rimosso, così la cancellazione arriva anche agli altri dispositivi). Ogni scheda porta la data dell'ultima modifica come proprietà del file: modifiche, lavatrice e cancellazioni si sincronizzano tra i dispositivi (vince l'ultima modifica). I file salvati con le versioni precedenti, anche quelli con la foto dentro la scheda, vengono convertiti alla prima sincronizzazione. Questa è una soluzione personale: non un database transazionale.
 
 **Importante:** non cancellare i dati del browser del telefono prima di aver collegato Drive e completato la prima sincronizzazione. Se rimuovi un capo mentre Drive non è collegato, la rimozione viene propagata al prossimo accesso.
 
 ## Style DNA
 Smart Casual × Relaxed Sophistication; 70% sartoria rilassata, 20% carattere cromatico, 10% sperimentazione. Estate Soft × Cool, palette personale.
 
+## Sezioni dell'app
+- **Oggi**: un'idea per la giornata (prima i look salvati con tutti i capi lavati, poi un outfit composto con i capi lavati adatti alla stagione) e le liste dei capi **lavati** e **in lavatrice**.
+- **Guardaroba**: capi per categoria, scheda con tutti i dati, modifica, lavatrice, rimozione.
+- **Looks**: composizioni di capi o descrizioni a parole, modificabili.
+- **Aggiungi**: fino a 40 fotografie per volta, analisi automatica e revisione prima di salvare. Le foto vengono portate al formato 4:5 con lo sfondo che prosegue il colore del bordo.
+
+## Analisi AI e sicurezza
+`/api/analyze` risponde solo se la richiesta porta il token dell'account Google collegato all'app (verificato con Google, deve appartenere a questo Client ID). Per limitarla a specifici indirizzi, su Vercel aggiungi `ALLOWED_EMAILS` con gli indirizzi separati da virgola. Il credito OpenAI è prepagato: tienilo senza ricarica automatica.
+
 ## Installazione come app
 Da Chrome apri `https://atelier-personal-wardrobe.vercel.app`: compare il pulsante **Installa app** (oppure menu ⋮ → «Installa app» / «Aggiungi a schermata Home»). L'app si apre a schermo intero e, grazie al service worker, anche senza connessione: i capi restano sul dispositivo e si sincronizzano al ritorno online.
 
 ## Struttura
-`index.html` (markup), `style.css` (tema scuro fisso), `app.js` (archivio locale, caricamento multiplo, categorie, looks), `drive-sync.js` (accesso Google e sincronizzazione Drive), `manifest.json` e `sw.js` (installazione e uso offline), `icons/`, `api/` (analisi AI e configurazione).
+`index.html` (markup), `style.css` (tema scuro fisso), `app.js` (archivio locale, foto, caricamento multiplo, modifica, lavatrice, idea del giorno, looks), `drive-sync.js` (accesso Google e sincronizzazione Drive), `manifest.json` e `sw.js` (installazione e uso offline), `icons/`, `fonts/` (Cormorant Garamond, licenza SIL OFL in `fonts/OFL.txt`), `api/` (analisi AI e configurazione).
