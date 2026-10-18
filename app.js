@@ -26,6 +26,7 @@ let idea = null;
 let todayEvents = null; // null = calendario non collegato
 let eventsError = '';
 let eventsAt = 0;
+let manualEvents = []; // impegni aggiunti a mano per oggi (restano su questo dispositivo)
 
 /* ---------- Archivio locale (IndexedDB) ---------- */
 
@@ -368,13 +369,13 @@ const OCCASIONS = [
 function dayOccasions(events) {
   const matched = [];
   for (const ev of events || []) {
-    const occ = OCCASIONS.find(o => o.re.test(ev.title));
+    const occ = ev.tag ? OCCASIONS.find(o => o.tag === ev.tag) : OCCASIONS.find(o => o.re.test(ev.title));
     if (occ) matched.push({ occ, ev });
   }
   return matched;
 }
 
-const eventTime = ev => (ev.allDay ? 'Tutto il giorno' : new Date(ev.start).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }));
+const eventTime = ev => (ev.manual ? 'Da te' : ev.allDay ? 'Tutto il giorno' : new Date(ev.start).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }));
 
 function occasionFit(g, tags) {
   if (!tags.length) return 1;
@@ -434,26 +435,55 @@ function miniHtml(d, on) {
     '<button class="btn secondary" data-wash="' + d.id + '" data-on="' + on + '">' + (on ? 'In lavatrice' : 'Lavato') + '</button></div></div>';
 }
 
-function renderAgenda(matched) {
-  const box = $('#agenda');
-  const signedIn = !!window.atelierToken?.();
-  if (!signedIn) { box.classList.add('hidden'); return; }
-  box.classList.remove('hidden');
-  const label = new Map(matched.map(m => [m.ev, m.occ.tag]));
-  if (eventsError) {
-    box.innerHTML = '<h2>Impegni di oggi</h2><p class="muted">' + esc(eventsError) + '</p>';
-  } else if (todayEvents === null && window.atelierCalendarOk?.()) {
-    box.innerHTML = '<h2>Impegni di oggi</h2><p class="muted">Caricamento degli impegni…</p>';
-  } else if (todayEvents === null) {
-    box.innerHTML = '<h2>Impegni di oggi</h2><p class="muted">Collega Google Calendar per avere un\'idea su misura per i tuoi impegni. Gli eventi restano sul tuo dispositivo.</p>' +
-      '<div class="actions"><button class="btn secondary" data-cal="connect">Collega il calendario</button></div>';
-  } else if (!todayEvents.length) {
-    box.innerHTML = '<h2>Impegni di oggi</h2><p class="muted">Nessun impegno in calendario.</p>';
-  } else {
-    box.innerHTML = '<h2>Impegni di oggi</h2><ul class="agenda-list">' + todayEvents.map(ev =>
-      '<li><span class="time">' + esc(eventTime(ev)) + '</span><span>' + esc(ev.title) + '</span>' +
-      (label.get(ev) ? '<span class="occ">' + esc(label.get(ev)) + '</span>' : '') + '</li>').join('') + '</ul>';
+const todayStr = () => {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+};
+
+function readManual() {
+  try {
+    const o = JSON.parse(localStorage.getItem('atelier_manual') || '{}');
+    manualEvents = o.date === todayStr() && Array.isArray(o.items) ? o.items : [];
+  } catch {
+    manualEvents = [];
   }
+}
+
+function saveManual() {
+  try { localStorage.setItem('atelier_manual', JSON.stringify({ date: todayStr(), items: manualEvents })); } catch { /* storage non disponibile */ }
+}
+
+async function addManual(title, tag) {
+  title = title.trim();
+  if (!title) return;
+  manualEvents.push({ title, tag, manual: true, allDay: true });
+  saveManual();
+  idea = null;
+  await renderAll();
+}
+
+function renderAgenda(matched, events) {
+  const signedIn = !!window.atelierToken?.();
+  const label = new Map(matched.map(m => [m.ev, m.occ.tag]));
+  let html = '<h2>Impegni di oggi</h2>';
+  if (eventsError) {
+    html += '<p class="muted">' + esc(eventsError) + '</p>';
+  } else if (signedIn && todayEvents === null && window.atelierCalendarOk?.()) {
+    html += '<p class="muted">Caricamento degli impegni…</p>';
+  } else if (signedIn && todayEvents === null) {
+    html += '<p class="muted">Collega Google Calendar per avere un\'idea su misura per i tuoi impegni. Gli eventi restano sul tuo dispositivo.</p>' +
+      '<div class="actions"><button class="btn secondary" data-cal="connect">Collega il calendario</button></div>';
+  } else if (!events.length) {
+    html += '<p class="muted">Nessun impegno per oggi.</p>';
+  }
+  if (events.length) {
+    html += '<ul class="agenda-list">' + events.map(ev =>
+      '<li><span class="time">' + esc(eventTime(ev)) + '</span><span>' + esc(ev.title) + '</span>' +
+      (label.get(ev) ? '<span class="occ">' + esc(label.get(ev)) + '</span>' : '') +
+      (ev.manual ? '<button class="link-btn" data-manual-del="' + manualEvents.indexOf(ev) + '" aria-label="Rimuovi ' + esc(ev.title) + '">Rimuovi</button>' : '') +
+      '</li>').join('') + '</ul>';
+  }
+  $('#agendaInfo').innerHTML = html;
 }
 
 function renderToday(garments, looks) {
@@ -462,17 +492,19 @@ function renderToday(garments, looks) {
   $('#todayEmpty').classList.toggle('hidden', garments.length > 0);
   $('#todayContent').classList.toggle('hidden', !garments.length);
 
-  const matched = dayOccasions(todayEvents);
+  readManual();
+  const events = [...(todayEvents || []), ...manualEvents];
+  const matched = dayOccasions(events);
   const tags = [...new Map(matched.map(m => [m.occ.tag, m.occ])).values()];
   const key = tags.map(t => t.tag).join(',');
-  renderAgenda(matched);
+  renderAgenda(matched, events);
 
   const byId = new Map(garments.map(g => [g.id, g]));
   if (!idea || idea.key !== key || idea.missing || !idea.ids?.every(id => byId.has(id) && !washing(byId.get(id)))) {
     idea = { ...makeIdea(clean, looks, ideaN, tags), key };
   }
   const note = matched.length
-    ? '<p class="small">Pensato per ' + matched.slice(0, 3).map(m => esc(m.occ.tag) + ' (' + esc(m.ev.title) + ', ' + esc(eventTime(m.ev)) + ')').join(' e ') + '.</p>'
+    ? '<p class="small">Pensato per ' + matched.slice(0, 3).map(m => esc(m.occ.tag) + ' (' + (m.ev.manual ? 'aggiunto da te' : esc(m.ev.title) + ', ' + esc(eventTime(m.ev))) + ')').join(' e ') + '.</p>'
     : '';
 
   if (idea.missing) {
@@ -511,7 +543,22 @@ async function refreshEvents(force = false) {
 
 $('#agenda').addEventListener('click', e => {
   if (e.target.closest('[data-cal=connect]')) window.atelierConnectCalendar?.();
+  const occ = e.target.closest('[data-occ]');
+  if (occ) addManual(occ.textContent, occ.dataset.occ);
+  const del = e.target.closest('[data-manual-del]');
+  if (del) {
+    manualEvents.splice(+del.dataset.manualDel, 1);
+    saveManual();
+    idea = null;
+    renderAll();
+  }
 });
+
+$('#manualForm').onsubmit = async e => {
+  e.preventDefault();
+  await addManual($('#manualText').value);
+  $('#manualText').value = '';
+};
 
 $('#anotherIdea').onclick = async () => {
   ideaN++;
