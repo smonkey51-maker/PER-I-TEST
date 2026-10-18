@@ -44,8 +44,10 @@
 
   <main>
     <section id="view-today" role="tabpanel">
-      <div class="view-head">
-        <h1>Oggi</h1>
+      <div class="greet">
+        <p id="todayDate" class="date"></p>
+        <h1 id="greeting">Oggi</h1>
+        <p id="todayLine" class="lede"></p>
       </div>
       <div id="weather" class="idea-card agenda">
         <div id="weatherInfo"></div>
@@ -77,15 +79,18 @@
         </div>
       </div>
       <div id="todayEmpty" class="empty hidden">
-        <h2>Il guardaroba è vuoto</h2>
-        <p>Aggiungi i tuoi capi: qui troverai un'idea per ogni giorno e potrai segnare cosa è lavato e cosa è in lavatrice.</p>
-        <button class="btn" id="goAddToday">Aggiungi i primi capi</button>
+        <h2>Il tuo guardaroba comincia da qui</h2>
+        <p>Fotografa i capi che ami: ogni mattina ATELIER ti suggerisce come abbinarli, tenendo conto del tempo e dei tuoi impegni.</p>
+        <button class="btn" id="goAddToday">Aggiungi il primo capo</button>
       </div>
       <div id="todayContent" class="hidden">
         <div class="idea-card">
           <h2>Cosa mi metto oggi</h2>
           <div id="idea"></div>
-          <div class="actions"><button class="btn secondary" id="anotherIdea">Un'altra idea</button></div>
+          <div class="actions">
+            <button class="btn" id="wearIdea">Indosso questo</button>
+            <button class="btn secondary" id="anotherIdea">Un'altra idea</button>
+          </div>
           <div class="manual">
             <label for="inspoName">Ispirazione di stile</label>
             <form id="inspoForm" class="inspo-form">
@@ -118,9 +123,9 @@
       <div id="chips" class="chips" role="group" aria-label="Filtra per categoria"></div>
       <div id="wardrobe"></div>
       <div id="empty" class="empty">
-        <h2>Il guardaroba è vuoto</h2>
-        <p>Carica le fotografie dei tuoi capi: ATELIER li riconosce e li ordina per categoria.</p>
-        <button class="btn" id="goAdd">Aggiungi i primi capi</button>
+        <h2>Il tuo guardaroba comincia da qui</h2>
+        <p>Fotografa i capi che ami: ATELIER li riconosce e li mette in ordine per te.</p>
+        <button class="btn" id="goAdd">Aggiungi il primo capo</button>
       </div>
     </section>
 
@@ -184,6 +189,7 @@
       <form id="editForm" class="hidden"></form>
       <div id="detailActions" class="actions">
         <button class="btn" id="detailWash">Metti in lavatrice</button>
+        <button class="btn secondary" id="detailFav" aria-pressed="false">Aggiungi ai preferiti</button>
         <label class="btn secondary hidden" id="detailPhotoLabel">Aggiungi foto<input type="file" id="detailPhoto" accept="image/*" class="sr-only"></label>
         <button class="btn secondary" id="detailEdit">Modifica</button>
         <button class="btn danger" id="detailDelete">Rimuovi capo</button>
