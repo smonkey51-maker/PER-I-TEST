@@ -722,6 +722,18 @@ async function seedLooks() {
   localStorage.setItem('atelier_looks_seeded', '1');
 }
 
+// Una volta per dispositivo: i capi dei look di partenza entrano nel guardaroba (id fissi, così più dispositivi non creano doppioni)
+async function addSeedGarments() {
+  if (localStorage.getItem('atelier_seed_garments')) return;
+  for (const seed of SEED_LOOKS) {
+    const look = (await all('looks')).find(l => l.id === seed.id);
+    if (!look) continue;
+    const { ids } = await ensureLookGarments(look.composizione, new Set(), true);
+    await update('looks', look.id, { capi: [...new Set([...(look.capi || []), ...ids])] });
+  }
+  localStorage.setItem('atelier_seed_garments', '1');
+}
+
 function renderLooks(looks, garments) {
   looks = [...looks].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
   const byId = new Map(garments.map(g => [g.id, g]));
@@ -799,6 +811,32 @@ function findMatch(component, garments) {
   }) || null;
 }
 
+// Collega ai capi esistenti quelli descritti nel testo e crea quelli che mancano (tranne gli esclusi)
+async function ensureLookGarments(text, excluded = new Set(), fixedIds = false) {
+  const ids = new Set();
+  const garments = await all();
+  let added = 0;
+  for (const c of parseComponents(text)) {
+    const found = findMatch(c, garments);
+    if (found) { ids.add(found.id); continue; }
+    if (excluded.has(c)) continue;
+    const now = Date.now();
+    const item = {
+      id: fixedIds ? 'seed-' + norm(c).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : crypto.randomUUID(),
+      categoria: categoryFor(c),
+      tipo: c.charAt(0).toUpperCase() + c.slice(1),
+      createdAt: now,
+      updatedAt: now
+    };
+    for (const f of FIELDS) item[f] ??= '';
+    await put(item);
+    garments.push(item);
+    ids.add(item.id);
+    added++;
+  }
+  return { ids, added };
+}
+
 let lookGarments = [];
 let parsedTimer;
 
@@ -861,22 +899,9 @@ $('#lookForm').onsubmit = async e => {
   }
 
   // I capi descritti nel testo vengono collegati se ci sono già, altrimenti aggiunti al guardaroba
-  const capi = new Set(picked);
-  const garments = await all();
   const excluded = new Set([...document.querySelectorAll('#lookParsed input[data-new]:not(:checked)')].map(i => i.value));
-  let added = 0;
-  for (const c of parseComponents(composizione)) {
-    const found = findMatch(c, garments);
-    if (found) { capi.add(found.id); continue; }
-    if (excluded.has(c)) continue;
-    const now = Date.now();
-    const item = { id: crypto.randomUUID(), categoria: categoryFor(c), tipo: c.charAt(0).toUpperCase() + c.slice(1), createdAt: now, updatedAt: now };
-    for (const f of FIELDS) item[f] ??= '';
-    await put(item);
-    garments.push(item);
-    capi.add(item.id);
-    added++;
-  }
+  const { ids, added } = await ensureLookGarments(composizione, excluded);
+  const capi = new Set([...picked, ...ids]);
 
   const data = { nome, composizione, capi: [...capi] };
   if (editingLookId) await update('looks', editingLookId, data);
@@ -919,5 +944,6 @@ showTab(TABS.includes(startTab) ? startTab : 'today');
 updatePicked();
 migrateLocalPhotos()
   .then(seedLooks)
+  .then(addSeedGarments)
   .then(renderAll)
   .catch(e => toast('Archivio locale non disponibile: ' + e.message));
