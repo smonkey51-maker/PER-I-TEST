@@ -359,18 +359,49 @@ function seasonFit(g) {
 }
 
 // Occasioni riconosciute dal titolo degli impegni; kw cerca la stessa occasione nel campo «occasioni» dei capi
+// Parole che iniziano con questi testi (così «riunioni» e «cene» valgono, «scena» e «transport» no)
+const startsWith = words => new RegExp('(?<![a-zàèéìòù])(?:' + words.join('|') + ')', 'i');
+
+// re: parole nel titolo dell'impegno; kw: parole nel campo «occasioni» dei capi. Un impegno può avere più occasioni.
 const OCCASIONS = [
-  { tag: 'serata', re: /cena|aperitiv|ristorant|festa|party|compleanno|matrimonio|teatro|concerto|cinema|drink|serata|evento/i, kw: /serata|cena|aperitiv|elegan|event|festa|formal/i },
-  { tag: 'lavoro', re: /riunion|meeting|call|cliente|colloquio|presentazion|ufficio|lavoro|workshop|intervist|review|demo/i, kw: /lavoro|ufficio|business|formal|elegan|riunion|smart/i },
-  { tag: 'sport', re: /palestra|corsa|yoga|allenament|sport|calcio|tennis|nuoto|padel|running|pilates|bici/i, kw: /sport|palestra|allenam|attiv/i },
-  { tag: 'viaggio', re: /volo|treno|viaggio|aeroporto|partenza|trasferta/i, kw: /viaggio|comod|casual|trasferta/i }
+  {
+    tag: 'cerimonia',
+    re: startsWith(['cerimoni', 'matrimoni', 'nozze', 'battesim', 'comunione', 'cresima', 'laurea', 'funerale', 'gala\\b', 'inaugurazion', 'premiazion']),
+    kw: startsWith(['cerimoni', 'elegan', 'formal', 'matrimoni', 'festa', 'serata', 'gala'])
+  },
+  {
+    tag: 'serata',
+    re: startsWith(['cena', 'cene\\b', 'aperitiv', 'apericena', 'ristorant', 'pizzeria', 'trattoria', 'osteria', 'festa', 'party', 'compleanno', 'anniversari', 'teatro', 'concerto', 'cinema', 'opera\\b', 'musical', 'mostra', 'vernissage', 'drink', 'cocktail', 'happy hour', 'brindisi', 'serata', 'evento', 'discoteca', 'degustazion', 'dinner', 'appuntamento romantico', 'primo appuntamento']),
+    kw: startsWith(['serata', 'cena', 'aperitiv', 'elegan', 'event', 'festa', 'formal', 'sera', 'uscita'])
+  },
+  {
+    tag: 'lavoro',
+    re: startsWith(['riunion', 'meeting', 'call', 'videocall', 'videochiamat', 'cliente', 'clienti', 'colloquio', 'presentazion', 'ufficio', 'lavoro', 'workshop', 'intervist', 'review', 'demo\\b', 'stand-?up', 'kick-?off', 'conferenz', 'convegno', 'congresso', 'fiera', 'seminari', 'formazione', 'trattativa', 'consulenza', 'assemblea', 'direttivo', 'board', 'sopralluogo', 'esame', 'lezione', 'sync']),
+    kw: startsWith(['lavoro', 'ufficio', 'business', 'formal', 'elegan', 'riunion', 'smart', 'professional'])
+  },
+  {
+    tag: 'sport',
+    re: startsWith(['palestra', 'gym', 'workout', 'corsa', 'running', 'yoga', 'pilates', 'allenament', 'sport\\b', 'sportiv', 'calcio', 'calcetto', 'tennis', 'padel', 'nuoto', 'piscina', 'bici', 'ciclismo', 'spinning', 'crossfit', 'fitness', 'trekking', 'escursion', 'camminata', 'sci\\b', 'snowboard', 'golf\\b', 'basket', 'pallavolo', 'boxe', 'arrampicata', 'danza', 'surf', 'vela\\b']),
+    kw: startsWith(['sport', 'palestra', 'allenam', 'attiv', 'fitness', 'corsa', 'outdoor'])
+  },
+  {
+    tag: 'viaggio',
+    re: startsWith(['volo\\b', 'treno', 'viaggio', 'aeroporto', 'aereo', 'stazione', 'partenza', 'rientro', 'trasferta', 'check-?in', 'imbarco', 'hotel', 'vacanza', 'gita', 'transfer']),
+    kw: startsWith(['viaggio', 'comod', 'casual', 'trasferta', 'travel'])
+  },
+  {
+    tag: 'casual',
+    re: startsWith(['pranzo', 'brunch', 'colazione', 'caff[eè]', 'shopping', 'amici\\b', 'passeggiata', 'picnic', 'grigliata', 'barbecue', 'parco\\b', 'museo', 'mercatino', 'spiaggia', 'mare\\b', 'famiglia', 'bambini', 'relax', 'weekend', 'tempo libero']),
+    kw: startsWith(['casual', 'quotidian', 'tempo libero', 'comod', 'relax', 'weekend', 'informal'])
+  }
 ];
 
+// Un impegno può rientrare in più occasioni (es. «cena di lavoro»: serata e lavoro)
 function dayOccasions(events) {
   const matched = [];
   for (const ev of events || []) {
-    const occ = ev.tag ? OCCASIONS.find(o => o.tag === ev.tag) : OCCASIONS.find(o => o.re.test(ev.title));
-    if (occ) matched.push({ occ, ev });
+    const occs = ev.tag ? OCCASIONS.filter(o => o.tag === ev.tag) : OCCASIONS.filter(o => o.re.test(ev.title));
+    for (const occ of occs) matched.push({ occ, ev });
   }
   return matched;
 }
@@ -464,7 +495,8 @@ async function addManual(title, tag) {
 
 function renderAgenda(matched, events) {
   const signedIn = !!window.atelierToken?.();
-  const label = new Map(matched.map(m => [m.ev, m.occ.tag]));
+  const label = new Map();
+  for (const m of matched) label.set(m.ev, [...(label.get(m.ev) || []), m.occ.tag]);
   let html = '<h2>Impegni di oggi</h2>';
   if (eventsError) {
     html += '<p class="muted">' + esc(eventsError) + '</p>';
@@ -479,7 +511,7 @@ function renderAgenda(matched, events) {
   if (events.length) {
     html += '<ul class="agenda-list">' + events.map(ev =>
       '<li><span class="time">' + esc(eventTime(ev)) + '</span><span>' + esc(ev.title) + '</span>' +
-      (label.get(ev) ? '<span class="occ">' + esc(label.get(ev)) + '</span>' : '') +
+      (label.has(ev) ? '<span class="occ">' + esc(label.get(ev).join(', ')) + '</span>' : '') +
       (ev.manual ? '<button class="link-btn" data-manual-del="' + manualEvents.indexOf(ev) + '" aria-label="Rimuovi ' + esc(ev.title) + '">Rimuovi</button>' : '') +
       '</li>').join('') + '</ul>';
   }
@@ -503,8 +535,11 @@ function renderToday(garments, looks) {
   if (!idea || idea.key !== key || idea.missing || !idea.ids?.every(id => byId.has(id) && !washing(byId.get(id)))) {
     idea = { ...makeIdea(clean, looks, ideaN, tags), key };
   }
-  const note = matched.length
-    ? '<p class="small">Pensato per ' + matched.slice(0, 3).map(m => esc(m.occ.tag) + ' (' + (m.ev.manual ? 'aggiunto da te' : esc(m.ev.title) + ', ' + esc(eventTime(m.ev))) + ')').join(' e ') + '.</p>'
+  const byEvent = new Map();
+  for (const m of matched) byEvent.set(m.ev, [...(byEvent.get(m.ev) || []), m.occ.tag]);
+  const note = byEvent.size
+    ? '<p class="small">Pensato per ' + [...byEvent].slice(0, 3).map(([ev, tg]) =>
+        ev.manual && ev.tag ? esc(tg[0]) + ' (aggiunto da te)' : esc(ev.title) + (ev.manual ? '' : ', ' + esc(eventTime(ev))) + ' (' + esc(tg.join(', ')) + ')').join(' e ') + '.</p>'
     : '';
 
   if (idea.missing) {
