@@ -46,16 +46,42 @@ const migrate=async()=>{
     await request('files/'+f.id+'?'+new URLSearchParams({addParents:dest,removeParents:root,fields:'id'}),{method:'PATCH',headers:{'Content-Type':'application/json'},body:'{}'});
   });
 };
+const TOMBS='ATELIER/Eliminati';
+let again=false;
 const sync=async()=>{
-  if(busy||!token)return;
+  if(!token)return;
+  if(busy){again=true;return}
   busy=true;el('syncDrive').disabled=true;
   try{
     status('Sincronizzazione in corso…');
     await migrate();
-    let downloaded=0,uploaded=0;
+    let downloaded=0,uploaded=0,removed=0;
+
+    // 1. Cancellazioni fatte qui: lasciano una traccia su Drive per gli altri dispositivi
+    const tombs=new Set((await cloudFiles(TOMBS)).map(f=>f.name));
+    const tombFolder=await ensureFolder(TOMBS);
+    for(const t of await all('deleted')){
+      const name=t.key+'.json';
+      if(!tombs.has(name)){await upload(name,tombFolder,{id:t.id,kind:t.kind,at:t.at});tombs.add(name)}
+      await del(t.key,'deleted');
+    }
+
+    // 2. Cancellazioni fatte altrove: tolgo i capi e i look dal dispositivo
+    const gone={garment:new Set(),look:new Set()};
+    for(const name of tombs){const m=/^(garment|look)-(.+)\.json$/.exec(name);if(m)gone[m[1]].add(m[2])}
+    for(const [kind,store] of kinds){
+      for(const item of await all(store))if(gone[kind].has(item.id)){await del(item.id,store);removed++}
+    }
+
+    // 3. Capi e look: scarico quelli che mancano qui, carico quelli che mancano su Drive
     for(const [kind,store,path] of kinds){
-      const remote=await cloudFiles(path),names=new Set(remote.map(f=>f.name));
-      const local=await all(store),localIds=new Set(local.map(x=>x.id)),re=new RegExp('^'+kind+'-(.+)\\.json$');
+      let remote=await cloudFiles(path);
+      const re=new RegExp('^'+kind+'-(.+)\\.json$');
+      const stale=remote.filter(f=>{const m=re.exec(f.name);return m&&gone[kind].has(m[1])});
+      await pool(stale,4,async f=>{const r=await fetch('https://www.googleapis.com/drive/v3/files/'+f.id,{method:'DELETE',headers:{Authorization:'Bearer '+token}});if(!r.ok&&r.status!==404)throw Error('Eliminazione Drive non riuscita: '+r.status)});
+      remote=remote.filter(f=>!stale.includes(f));
+      const names=new Set(remote.map(f=>f.name));
+      const local=await all(store),localIds=new Set(local.map(x=>x.id));
       const missingHere=remote.filter(f=>{const m=re.exec(f.name);return m&&!localIds.has(m[1])});
       await pool(missingHere,5,async f=>{const item=await read(f.id);if(item?.id){await put(item,store);downloaded++}});
       const missingRemote=local.filter(item=>!names.has(kind+'-'+item.id+'.json'));
@@ -63,22 +89,17 @@ const sync=async()=>{
       await pool(missingRemote,3,async item=>{await upload(kind+'-'+item.id+'.json',folder,item);uploaded++});
     }
     await renderSaved();await renderLooks();
-    status('Sincronizzato · '+downloaded+' scaricati · '+uploaded+' caricati');
+    status('Sincronizzato · '+downloaded+' scaricati · '+uploaded+' caricati'+(removed?' · '+removed+' rimossi':''));
   }catch(e){status('Errore: '+e.message)}
-  finally{busy=false;el('syncDrive').disabled=false}
+  finally{
+    busy=false;el('syncDrive').disabled=false;
+    if(again){again=false;sync()}
+  }
 };
-el('connectDrive').onclick=async()=>{try{status('Accesso Google…');await auth(true);for(const k of kinds)await ensureFolder(k[2]);await sync()}catch(e){status('Errore: '+e.message)}};
+el('connectDrive').onclick=async()=>{try{status('Accesso Google…');await auth(true);for(const k of kinds)await ensureFolder(k[2]);await ensureFolder(TOMBS);await sync()}catch(e){status('Errore: '+e.message)}};
 el('syncDrive').onclick=sync;
 el('disconnectDrive').onclick=()=>{token=null;signedInEmail=null;folderIds={};clearTimeout(refreshTimer);localStorage.removeItem('atelier_google_email');setConnected(false);status('Disconnesso. I dati locali restano sul dispositivo.')};
 window.atelierDriveSync=sync;
-window.atelierDriveDelete=async(id,kind='garment')=>{
-  if(!token){status('Eliminazione solo locale: accedi a Google per sincronizzare.');return}
-  try{
-    const path=kinds.find(k=>k[0]===kind)[2],files=await cloudFiles(path),f=files.find(f=>f.name===kind+'-'+id+'.json');
-    if(f){const r=await fetch('https://www.googleapis.com/drive/v3/files/'+f.id,{method:'DELETE',headers:{Authorization:'Bearer '+token}});if(!r.ok)throw Error('HTTP '+r.status)}
-    status('Rimosso dal Drive.');
-  }catch(e){status('Eliminazione cloud non riuscita: '+e.message)}
-};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
-if(signedInEmail){status('Accesso automatico…');auth(false).then(sync).catch(()=>{setConnected(false);status('Premi Accedi con Google per ricollegare Drive.')})}
+if(signedInEmail){status('Accesso automatico…');auth(false).then(sync).catch(()=>{setConnected(false);status(navigator.onLine?'Premi Accedi con Google per ricollegare Drive.':'Senza connessione: i tuoi capi sono disponibili sul dispositivo.')})}
 })();

@@ -21,11 +21,12 @@ let detailId = null;
 /* ---------- Archivio locale (IndexedDB) ---------- */
 
 const dbp = new Promise((resolve, reject) => {
-  const r = indexedDB.open('atelier-v1', 2);
+  const r = indexedDB.open('atelier-v1', 3);
   r.onupgradeneeded = () => {
     const d = r.result;
     if (!d.objectStoreNames.contains('garments')) d.createObjectStore('garments', { keyPath: 'id' });
     if (!d.objectStoreNames.contains('looks')) d.createObjectStore('looks', { keyPath: 'id' });
+    if (!d.objectStoreNames.contains('deleted')) d.createObjectStore('deleted', { keyPath: 'key' });
   };
   r.onsuccess = () => resolve(r.result);
   r.onerror = () => reject(r.error);
@@ -58,6 +59,12 @@ async function del(id, store = 'garments') {
     t.oncomplete = res;
     t.onerror = () => rej(t.error);
   });
+}
+
+// Elimina in locale e annota la rimozione: alla prossima sincronizzazione viene propagata agli altri dispositivi
+async function removeItem(id, kind) {
+  await del(id, kind === 'look' ? 'looks' : 'garments');
+  await put({ key: kind + '-' + id, kind, id, at: Date.now() }, 'deleted');
 }
 
 /* ---------- Interfaccia di base ---------- */
@@ -149,13 +156,13 @@ $('#detailClose').onclick = () => $('#detail').close();
 
 $('#detailDelete').onclick = async () => {
   if (!detailId || !(await ask('Rimuovere questo capo dal guardaroba?'))) return;
-  await del(detailId);
-  await window.atelierDriveDelete?.(detailId, 'garment');
+  await removeItem(detailId, 'garment');
   detailId = null;
   $('#detail').close();
   await renderSaved();
   await renderLooks();
   toast('Capo rimosso');
+  await window.atelierDriveSync?.();
 };
 
 $('#goAdd').onclick = () => showTab('add');
@@ -372,10 +379,10 @@ async function renderLooks() {
 $('#looks').addEventListener('click', async e => {
   const b = e.target.closest('[data-look-delete]');
   if (!b || !(await ask('Rimuovere questo look?'))) return;
-  await del(b.dataset.lookDelete, 'looks');
-  await window.atelierDriveDelete?.(b.dataset.lookDelete, 'look');
+  await removeItem(b.dataset.lookDelete, 'look');
   await renderLooks();
   toast('Look rimosso');
+  await window.atelierDriveSync?.();
 });
 
 async function openLookForm() {
@@ -422,3 +429,26 @@ showTab(['wardrobe', 'add', 'looks'].includes(startTab) ? startTab : 'wardrobe')
 updatePicked();
 renderSaved().catch(e => toast('Archivio locale non disponibile: ' + e.message));
 seedLooks().then(renderLooks).catch(e => { $('#lookStatus').textContent = 'Looks non disponibili: ' + e.message; });
+
+/* ---------- Installazione come app ---------- */
+
+let installPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  installPrompt = e;
+  $('#installApp').classList.remove('hidden');
+});
+$('#installApp').onclick = async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  await installPrompt.userChoice;
+  installPrompt = null;
+  $('#installApp').classList.add('hidden');
+};
+window.addEventListener('appinstalled', () => {
+  installPrompt = null;
+  $('#installApp').classList.add('hidden');
+  toast('ATELIER è stata installata');
+});
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => { /* senza service worker l'app funziona comunque online */ });
