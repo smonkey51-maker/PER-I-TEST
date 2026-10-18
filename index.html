@@ -88,11 +88,15 @@
           <div class="actions"><button class="btn secondary" id="anotherIdea">Un'altra idea</button></div>
           <div class="manual">
             <label for="inspoName">Ispirazione di stile</label>
-            <form id="inspoForm" class="manual-form">
+            <form id="inspoForm" class="inspo-form">
               <input id="inspoName" maxlength="60" autocomplete="off" placeholder="Ispirato a… (es. Timothée Chalamet)">
-              <button type="submit" class="btn secondary" id="inspoBtn">Crea outfit</button>
+              <div class="actions">
+                <button type="submit" class="btn secondary" id="inspoBtn">Crea con i miei capi</button>
+                <button type="button" class="btn secondary" id="celebBtn">Cerca i suoi look</button>
+              </div>
             </form>
             <p id="inspoStatus" class="small" role="status"></p>
+            <div id="celeb" class="celeb hidden"></div>
           </div>
         </div>
         <div class="view-head sec">
@@ -185,6 +189,14 @@
         <button class="btn danger" id="detailDelete">Rimuovi capo</button>
         <button class="btn secondary" id="detailClose">Chiudi</button>
       </div>
+    </div>
+  </dialog>
+
+  <dialog id="celebDialog" aria-labelledby="celebTitle">
+    <div class="dialog-body">
+      <h2 id="celebTitle"></h2>
+      <div id="celebBody"></div>
+      <div class="actions"><button class="btn secondary" id="celebClose">Chiudi</button></div>
     </div>
   </dialog>
 
