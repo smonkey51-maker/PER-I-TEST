@@ -356,10 +356,10 @@ dd { margin: 0; }
 /* Oggi */
 .idea-card { background: var(--surface); border-radius: var(--radius); padding: 20px; }
 .idea-card .actions { margin-top: 16px; }
-.strip { display: flex; gap: 10px; overflow-x: auto; margin-top: 12px; padding-bottom: 4px; }
-.strip figure { margin: 0; flex: none; width: 104px; }
+.strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 12px 10px; margin-top: 12px; }
+.strip figure { margin: 0; min-width: 0; }
 .strip-img { display: block; width: 100%; aspect-ratio: 4 / 5; border-radius: 10px; background: var(--surface-2); }
-figcaption { font-size: 14px; color: var(--muted); margin-top: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+figcaption { font-size: 14px; line-height: 1.3; color: var(--muted); margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 .sec { margin-top: 44px; }
 .cat-sm { margin: 22px 0 10px; font: 500 15px var(--sans); color: var(--muted); }
 .mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
@@ -370,8 +370,8 @@ figcaption { font-size: 14px; color: var(--muted); margin-top: 6px; overflow: hi
 .mini-body .btn { width: 100%; padding: 8px; }
 
 /* Looks come composizioni di capi */
-.board { display: flex; gap: 8px; margin: 12px 0; overflow-x: auto; }
-.board figure { margin: 0; flex: 1 1 0; min-width: 84px; max-width: 160px; }
+.board { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.board figure { margin: 0; flex: 1 1 84px; max-width: 160px; }
 .board-img { display: block; width: 100%; aspect-ratio: 4 / 5; border-radius: 10px; background: var(--surface-2); }
 .warn { color: var(--danger); font-size: 14px; margin-top: 4px; }
 .look .actions { margin-top: 12px; }
@@ -443,3 +443,6 @@ label.btn:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; 
 .mine { margin-top: 4px; color: var(--accent); }
 .sources { margin: 0 0 12px; padding-left: 18px; }
 .sources a, .celeb a { color: var(--accent); }
+
+/* Spazio tra pulsanti e moduli che li seguono */
+.actions + form { margin-top: 12px; }
