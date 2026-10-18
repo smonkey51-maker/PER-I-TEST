@@ -15,9 +15,12 @@ Vercel collegato al branch predefinito della repository. Variabile server-side `
 Permesso richiesto: `https://www.googleapis.com/auth/drive.file`, limitato ai file creati o aperti tramite l'app.
 
 ## Archiviazione
-ATELIER crea una cartella `ATELIER` e salva una scheda JSON per capo, con metadati e fotografia JPEG compressa codificata in data URL. Questa è una soluzione personale iniziale: non un database transazionale. Con molti capi può diventare inefficiente. Per una versione avanzata conviene separare foto e metadati, gestire versioni/conflitti e aggiungere un account server-side.
+Su Drive ATELIER usa la cartella `ATELIER` con una sottocartella per sezione: `Guardaroba` (una scheda JSON per capo, con metadati e fotografia JPEG compressa) e `Looks` (una scheda JSON per look). I file salvati in passato direttamente in `ATELIER` vengono spostati nelle sottocartelle alla prima sincronizzazione. Questa è una soluzione personale iniziale: non un database transazionale. Con molti capi può diventare inefficiente. Per una versione avanzata conviene separare foto e metadati, gestire versioni/conflitti e aggiungere un account server-side.
 
 **Importante:** non cancellare i dati del browser del telefono prima di aver collegato Drive e completato la prima sincronizzazione. Se rimuovi un capo mentre Drive non è collegato, la rimozione potrebbe non propagarsi.
 
 ## Style DNA
 Smart Casual × Relaxed Sophistication; 70% sartoria rilassata, 20% carattere cromatico, 10% sperimentazione. Estate Soft × Cool, palette personale.
+
+## Struttura
+`index.html` (markup), `style.css` (tema scuro fisso), `app.js` (archivio locale, caricamento multiplo, categorie, looks), `drive-sync.js` (accesso Google e sincronizzazione Drive), `api/` (analisi AI e configurazione).
