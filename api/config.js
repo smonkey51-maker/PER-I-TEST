@@ -1,1 +1,2 @@
-export default function handler(req,res){const id=process.env.GOOGLE_CLIENT_ID||'';if(!id)return res.status(503).json({error:'Configura GOOGLE_CLIENT_ID su Vercel.'});res.setHeader('Cache-Control','public, max-age=3600');return res.status(200).json({googleClientId:id})}
+const CLIENT_ID='530904624660-3r2eacr82jaae7bio9r78vlol7mosphh.apps.googleusercontent.com';
+export default function handler(req,res){res.setHeader('Cache-Control','public, max-age=3600');return res.status(200).json({googleClientId:process.env.GOOGLE_CLIENT_ID||CLIENT_ID})}

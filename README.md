@@ -9,7 +9,7 @@ Vercel collegato al branch predefinito della repository. Variabile server-side `
 1. In Google Cloud Console crea o seleziona un progetto e abilita **Google Drive API**.
 2. Configura la schermata consenso OAuth e portala **In production** (così l'autorizzazione non scade dopo 7 giorni; comparirà solo l'avviso "app non verificata" al primo accesso).
 3. Crea un **OAuth client ID** di tipo **Web application** e in **Authorized JavaScript origins** aggiungi `https://atelier-personal-wardrobe.vercel.app` (senza slash finale).
-4. Su Vercel aggiungi la variabile `GOOGLE_CLIENT_ID` (il Client ID pubblico, mai il Client Secret) e rifai il deploy.
+4. Il Client ID pubblico è in `api/config.js` (si può sovrascrivere con la variabile Vercel `GOOGLE_CLIENT_ID`). Mai il Client Secret.
 5. Su ogni dispositivo premi **Accedi con Google** la prima volta. Dalle aperture successive l'app ricollega Drive e scarica i capi in automatico; se il browser blocca l'accesso silenzioso basta un tocco su "Accedi con Google".
 
 Permesso richiesto: `https://www.googleapis.com/auth/drive.file`, limitato ai file creati o aperti tramite l'app.
