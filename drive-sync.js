@@ -86,11 +86,17 @@
       Math.max(60, (+result.expires_in || 3600) - 120) * 1000
     );
 
-    if (!signedInEmail || interactive) {
+    if (!signedInEmail || interactive || !localStorage.getItem('atelier_name')) {
       const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: 'Bearer ' + token } });
-      if (!r.ok) throw Error('Impossibile verificare account Google');
-      signedInEmail = (await r.json()).email;
-      localStorage.setItem('atelier_google_email', signedInEmail);
+      if (r.ok) {
+        const u = await r.json();
+        signedInEmail = u.email;
+        localStorage.setItem('atelier_google_email', signedInEmail);
+        // il nome serve solo per salutarti
+        if (u.given_name) localStorage.setItem('atelier_name', u.given_name);
+      } else if (!signedInEmail || interactive) {
+        throw Error('Impossibile verificare account Google');
+      }
     }
     setConnected(true);
   };
@@ -382,6 +388,7 @@
     token = null; signedInEmail = null; folderIds = {};
     clearTimeout(refreshTimer);
     localStorage.removeItem('atelier_google_email');
+    localStorage.removeItem('atelier_name');
     setConnected(false);
     status('Disconnesso. I dati locali restano sul dispositivo.');
   };

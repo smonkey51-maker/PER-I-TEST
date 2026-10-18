@@ -23,8 +23,8 @@ Su Drive ATELIER usa la cartella `ATELIER` con una sottocartella per sezione: `G
 Smart Casual × Relaxed Sophistication; 70% sartoria rilassata, 20% carattere cromatico, 10% sperimentazione. Estate Soft × Cool, palette personale.
 
 ## Sezioni dell'app
-- **Oggi**: un'idea per la giornata (prima i look salvati con tutti i capi lavati, poi un outfit composto con i capi lavati adatti alla stagione) e le liste dei capi **lavati** e **in lavatrice**.
-- **Guardaroba**: capi per categoria, scheda con tutti i dati, modifica, lavatrice, rimozione.
+- **Oggi**: saluto con l'ora del giorno e il nome del profilo Google (letto una volta e tenuto solo su questo dispositivo), una frase su tempo e impegni, e un'idea per la giornata (prima i look salvati con tutti i capi lavati, poi un outfit composto con i capi lavati adatti alla stagione) e le liste dei capi **lavati** e **in lavatrice**.
+- **Guardaroba**: capi per categoria e per preferiti, scheda con tutti i dati, quante volte e quando è stato indossato, modifica, lavatrice, rimozione.
 - **Looks**: composizioni di capi o descrizioni a parole, modificabili. I capi descritti nel testo (separati da virgola) vengono collegati al look se nel guardaroba ci sono già, altrimenti aggiunti senza fotografia; l'elenco dei capi riconosciuti si vede mentre scrivi e si può escludere un capo togliendo la spunta. Un capo senza foto si completa dalla sua scheda con «Aggiungi foto». I capi dei tre look di partenza vengono inseriti nel guardaroba una sola volta per dispositivo (stesso controllo dei doppioni, identificativi fissi per non duplicarli tra dispositivi).
 - **Aggiungi**: fino a 40 fotografie per volta, analisi automatica e revisione prima di salvare. Le foto vengono portate al formato 4:5 con lo sfondo che prosegue il colore del bordo.
 
@@ -34,6 +34,9 @@ Facoltativo. Al primo accesso Google chiede, oltre a Drive, la **sola lettura de
 Un impegno che non è in calendario si aggiunge a mano da «Oggi» (Lavoro, Serata, Sport, Viaggio, oppure una frase libera come «cena con Anna»): conta come quelli del calendario per l'idea del giorno, vale solo per oggi e resta su questo dispositivo.
 
 Da fare una volta su Google Cloud: abilita **Google Calendar API** e, in Google Auth Platform → Accesso ai dati, aggiungi l'ambito `https://www.googleapis.com/auth/calendar.events.readonly`. Chi aveva già fatto l'accesso mantiene Drive senza altre richieste e collega il calendario con il pulsante in «Oggi».
+
+## Capi indossati e preferiti
+«Indosso questo» segna i capi dell'idea come indossati oggi (la data viene salvata nella scheda del capo e si sincronizza con Drive). L'idea del giorno ne tiene conto: i capi appena indossati riposano, quelli che non metti da tempo tornano a farsi vedere e, se ne compare uno che non indossi da più di un mese, l'idea lo dice. I capi segnati come preferiti (cuore nella scheda, filtro «Preferiti» nel guardaroba) vengono scelti più spesso.
 
 ## Meteo e ispirazione di stile
 - **Meteo**: in «Oggi» indichi dove sei (posizione del dispositivo, solo su richiesta, oppure il nome di una città). Le previsioni di oggi vengono lette da Open-Meteo (gratuito, senza chiavi): il luogo, con coordinate arrotondate a circa un chilometro, resta su questo dispositivo e non va su Drive. Il meteo guida l'idea del giorno: con il freddo maglieria e capospalla, con il caldo magliette e camicie senza capospalla, con la pioggia (almeno 50%) capospalla e promemoria dell'ombrello; contano le stagioni indicate nei capi, e se serve un capospalla lavato e non c'è, l'idea lo segnala. I look salvati si propongono solo se tutti i loro capi vanno bene con il meteo.

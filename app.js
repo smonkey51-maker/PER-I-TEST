@@ -233,7 +233,7 @@ async function renderAll() {
 
 function cardHtml(d) {
   return '<button class="card' + (washing(d) ? ' washing' : '') + '" data-open="' + d.id + '">' +
-    '<div class="card-img-wrap">' + photoHtml(d.id, 'card-img fade', d.tipo || 'Capo') + '</div>' +
+    '<div class="card-img-wrap">' + photoHtml(d.id, 'card-img fade', d.tipo || 'Capo') + (d.preferito ? '<span class="fav" aria-label="Preferito">' + HEART + '</span>' : '') + '</div>' +
     '<div class="card-body"><strong>' + esc(d.tipo || 'Capo') + '</strong><span>' +
     (washing(d) ? 'In lavatrice' : (esc(known(d.colore)) || '&nbsp;')) + '</span></div></button>';
 }
@@ -242,19 +242,21 @@ function renderWardrobe(items) {
   $('#count').textContent = items.length;
   $('#empty').classList.toggle('hidden', items.length > 0);
 
+  const favs = items.filter(d => d.preferito);
   const present = CATS.filter(c => items.some(d => catOf(d) === c));
-  if (filter !== 'Tutti' && !present.includes(filter)) filter = 'Tutti';
+  if (filter === 'Preferiti' ? !favs.length : filter !== 'Tutti' && !present.includes(filter)) filter = 'Tutti';
 
   $('#chips').innerHTML = items.length
-    ? ['Tutti', ...present].map(c => {
-        const n = c === 'Tutti' ? items.length : items.filter(d => catOf(d) === c).length;
+    ? ['Tutti', ...(favs.length ? ['Preferiti'] : []), ...present].map(c => {
+        const n = c === 'Tutti' ? items.length : c === 'Preferiti' ? favs.length : items.filter(d => catOf(d) === c).length;
         return '<button class="chip" data-filter="' + esc(c) + '" aria-pressed="' + (c === filter) + '">' + esc(c) + ' ' + n + '</button>';
       }).join('')
     : '';
 
-  $('#wardrobe').innerHTML = present
-    .filter(c => filter === 'Tutti' || c === filter)
-    .map(c => '<h3 class="cat">' + esc(c) + '</h3><div class="grid">' + items.filter(d => catOf(d) === c).map(cardHtml).join('') + '</div>')
+  const list = filter === 'Preferiti' ? favs : items;
+  $('#wardrobe').innerHTML = CATS
+    .filter(c => list.some(d => catOf(d) === c) && (filter === 'Tutti' || filter === 'Preferiti' || c === filter))
+    .map(c => '<h3 class="cat">' + esc(c) + '</h3><div class="grid">' + list.filter(d => catOf(d) === c).map(cardHtml).join('') + '</div>')
     .join('');
 }
 
@@ -282,9 +284,11 @@ async function openDetail(id) {
   $('#detailPhotoLabel').classList.toggle('hidden', !!src);
   $('#detailTitle').textContent = item.tipo || 'Capo';
   const rows = [['Categoria', catOf(item)], ...FIELDS.filter(f => f !== 'tipo').map(f => [LABELS[f], known(item[f])])];
+  rows.push(['Indossato', wornText(item)]);
   if (washing(item)) rows.unshift(['Stato', 'In lavatrice']);
   $('#detailFields').innerHTML = rows.filter(r => r[1]).map(r => '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>').join('');
   $('#detailWash').textContent = washing(item) ? 'Segna come lavato' : 'Metti in lavatrice';
+  setFav(!!item.preferito);
   $('#editForm').innerHTML =
     '<label>Categoria<select name="categoria">' + CATS.map(c => '<option' + (c === catOf(item) ? ' selected' : '') + '>' + c + '</option>').join('') + '</select></label>' +
     FIELDS.map(f => '<label>' + LABELS[f] + '<input name="' + f + '" value="' + esc(item[f]) + '" autocomplete="off"></label>').join('') +
@@ -298,6 +302,26 @@ function setEditing(on) {
   $('#detailFields').classList.toggle('hidden', on);
   $('#detailActions').classList.toggle('hidden', on);
 }
+
+function setFav(on) {
+  const b = $('#detailFav');
+  b.setAttribute('aria-pressed', String(on));
+  b.innerHTML = (on ? HEART + ' ' : '') + (on ? 'Nei preferiti' : 'Aggiungi ai preferiti');
+}
+
+$('#detailFav').onclick = async () => {
+  const item = (await all()).find(d => d.id === detailId);
+  if (!item) return;
+  const on = !item.preferito;
+  await update('garments', detailId, { preferito: on || undefined });
+  setFav(on);
+  const b = $('#detailFav');
+  b.classList.remove('bump');
+  void b.offsetWidth;
+  if (on) { b.classList.add('bump'); navigator.vibrate?.(10); }
+  await renderAll();
+  await window.atelierDriveSync?.();
+};
 
 $('#detailPhoto').onchange = async e => {
   const file = e.target.files[0];
@@ -517,9 +541,37 @@ function occasionFit(g, tags) {
   return tags.some(t => t.kw.test(o)) ? 2 : .25;
 }
 
+/* ---------- Capi indossati e preferiti ---------- */
+
+const HEART = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
+const wornToday = g => (g.indossato || []).includes(todayStr());
+
+function daysSinceWorn(g) {
+  const last = (g.indossato || []).at(-1);
+  return last ? Math.round((new Date(todayStr()) - new Date(last)) / 86400000) : null;
+}
+
+function wornText(g) {
+  const n = (g.indossato || []).length;
+  if (!n) return 'Non ancora';
+  const d = daysSinceWorn(g);
+  return n + (n === 1 ? ' volta' : ' volte') + ', l\u2019ultima ' + (d === 0 ? 'oggi' : d === 1 ? 'ieri' : d + ' giorni fa');
+}
+
+// Preferiti più probabili; i capi appena indossati riposano, quelli dimenticati tornano a farsi vedere
+function affinity(g) {
+  let f = g.preferito ? 1.5 : 1;
+  const d = daysSinceWorn(g);
+  if (d === null) f *= 1.15;
+  else if (d < 2) f *= .35;
+  else if (d < 5) f *= .7;
+  else if (d >= 21) f *= 1.25;
+  return f;
+}
+
 function weight(g, tags) {
   const s = seasonFit(g);
-  return s ? (s === 2 ? 3 : 1) * occasionFit(g, tags) : 0;
+  return s ? (s === 2 ? 3 : 1) * occasionFit(g, tags) * affinity(g) : 0;
 }
 
 // Sceglie a caso, ma con più probabilità i capi adatti alla stagione e agli impegni di oggi
@@ -627,6 +679,31 @@ function renderAgenda(matched, events) {
   $('#agendaInfo').innerHTML = html;
 }
 
+let shownIdea = '';
+
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+// Saluto personale: ora del giorno, nome dal profilo Google, e una frase su tempo e impegni
+function renderGreeting(events, count) {
+  const now = new Date();
+  const h = now.getHours();
+  const hello = h < 5 ? 'Buonanotte' : h < 12 ? 'Buongiorno' : h < 18 ? 'Buon pomeriggio' : 'Buonasera';
+  const name = localStorage.getItem('atelier_name');
+  $('#greeting').textContent = name ? hello + ', ' + name : hello;
+  $('#todayDate').textContent = cap(now.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }));
+
+  const bits = [];
+  if (weather && wxNow) {
+    bits.push({ freddo: 'Fa freddo', fresco: 'Fa fresco', mite: 'Il clima è mite', caldo: 'Fa caldo' }[wxNow.band] + ' (' + weather.tmin + '–' + weather.tmax + '°C)' + (wxNow.rainy ? ' e può piovere' : ''));
+  }
+  if (events.length) {
+    const first = events.find(e => !e.manual && !e.allDay);
+    bits.push((events.length === 1 ? 'Hai un impegno' : 'Hai ' + events.length + ' impegni') + (first ? ', il primo alle ' + eventTime(first) : ''));
+  }
+  if (count && idea && !idea.missing) bits.push(bits.length ? 'Ti ho preparato un outfit' : 'Ecco un’idea per oggi');
+  $('#todayLine').textContent = bits.length ? bits.join('. ') + '.' : '';
+}
+
 function renderToday(garments, looks) {
   const clean = garments.filter(g => !washing(g));
   const dirty = garments.filter(washing);
@@ -655,6 +732,10 @@ function renderToday(garments, looks) {
         ev.manual && ev.tag ? esc(tg[0]) + ' (aggiunto da te)' : esc(ev.title) + (ev.manual ? '' : ', ' + esc(eventTime(ev))) + ' (' + esc(tg.join(', ')) + ')').join(' e ') + '.</p>'
     : '';
 
+  // Un capo che non indossi da tempo merita una menzione
+  const forgotten = idea.missing ? null : idea.ids.map(id => byId.get(id)).filter(g => (daysSinceWorn(g) ?? 0) >= 30).sort((x, y) => daysSinceWorn(y) - daysSinceWorn(x))[0];
+  const memory = forgotten ? '<p class="small">Include ' + esc(forgotten.tipo || 'un capo') + ', che non indossi da ' + (daysSinceWorn(forgotten) >= 60 ? 'due mesi' : 'più di un mese') + '.</p>' : '';
+
   const extra = (idea.why ? '<p class="small">' + esc(idea.why) + ' <a href="https://www.google.com/search?tbm=isch&q=' + encodeURIComponent((idea.person || '') + ' outfit') + '" target="_blank" rel="noopener">Vedi foto di riferimento</a></p>' : '') +
     (wxNow ? '<p class="small">Meteo: ' + esc(wxText(weather)) + (wxNow.rainy ? '. Porta un ombrello' : '') + '.</p>' : '') +
     (idea.warn ? '<p class="warn">' + esc(idea.warn) + '</p>' : '');
@@ -662,11 +743,22 @@ function renderToday(garments, looks) {
   if (idea.missing) {
     $('#idea').innerHTML = '<p class="muted">Per comporre un outfit servono capi lavati: ti mancano ' + idea.missing.join(', ') + '.</p>';
   } else {
-    $('#idea').innerHTML = '<h3>' + esc(idea.title) + '</h3>' + note + extra + '<div class="strip">' + idea.ids.map(id => {
+    const sig = idea.ids.join(',');
+    const enter = sig !== shownIdea;
+    shownIdea = sig;
+    $('#idea').innerHTML = '<h3>' + esc(idea.title) + '</h3>' + note + extra + memory + '<div class="strip' + (enter ? ' enter' : '') + '">' + idea.ids.map((id, i) => {
       const g = byId.get(id);
-      return '<figure>' + photoHtml(id, 'strip-img fade', g.tipo || 'Capo') + (photoSrc(id) ? '<figcaption>' + esc(g.tipo || 'Capo') + '</figcaption>' : '') + '</figure>';
+      return '<figure style="--i:' + i + '">' + photoHtml(id, 'strip-img fade', g.tipo || 'Capo') + (photoSrc(id) ? '<figcaption>' + esc(g.tipo || 'Capo') + '</figcaption>' : '') + '</figure>';
     }).join('') + '</div>';
   }
+
+  renderGreeting(events, garments.length);
+  const wear = $('#wearIdea');
+  const wornAll = !idea.missing && idea.ids.every(id => wornToday(byId.get(id)));
+  wear.classList.toggle('hidden', !!idea.missing);
+  wear.classList.toggle('done', wornAll);
+  wear.disabled = wornAll;
+  wear.textContent = wornAll ? 'Indossato oggi' : 'Indosso questo';
 
   $('#cleanCount').textContent = clean.length;
   $('#washCount').textContent = dirty.length;
@@ -873,6 +965,21 @@ $('#celebBody').addEventListener('click', e => {
   requestInspiration(celeb.persona, riferimento);
 });
 
+$('#wearIdea').onclick = async () => {
+  if (!idea?.ids) return;
+  const today = todayStr();
+  const garments = await all();
+  for (const id of idea.ids) {
+    const g = garments.find(x => x.id === id);
+    if (g && !wornToday(g)) await update('garments', id, { indossato: [...(g.indossato || []), today].slice(-60) });
+  }
+  navigator.vibrate?.(12);
+  const name = localStorage.getItem('atelier_name');
+  toast(name ? 'Buona giornata, ' + name + '.' : 'Buona giornata.');
+  await renderAll();
+  await window.atelierDriveSync?.();
+};
+
 $('#anotherIdea').onclick = async () => {
   ideaN++;
   idea = null;
@@ -1064,7 +1171,7 @@ $('#save').onclick = async () => {
   $('#status').textContent = '';
   await renderAll();
   showTab('wardrobe');
-  toast(items.length === 1 ? '1 capo salvato' : items.length + ' capi salvati');
+  toast(items.length === 1 ? 'Un nuovo capo nel tuo guardaroba.' : items.length + ' nuovi capi nel tuo guardaroba.');
   await window.atelierDriveSync?.();
 };
 
