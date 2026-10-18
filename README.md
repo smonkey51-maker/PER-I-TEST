@@ -21,3 +21,6 @@ ATELIER crea una cartella `ATELIER` e salva una scheda JSON per capo, con metada
 
 ## Style DNA
 Smart Casual × Relaxed Sophistication; 70% sartoria rilassata, 20% carattere cromatico, 10% sperimentazione. Estate Soft × Cool, palette personale.
+
+## Struttura
+`index.html` (markup), `style.css` (tema scuro fisso), `app.js` (archivio locale, caricamento multiplo, categorie, looks), `drive-sync.js` (accesso Google e sincronizzazione Drive), `api/` (analisi AI e configurazione).
