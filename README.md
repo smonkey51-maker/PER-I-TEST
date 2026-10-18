@@ -35,6 +35,10 @@ Un impegno che non è in calendario si aggiunge a mano da «Oggi» (Lavoro, Sera
 
 Da fare una volta su Google Cloud: abilita **Google Calendar API** e, in Google Auth Platform → Accesso ai dati, aggiungi l'ambito `https://www.googleapis.com/auth/calendar.events.readonly`. Chi aveva già fatto l'accesso mantiene Drive senza altre richieste e collega il calendario con il pulsante in «Oggi».
 
+## Meteo e ispirazione di stile
+- **Meteo**: in «Oggi» indichi dove sei (posizione del dispositivo, solo su richiesta, oppure il nome di una città). Le previsioni di oggi vengono lette da Open-Meteo (gratuito, senza chiavi): il luogo, con coordinate arrotondate a circa un chilometro, resta su questo dispositivo e non va su Drive. Il meteo guida l'idea del giorno: con il freddo maglieria e capospalla, con il caldo magliette e camicie senza capospalla, con la pioggia (almeno 50%) capospalla e promemoria dell'ombrello; contano le stagioni indicate nei capi, e se serve un capospalla lavato e non c'è, l'idea lo segnala. I look salvati si propongono solo se tutti i loro capi vanno bene con il meteo.
+- **Ispirazione di stile**: scrivi il nome di una persona nota e l'app compone un outfit con i tuoi capi lavati ispirato al suo stile, tenendo conto di impegni e meteo (`/api/inspire`, serve l'accesso Google e usa il credito OpenAI, poche frazioni di centesimo per richiesta). Vengono inviati all'AI solo il nome e le schede testuali dei capi lavati, mai le fotografie. Non ci sono foto di personaggi: c'è il collegamento «Vedi foto di riferimento» che apre una ricerca immagini in una nuova scheda.
+
 ### Parole chiave degli impegni
 Il titolo dell'impegno viene confrontato con queste parole (iniziano con il testo indicato, quindi «riunioni» vale, «sportello» no); un impegno può rientrare in più occasioni, per esempio «cena di lavoro» è serata e lavoro. L'elenco è in `app.js` (`OCCASIONS`).
 - **Cerimonia**: cerimonia, matrimonio, nozze, battesimo, comunione, cresima, laurea, funerale, gala, inaugurazione, premiazione.
@@ -45,10 +49,10 @@ Il titolo dell'impegno viene confrontato con queste parole (iniziano con il test
 - **Tempo libero**: pranzo, brunch, colazione, caffè, shopping, amici, passeggiata, picnic, grigliata, barbecue, parco, museo, mercatino, spiaggia, mare, famiglia, bambini, relax, weekend.
 
 ## Analisi AI e sicurezza
-`/api/analyze` risponde solo se la richiesta porta il token dell'account Google collegato all'app (verificato con Google, deve appartenere a questo Client ID). Per limitarla a specifici indirizzi, su Vercel aggiungi `ALLOWED_EMAILS` con gli indirizzi separati da virgola. Il credito OpenAI è prepagato: tienilo senza ricarica automatica.
+`/api/analyze` e `/api/inspire` rispondono solo se la richiesta porta il token dell'account Google collegato all'app (verificato con Google, deve appartenere a questo Client ID). Per limitarla a specifici indirizzi, su Vercel aggiungi `ALLOWED_EMAILS` con gli indirizzi separati da virgola. Il credito OpenAI è prepagato: tienilo senza ricarica automatica.
 
 ## Installazione come app
 Da Chrome apri `https://atelier-personal-wardrobe.vercel.app`: compare il pulsante **Installa app** (oppure menu ⋮ → «Installa app» / «Aggiungi a schermata Home»). L'app si apre a schermo intero e, grazie al service worker, anche senza connessione: i capi restano sul dispositivo e si sincronizzano al ritorno online.
 
 ## Struttura
-`index.html` (markup), `style.css` (tema scuro fisso), `app.js` (archivio locale, foto, caricamento multiplo, modifica, lavatrice, idea del giorno, looks), `drive-sync.js` (accesso Google e sincronizzazione Drive), `manifest.json` e `sw.js` (installazione e uso offline), `icons/`, `fonts/` (Cormorant Garamond, licenza SIL OFL in `fonts/OFL.txt`), `api/` (analisi AI e configurazione).
+`index.html` (markup), `style.css` (tema scuro fisso), `app.js` (archivio locale, foto, caricamento multiplo, modifica, lavatrice, idea del giorno, looks), `drive-sync.js` (accesso Google e sincronizzazione Drive), `manifest.json` e `sw.js` (installazione e uso offline), `icons/`, `fonts/` (Cormorant Garamond, licenza SIL OFL in `fonts/OFL.txt`), `api/` (analisi AI, ispirazione di stile e configurazione).

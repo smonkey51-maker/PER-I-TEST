@@ -47,6 +47,17 @@
       <div class="view-head">
         <h1>Oggi</h1>
       </div>
+      <div id="weather" class="idea-card agenda">
+        <div id="weatherInfo"></div>
+        <div id="weatherSetup" class="manual hidden">
+          <p class="small">Il meteo orienta la scelta dei capi. La posizione serve solo a leggere le previsioni da Open-Meteo e resta su questo dispositivo.</p>
+          <div class="actions"><button type="button" class="btn secondary" id="useLocation">Usa la mia posizione</button></div>
+          <form id="weatherForm" class="manual-form">
+            <input id="weatherCity" maxlength="60" autocomplete="off" placeholder="Oppure scrivi la città" aria-label="Città">
+            <button type="submit" class="btn secondary">Imposta</button>
+          </form>
+        </div>
+      </div>
       <div id="agenda" class="idea-card agenda">
         <div id="agendaInfo"></div>
         <div class="manual">
@@ -75,6 +86,14 @@
           <h2>Cosa mi metto oggi</h2>
           <div id="idea"></div>
           <div class="actions"><button class="btn secondary" id="anotherIdea">Un'altra idea</button></div>
+          <div class="manual">
+            <label for="inspoName">Ispirazione di stile</label>
+            <form id="inspoForm" class="manual-form">
+              <input id="inspoName" maxlength="60" autocomplete="off" placeholder="Ispirato a… (es. Timothée Chalamet)">
+              <button type="submit" class="btn secondary" id="inspoBtn">Crea outfit</button>
+            </form>
+            <p id="inspoStatus" class="small" role="status"></p>
+          </div>
         </div>
         <div class="view-head sec">
           <h2>Lavati <span id="cleanCount" class="muted">0</span></h2>
