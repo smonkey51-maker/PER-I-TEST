@@ -35,6 +35,15 @@ Un impegno che non è in calendario si aggiunge a mano da «Oggi» (Lavoro, Sera
 
 Da fare una volta su Google Cloud: abilita **Google Calendar API** e, in Google Auth Platform → Accesso ai dati, aggiungi l'ambito `https://www.googleapis.com/auth/calendar.events.readonly`. Chi aveva già fatto l'accesso mantiene Drive senza altre richieste e collega il calendario con il pulsante in «Oggi».
 
+### Parole chiave degli impegni
+Il titolo dell'impegno viene confrontato con queste parole (iniziano con il testo indicato, quindi «riunioni» vale, «sportello» no); un impegno può rientrare in più occasioni, per esempio «cena di lavoro» è serata e lavoro. L'elenco è in `app.js` (`OCCASIONS`).
+- **Cerimonia**: cerimonia, matrimonio, nozze, battesimo, comunione, cresima, laurea, funerale, gala, inaugurazione, premiazione.
+- **Serata**: cena, aperitivo, apericena, ristorante, pizzeria, trattoria, osteria, festa, party, compleanno, anniversario, teatro, concerto, cinema, opera, musical, mostra, vernissage, drink, cocktail, happy hour, brindisi, serata, evento, discoteca, degustazione, dinner, appuntamento romantico.
+- **Lavoro**: riunione, meeting, call, videocall, videochiamata, cliente, colloquio, presentazione, ufficio, lavoro, workshop, intervista, review, demo, stand-up, kick-off, conferenza, convegno, congresso, fiera, seminario, formazione, trattativa, consulenza, assemblea, direttivo, board, sopralluogo, esame, lezione, sync.
+- **Sport**: palestra, gym, workout, corsa, running, yoga, pilates, allenamento, sport, calcio, calcetto, tennis, padel, nuoto, piscina, bici, ciclismo, spinning, crossfit, fitness, trekking, escursione, camminata, sci, snowboard, golf, basket, pallavolo, boxe, arrampicata, danza, surf, vela.
+- **Viaggio**: volo, treno, viaggio, aeroporto, aereo, stazione, partenza, rientro, trasferta, check-in, imbarco, hotel, vacanza, gita, transfer.
+- **Tempo libero**: pranzo, brunch, colazione, caffè, shopping, amici, passeggiata, picnic, grigliata, barbecue, parco, museo, mercatino, spiaggia, mare, famiglia, bambini, relax, weekend.
+
 ## Analisi AI e sicurezza
 `/api/analyze` risponde solo se la richiesta porta il token dell'account Google collegato all'app (verificato con Google, deve appartenere a questo Client ID). Per limitarla a specifici indirizzi, su Vercel aggiungi `ALLOWED_EMAILS` con gli indirizzi separati da virgola. Il credito OpenAI è prepagato: tienilo senza ricarica automatica.
 
