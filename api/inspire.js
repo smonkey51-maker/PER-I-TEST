@@ -8,6 +8,7 @@ const SYSTEM_PROMPT =
   'Se non la conosci abbastanza rispondi {"sconosciuto":true}. ' +
   'Altrimenti componi UN outfit scegliendo esclusivamente tra i capi forniti (usa i loro id): un capo sopra, pantaloni e scarpe se disponibili, ' +
   'un capospalla solo se serve per meteo o occasione, al massimo un accessorio. Rispetta occasioni e meteo del contesto, se indicati. ' +
+  'Se è presente «riferimento», è la descrizione di un look reale di quella persona: riproducilo il più fedelmente possibile con i capi disponibili. ' +
   'Rispondi solo con JSON: {"ids":["..."],"motivo":"una frase in italiano che collega l\'outfit allo stile della persona"}.';
 
 // Accetta solo chi ha fatto l'accesso con Google in questa app (stesso controllo di /api/analyze)
@@ -44,6 +45,8 @@ export default async function handler(req, res) {
   if (!person) return res.status(400).json({ error: 'Scrivi il nome di una persona.' });
   if (garments.length < 3) return res.status(400).json({ error: 'Servono almeno tre capi lavati.' });
 
+  // Descrizione di un look reale da riprodurre con i capi disponibili (facoltativa)
+  const riferimento = text(req.body?.riferimento, 900);
   const contesto = {
     occasioni: (Array.isArray(req.body?.contesto?.occasioni) ? req.body.contesto.occasioni : []).slice(0, 6).map(o => text(o, 20)),
     meteo: text(req.body?.contesto?.meteo, 120)
@@ -59,7 +62,7 @@ export default async function handler(req, res) {
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: JSON.stringify({ persona: person, contesto, capi: garments }) }
+          { role: 'user', content: JSON.stringify({ persona: person, contesto, ...(riferimento ? { riferimento } : {}), capi: garments }) }
         ]
       })
     });

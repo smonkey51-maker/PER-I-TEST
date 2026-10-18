@@ -1,0 +1,5 @@
+{
+  "functions": {
+    "api/celebrity.js": { "maxDuration": 60 }
+  }
+}

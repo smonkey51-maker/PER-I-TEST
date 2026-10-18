@@ -712,9 +712,7 @@ $('#manualForm').onsubmit = async e => {
   $('#manualText').value = '';
 };
 
-$('#inspoForm').onsubmit = async e => {
-  e.preventDefault();
-  const person = $('#inspoName').value.trim();
+async function requestInspiration(person, riferimento = '') {
   const out = $('#inspoStatus');
   if (!person) return;
   if (!window.atelierToken?.()) { out.textContent = "Accedi con Google per usare l'ispirazione di stile."; return; }
@@ -728,6 +726,7 @@ $('#inspoForm').onsubmit = async e => {
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + window.atelierToken() },
       body: JSON.stringify({
         person,
+        ...(riferimento ? { riferimento } : {}),
         garments: garments.map(g => ({ id: g.id, categoria: catOf(g), tipo: g.tipo, colore: g.colore, materiale: g.materiale, stagione: g.stagione, occasioni: g.occasioni })),
         contesto: { occasioni: lastTags.map(t => t.tag), meteo: weather ? wxText(weather) : '' }
       })
@@ -742,7 +741,137 @@ $('#inspoForm').onsubmit = async e => {
   } finally {
     $('#inspoBtn').disabled = false;
   }
+}
+
+$('#inspoForm').onsubmit = e => {
+  e.preventDefault();
+  requestInspiration($('#inspoName').value.trim());
 };
+
+/* ---------- Look reali delle celebrità: ricerca sul web con l'AI ---------- */
+
+const CELEB_TTL = 24 * 60 * 60 * 1000;
+const CELEB_DAILY_MAX = 15; // ogni ricerca usa credito OpenAI
+let celeb = null;           // { persona, look, fonti, photo }
+
+const readJson = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
+const writeJson = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage non disponibile */ } };
+const hostOf = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
+
+const celebSearchesToday = () => { const q = readJson('atelier_celeb_n', {}); return q.date === todayStr() ? q.n : 0; };
+
+// Ritratto da Wikipedia (licenze chiare): serve da accesso ai look, non è la foto dell'outfit
+async function celebPhoto(name) {
+  for (const lang of ['it', 'en']) {
+    try {
+      const r = await fetch('https://' + lang + '.wikipedia.org/w/api.php?' + new URLSearchParams({
+        action: 'query', format: 'json', origin: '*', generator: 'search', gsrsearch: name, gsrlimit: '1',
+        prop: 'pageimages', piprop: 'thumbnail', pithumbsize: '480'
+      }));
+      const page = Object.values((await r.json()).query?.pages || {})[0];
+      const src = page?.thumbnail?.source;
+      if (src && src.startsWith('https://upload.wikimedia.org/')) {
+        return { src, title: page.title, page: 'https://' + lang + '.wikipedia.org/wiki/' + encodeURIComponent(page.title.replace(/ /g, '_')) };
+      }
+    } catch { /* provo la lingua successiva */ }
+  }
+  return null;
+}
+
+function renderCeleb() {
+  const box = $('#celeb');
+  box.classList.toggle('hidden', !celeb);
+  if (!celeb) { box.innerHTML = ''; return; }
+  const n = celeb.look.length;
+  const initials = celeb.persona.split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+  box.innerHTML =
+    '<button type="button" class="celeb-photo" data-celeb-open aria-label="Apri i look di ' + esc(celeb.persona) + '">' +
+    (celeb.photo ? '<img src="' + esc(celeb.photo.src) + '" alt="Foto di ' + esc(celeb.persona) + '" referrerpolicy="no-referrer">' : '<span>' + esc(initials) + '</span>') + '</button>' +
+    '<div><strong>' + esc(celeb.persona) + '</strong><p class="small">' + n + (n === 1 ? ' look trovato' : ' look trovati') + '. Tocca la foto per vedere i componenti.</p>' +
+    (celeb.photo ? '<p class="small">Foto: <a href="' + esc(celeb.photo.page) + '" target="_blank" rel="noopener noreferrer">Wikipedia</a></p>' : '') + '</div>';
+}
+
+async function openCeleb() {
+  if (!celeb) return;
+  const garments = await all();
+  $('#celebTitle').textContent = celeb.persona;
+  $('#celebBody').innerHTML = celeb.look.map((l, i) => {
+    const meta = [l.occasione, l.data].filter(Boolean).join(', ');
+    return '<details class="celeb-look"' + (i === 0 ? ' open' : '') + '><summary>' + esc(l.titolo || 'Look ' + (i + 1)) + (meta ? ' <span class="small">' + esc(meta) + '</span>' : '') + '</summary>' +
+      (l.descrizione ? '<p>' + esc(l.descrizione) + '</p>' : '') +
+      '<ul class="parts">' + l.componenti.map(c => {
+        const mine = findSimilar(c.capo, garments);
+        const b = c.budget || {};
+        const shop = [b.negozio, b.prezzo].filter(Boolean).join(', ');
+        return '<li><div><strong>' + esc(c.capo) + '</strong>' + (c.marca ? ' · ' + esc(c.marca) : ' · <span class="small">marca non indicata</span>') +
+          (c.dettaglio ? '<div class="small">' + esc(c.dettaglio) + '</div>' : '') + '</div>' +
+          (b.descrizione ? '<div class="budget"><span class="small">Versione accessibile</span> ' + esc(b.descrizione) + (shop ? ' <span class="small">(' + esc(shop) + ')</span>' : '') + '</div>' : '') +
+          (mine ? '<div class="small mine">Simile nel tuo guardaroba: ' + esc(mine.tipo) + '</div>' : '') + '</li>';
+      }).join('') + '</ul>' +
+      '<button type="button" class="btn secondary" data-celeb-compose="' + i + '">Componi con i miei capi</button></details>';
+  }).join('') +
+    (celeb.fonti?.length ? '<h3 class="cat-sm">Fonti</h3><ul class="sources">' + celeb.fonti.map(f => '<li><a href="' + esc(f.url) + '" target="_blank" rel="noopener noreferrer">' + esc(f.titolo || hostOf(f.url)) + '</a></li>').join('') + '</ul>' : '') +
+    '<p class="small">Informazioni raccolte dal web con l\'AI: possono essere incomplete o imprecise. Prezzi indicativi. Le foto degli outfit si vedono nelle fonti.</p>';
+  $('#celebDialog').showModal();
+}
+
+$('#celebBtn').onclick = async () => {
+  const person = $('#inspoName').value.trim();
+  const out = $('#inspoStatus');
+  if (!person) { out.textContent = 'Scrivi il nome di una persona.'; return; }
+  if (!window.atelierToken?.()) { out.textContent = 'Accedi con Google per cercare i look.'; return; }
+
+  const key = norm(person);
+  const cache = readJson('atelier_celeb', {});
+  if (cache[key] && Date.now() - cache[key].at < CELEB_TTL) {
+    celeb = cache[key].data;
+    out.textContent = '';
+    renderCeleb();
+    return;
+  }
+  if (celebSearchesToday() >= CELEB_DAILY_MAX) {
+    out.textContent = 'Hai raggiunto il limite di ' + CELEB_DAILY_MAX + ' ricerche per oggi: ogni ricerca usa credito OpenAI.';
+    return;
+  }
+
+  $('#celebBtn').disabled = true;
+  out.textContent = 'Cerco i suoi look sul web: può richiedere fino a un minuto…';
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 58000);
+  try {
+    const r = await fetch('/api/celebrity', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + window.atelierToken() },
+      body: JSON.stringify({ person }),
+      signal: ctl.signal
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw Error(data.error || 'Errore ' + r.status);
+    writeJson('atelier_celeb_n', { date: todayStr(), n: celebSearchesToday() + 1 });
+    data.photo = await celebPhoto(data.persona);
+    celeb = data;
+    const recent = Object.entries({ ...cache, [key]: { at: Date.now(), data } }).sort((x, y) => y[1].at - x[1].at).slice(0, 10);
+    writeJson('atelier_celeb', Object.fromEntries(recent));
+    out.textContent = '';
+    renderCeleb();
+  } catch (err) {
+    out.textContent = err.name === 'AbortError' ? 'La ricerca ha impiegato troppo tempo: riprova.' : err instanceof TypeError ? 'Nessuna connessione.' : err.message;
+  } finally {
+    clearTimeout(timer);
+    $('#celebBtn').disabled = false;
+  }
+};
+
+$('#celeb').addEventListener('click', e => { if (e.target.closest('[data-celeb-open]')) openCeleb(); });
+$('#celebClose').onclick = () => $('#celebDialog').close();
+$('#celebBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-celeb-compose]');
+  if (!b || !celeb) return;
+  const l = celeb.look[+b.dataset.celebCompose];
+  const riferimento = (l.titolo + ': ' + l.componenti.map(c => [c.capo, c.marca, c.dettaglio].filter(Boolean).join(' ')).join('; ')).slice(0, 900);
+  $('#celebDialog').close();
+  requestInspiration(celeb.persona, riferimento);
+});
 
 $('#anotherIdea').onclick = async () => {
   ideaN++;
@@ -1029,6 +1158,20 @@ function parseComponents(text) {
     seen.add(k);
     return true;
   });
+}
+
+// Capo dello stesso tipo (stessa prima parola), con la preferenza per quello che ha più parole in comune: serve per i suggerimenti, non per i doppioni
+function findSimilar(component, garments) {
+  const [head, ...rest] = words(component);
+  if (!head) return null;
+  let best = null, bestScore = -1;
+  for (const g of garments) {
+    const gw = new Set(words([g.tipo, g.colore, g.materiale].filter(Boolean).join(' ')));
+    if (!gw.has(head)) continue;
+    const score = rest.filter(w => gw.has(w)).length;
+    if (score > bestScore) { best = g; bestScore = score; }
+  }
+  return best;
 }
 
 // Un capo c'è già se ha lo stesso tipo (prima parola) e almeno metà delle altre parole, come il colore
