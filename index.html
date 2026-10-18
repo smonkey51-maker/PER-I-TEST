@@ -94,7 +94,9 @@
         <label for="lookName">Nome del look</label>
         <input id="lookName" maxlength="60" autocomplete="off">
         <label for="lookParts">Composizione</label>
-        <input id="lookParts" maxlength="200" autocomplete="off" placeholder="Maglione lilla, gurkha sabbia, sneakers panna">
+        <input id="lookParts" maxlength="300" autocomplete="off" placeholder="Maglione lilla, gurkha sabbia, sneakers panna">
+        <p class="small hint">Separa i capi con una virgola: quelli che non hai ancora nel guardaroba vengono aggiunti.</p>
+        <div id="lookParsed" class="parsed-box hidden"></div>
         <label id="pickerLabel">Capi dal tuo guardaroba (facoltativo)</label>
         <div id="lookPicker" class="picker" aria-labelledby="pickerLabel"></div>
         <div class="actions">
@@ -142,6 +144,7 @@
       <form id="editForm" class="hidden"></form>
       <div id="detailActions" class="actions">
         <button class="btn" id="detailWash">Metti in lavatrice</button>
+        <label class="btn secondary hidden" id="detailPhotoLabel">Aggiungi foto<input type="file" id="detailPhoto" accept="image/*" class="sr-only"></label>
         <button class="btn secondary" id="detailEdit">Modifica</button>
         <button class="btn danger" id="detailDelete">Rimuovi capo</button>
         <button class="btn secondary" id="detailClose">Chiudi</button>
