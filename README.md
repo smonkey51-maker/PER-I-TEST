@@ -28,6 +28,11 @@ Smart Casual × Relaxed Sophistication; 70% sartoria rilassata, 20% carattere cr
 - **Looks**: composizioni di capi o descrizioni a parole, modificabili.
 - **Aggiungi**: fino a 40 fotografie per volta, analisi automatica e revisione prima di salvare. Le foto vengono portate al formato 4:5 con lo sfondo che prosegue il colore del bordo.
 
+## Impegni da Google Calendar
+Facoltativo. Al primo accesso Google chiede, oltre a Drive, la **sola lettura degli eventi** del calendario (`calendar.events.readonly`); se la rifiuti, in «Oggi» compare «Collega il calendario». Gli eventi di oggi si leggono nel browser, non vengono salvati e non vanno né al server né all'AI. Gli impegni con parole come riunione, cliente, cena, aperitivo, palestra, volo orientano l'idea del giorno: i capi con quella occasione nel campo «occasioni» hanno più probabilità di essere scelti. Gli eventi segnati come «libero», rifiutati o annullati vengono ignorati.
+
+Da fare una volta su Google Cloud: abilita **Google Calendar API** e, in Google Auth Platform → Accesso ai dati, aggiungi l'ambito `https://www.googleapis.com/auth/calendar.events.readonly`. Chi aveva già fatto l'accesso mantiene Drive senza altre richieste e collega il calendario con il pulsante in «Oggi».
+
 ## Analisi AI e sicurezza
 `/api/analyze` risponde solo se la richiesta porta il token dell'account Google collegato all'app (verificato con Google, deve appartenere a questo Client ID). Per limitarla a specifici indirizzi, su Vercel aggiungi `ALLOWED_EMAILS` con gli indirizzi separati da virgola. Il credito OpenAI è prepagato: tienilo senza ricarica automatica.
 

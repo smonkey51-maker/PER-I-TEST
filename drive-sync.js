@@ -1,6 +1,8 @@
 /* ATELIER — accesso Google e sincronizzazione con Drive (permesso drive.file: solo i file creati dall'app) */
 (() => {
-  const SCOPE = 'openid email profile https://www.googleapis.com/auth/drive.file';
+  const BASE_SCOPE = 'openid email profile https://www.googleapis.com/auth/drive.file';
+  const CAL_SCOPE = 'https://www.googleapis.com/auth/calendar.events.readonly'; // solo lettura degli eventi
+  const CAL_API = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
   const FOLDER_MIME = 'application/vnd.google-apps.folder';
   const API = 'https://www.googleapis.com/drive/v3/';
   const UPLOAD = 'https://www.googleapis.com/upload/drive/v3/';
@@ -23,6 +25,7 @@
   let clientIdValue = null;
   let refreshTimer = null;
   let folderIds = {};
+  let calendarOk = false;
 
   const el = id => document.getElementById(id);
   const status = s => { el('driveStatus').textContent = s; };
@@ -54,23 +57,28 @@
     throw Error('Servizio Google non caricato. Riprova.');
   };
 
-  const auth = async interactive => {
+  // Il calendario è facoltativo: si chiede al primo accesso e, se rifiutato, solo su richiesta esplicita
+  const auth = async (interactive, opts = {}) => {
     const id = await clientId();
     await googleReady();
     const hint = signedInEmail ? { login_hint: signedInEmail } : {};
+    const calPref = localStorage.getItem('atelier_cal');
+    const wantCalendar = opts.calendar || calPref === '1' || (interactive && !signedInEmail && calPref === null);
     const result = await new Promise((resolve, reject) => {
       const c = google.accounts.oauth2.initTokenClient({
         client_id: id,
-        scope: SCOPE,
+        scope: wantCalendar ? BASE_SCOPE + ' ' + CAL_SCOPE : BASE_SCOPE,
         ...hint,
         // consenso solo la prima volta; poi rinnovo silenzioso
-        prompt: interactive ? (localStorage.getItem('atelier_google_email') ? '' : 'consent') : 'none',
+        prompt: interactive ? (opts.calendar || !localStorage.getItem('atelier_google_email') ? 'consent' : '') : 'none',
         callback: r => (r.error ? reject(Error(r.error)) : resolve(r)),
         error_callback: e => reject(Error(e.type || 'Autorizzazione interrotta'))
       });
       c.requestAccessToken();
     });
     token = result.access_token;
+    calendarOk = (result.scope || '').split(' ').includes(CAL_SCOPE);
+    if (wantCalendar && interactive) localStorage.setItem('atelier_cal', calendarOk ? '1' : '0');
 
     clearTimeout(refreshTimer);
     refreshTimer = setTimeout(
@@ -88,6 +96,18 @@
   };
 
   window.atelierToken = () => token;
+  window.atelierCalendarOk = () => calendarOk;
+
+  window.atelierConnectCalendar = async () => {
+    try {
+      status('Autorizzazione calendario…');
+      await auth(true, { calendar: true });
+      status(calendarOk ? 'Calendario collegato.' : 'Calendario non autorizzato.');
+      await window.refreshEvents?.(true);
+    } catch (e) {
+      status('Errore: ' + e.message);
+    }
+  };
 
   /* ---------- Chiamate a Drive ---------- */
 
@@ -163,6 +183,29 @@
     await Promise.all(Array.from({ length: Math.min(size, items.length) }, async () => {
       while (next < items.length) await fn(items[next++]);
     }));
+  };
+
+  // Impegni di oggi: restano nel browser, non vengono salvati né inviati al server o all'analisi AI
+  window.atelierEvents = async () => {
+    if (!token || !calendarOk) return null;
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    const r = await authFetch(CAL_API + '?' + new URLSearchParams({
+      timeMin: start.toISOString(),
+      timeMax: end.toISOString(),
+      singleEvents: 'true',
+      orderBy: 'startTime',
+      maxResults: '25',
+      fields: 'items(summary,status,transparency,start,attendees(self,responseStatus))'
+    }));
+    if (r.status === 403) throw Error('Calendario non disponibile: abilita Google Calendar API nel progetto Google Cloud.');
+    if (!r.ok) throw Error('Calendario non raggiungibile (' + r.status + ')');
+    const j = await r.json();
+    return (j.items || [])
+      .filter(e => e.status !== 'cancelled' && e.transparency !== 'transparent' && !e.attendees?.some(a => a.self && a.responseStatus === 'declined'))
+      .map(e => ({ title: e.summary || 'Impegno', allDay: !e.start?.dateTime, start: e.start?.dateTime || e.start?.date }));
   };
 
   /* ---------- Cartelle ---------- */
@@ -317,6 +360,7 @@
       for (const [kind, store] of KINDS) await syncKind(kind, store, gone, stats);
       await syncPhotos(gone, stats);
       await renderAll();
+      window.refreshEvents?.();
       status('Sincronizzato · ' + stats.down + ' scaricati · ' + stats.up + ' caricati' + (stats.removed ? ' · ' + stats.removed + ' rimossi' : ''));
     } catch (e) {
       status('Errore: ' + e.message);

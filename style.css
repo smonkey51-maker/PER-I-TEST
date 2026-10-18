@@ -387,3 +387,12 @@ figcaption { font-size: 14px; color: var(--muted); margin-top: 6px; overflow: hi
 /* Cambio scheda */
 [role='tabpanel']:not(.hidden) { animation: rise .22s ease-out; }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Impegni di oggi */
+.agenda { margin-bottom: 12px; }
+.agenda p { margin-top: 6px; }
+.agenda-list { list-style: none; margin: 12px 0 0; padding: 0; }
+.agenda-list li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 8px 0; border-top: 1px solid var(--surface-2); }
+.agenda-list li:first-child { border-top: 0; }
+.agenda-list .time { flex: none; width: 112px; color: var(--muted); font-size: 14px; }
+.agenda-list .occ { margin-left: auto; font-size: 14px; color: var(--accent); }
