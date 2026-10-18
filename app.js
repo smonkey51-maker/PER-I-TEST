@@ -26,6 +26,14 @@ let idea = null;
 let todayEvents = null; // null = calendario non collegato
 let eventsError = '';
 let eventsAt = 0;
+let place = null;       // luogo scelto per il meteo: { name, lat, lon }
+try { place = JSON.parse(localStorage.getItem('atelier_place')); } catch { /* nessun luogo salvato */ }
+let weather = null;     // previsioni di oggi: { tmin, tmax, rain }
+let weatherError = '';
+let weatherAt = 0;
+let wxNow = null;       // profilo del meteo usato per scegliere i capi
+let lastTags = [];
+let lastKey = '';
 let manualEvents = []; // impegni aggiunti a mano per oggi (restano su questo dispositivo)
 
 /* ---------- Archivio locale (IndexedDB) ---------- */
@@ -201,7 +209,7 @@ function showTab(name) {
   document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
   try { sessionStorage.setItem('atelier_tab', name); } catch { /* storage non disponibile */ }
   window.scrollTo(0, 0);
-  if (name === 'today') refreshEvents();
+  if (name === 'today') { refreshEvents(); refreshWeather(); }
 }
 
 const known = v => (v && !/^non determinabile$/i.test(v) ? v : '');
@@ -355,8 +363,102 @@ const SEASONS = ['inverno', 'inverno', 'primavera', 'primavera', 'primavera', 'e
 function seasonFit(g) {
   const s = (g.stagione || '').toLowerCase();
   if (!s || /non determinabile|tutte|ogni|quattro|tutto l/.test(s)) return 1;
-  return s.includes(SEASONS[new Date().getMonth()]) ? 2 : 0;
+  const wanted = wxNow ? wxNow.seasons : [SEASONS[new Date().getMonth()]];
+  return wanted.some(x => s.includes(x)) ? 2 : 0;
 }
+
+/* ---------- Meteo di oggi (Open-Meteo, senza chiavi) ---------- */
+
+// Dalle previsioni di oggi ricava stagioni adatte, bisogno di capospalla e pioggia
+function wxProfile(w) {
+  if (!w) return null;
+  const rainy = w.rain >= 50;
+  const band = w.tmax < 12 ? 'freddo' : w.tmax < 19 ? 'fresco' : w.tmax < 26 ? 'mite' : 'caldo';
+  return {
+    band,
+    rainy,
+    seasons: { freddo: ['inverno', 'autunno'], fresco: ['autunno', 'primavera'], mite: ['primavera', 'estate'], caldo: ['estate'] }[band],
+    needOuter: band === 'freddo' || (band === 'fresco' && (w.tmin < 12 || rainy)) || (band === 'mite' && rainy)
+  };
+}
+
+const wxText = w => w.tmin + '–' + w.tmax + '°C, pioggia ' + w.rain + '%';
+
+async function refreshWeather(force = false) {
+  if (!place) return;
+  if (!force && weather && Date.now() - weatherAt < 30 * 60 * 1000) return;
+  weatherAt = Date.now();
+  try {
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?' + new URLSearchParams({
+      latitude: place.lat, longitude: place.lon, timezone: 'auto', forecast_days: '1',
+      daily: 'apparent_temperature_max,apparent_temperature_min,precipitation_probability_max'
+    }));
+    if (!r.ok) throw Error('Meteo non raggiungibile (' + r.status + ')');
+    const d = (await r.json()).daily;
+    weather = { tmin: Math.round(d.apparent_temperature_min[0]), tmax: Math.round(d.apparent_temperature_max[0]), rain: d.precipitation_probability_max?.[0] ?? 0 };
+    weatherError = '';
+  } catch (e) {
+    weather = null;
+    weatherError = e instanceof TypeError ? 'Meteo non disponibile senza connessione.' : e.message;
+  }
+  idea = null;
+  await renderAll();
+}
+
+function setPlace(p) {
+  place = p;
+  try { localStorage.setItem('atelier_place', JSON.stringify(p)); } catch { /* storage non disponibile */ }
+  $('#weatherSetup').classList.add('hidden');
+  return refreshWeather(true);
+}
+
+function renderWeather() {
+  let html = '<h2>Meteo di oggi</h2>';
+  if (!place) {
+    html += '<p class="muted">' + esc(weatherError || 'Indica dove sei per avere capi adatti a temperatura e pioggia.') + '</p>';
+    $('#weatherSetup').classList.remove('hidden');
+  } else if (weather) {
+    html += '<p>' + esc(place.name) + ' · ' + esc(wxText(weather)) + (wxNow?.rainy ? '. Porta un ombrello.' : '') + '</p>' +
+      '<button class="link-btn neutral" data-wx="change">Cambia luogo</button>';
+  } else if (weatherError) {
+    html += '<p class="muted">' + esc(weatherError) + '</p><button class="link-btn neutral" data-wx="retry">Riprova</button> <button class="link-btn neutral" data-wx="change">Cambia luogo</button>';
+  } else {
+    html += '<p class="muted">Caricamento del meteo…</p>';
+  }
+  $('#weatherInfo').innerHTML = html;
+}
+
+$('#weather').addEventListener('click', e => {
+  const b = e.target.closest('[data-wx]');
+  if (!b) return;
+  if (b.dataset.wx === 'change') $('#weatherSetup').classList.remove('hidden');
+  else refreshWeather(true);
+});
+
+$('#useLocation').onclick = () => {
+  if (!navigator.geolocation) { weatherError = 'Il dispositivo non fornisce la posizione: scrivi la città.'; return renderAll(); }
+  navigator.geolocation.getCurrentPosition(
+    pos => setPlace({ name: 'La tua posizione', lat: +pos.coords.latitude.toFixed(2), lon: +pos.coords.longitude.toFixed(2) }),
+    () => { weatherError = 'Posizione non autorizzata: scrivi la città.'; renderAll(); },
+    { timeout: 10000, maximumAge: 3600000 }
+  );
+};
+
+$('#weatherForm').onsubmit = async e => {
+  e.preventDefault();
+  const name = $('#weatherCity').value.trim();
+  if (!name) return;
+  try {
+    const r = await fetch('https://geocoding-api.open-meteo.com/v1/search?' + new URLSearchParams({ name, count: '1', language: 'it' }));
+    const found = (await r.json()).results?.[0];
+    if (!found) throw Error('Città non trovata: controlla il nome.');
+    $('#weatherCity').value = '';
+    await setPlace({ name: found.name, lat: +found.latitude.toFixed(2), lon: +found.longitude.toFixed(2) });
+  } catch (err) {
+    weatherError = err instanceof TypeError ? 'Ricerca della città non riuscita: controlla la connessione.' : err.message;
+    renderAll();
+  }
+};
 
 // Occasioni riconosciute dal titolo degli impegni; kw cerca la stessa occasione nel campo «occasioni» dei capi
 // Parole che iniziano con questi testi (così «riunioni» e «cene» valgono, «scena» e «transport» no)
@@ -433,7 +535,11 @@ function pickOne(pool, tags, strict = false) {
 
 function generateOutfit(clean, tags) {
   const inCats = (...cats) => clean.filter(g => cats.includes(catOf(g)));
-  const top = pickOne(inCats('Maglieria', 'Camicie e T-shirt'), tags);
+  // con il caldo magliette e camicie, con il freddo maglieria (se ce ne sono)
+  let tops = inCats('Maglieria', 'Camicie e T-shirt');
+  const preferred = wxNow?.band === 'caldo' ? inCats('Camicie e T-shirt') : wxNow?.band === 'freddo' ? inCats('Maglieria') : [];
+  if (preferred.length) tops = preferred;
+  const top = pickOne(tops, tags);
   const bottom = pickOne(inCats('Pantaloni e jeans'), tags);
   const shoes = pickOne(inCats('Scarpe'), tags);
   const missing = [];
@@ -443,17 +549,20 @@ function generateOutfit(clean, tags) {
   if (missing.length) return { missing };
 
   const picked = [top, bottom, shoes];
-  const outer = pickOne(inCats('Giacche e capispalla'), tags, true);
+  const outers = inCats('Giacche e capispalla');
+  const outer = wxNow ? (wxNow.needOuter ? pickOne(outers, tags, true) : null) : pickOne(outers, tags, true);
   if (outer) picked.push(outer);
+  const warn = wxNow?.needOuter && !outer ? (wxNow.rainy ? 'Piove: non hai capispalla lavati adatti.' : 'Fa fresco: non hai capispalla lavati adatti.') : '';
   const extra = Math.random() < .4 ? pickOne(inCats('Accessori'), tags) : null;
   if (extra) picked.push(extra);
-  return { title: 'Outfit suggerito', ids: picked.map(g => g.id) };
+  return { title: 'Outfit suggerito', ids: picked.map(g => g.id), warn };
 }
 
 // Con impegni particolari il primo suggerimento è un outfit su misura; altrimenti vengono prima i look salvati
 function makeIdea(clean, looks, n, tags) {
   const ids = new Set(clean.map(g => g.id));
-  const ready = looks.filter(l => l.capi?.length && l.capi.every(id => ids.has(id))).map(l => ({ title: l.nome, ids: l.capi }));
+  const byId = new Map(clean.map(g => [g.id, g]));
+  const ready = looks.filter(l => l.capi?.length && l.capi.every(id => ids.has(id) && seasonFit(byId.get(id)) > 0)).map(l => ({ title: l.nome, ids: l.capi }));
   const slots = tags.length ? ['gen', ...ready] : ready;
   const slot = slots[n];
   if (slot && slot !== 'gen') return slot;
@@ -525,10 +634,14 @@ function renderToday(garments, looks) {
   $('#todayContent').classList.toggle('hidden', !garments.length);
 
   readManual();
+  wxNow = wxProfile(weather);
+  renderWeather();
   const events = [...(todayEvents || []), ...manualEvents];
   const matched = dayOccasions(events);
   const tags = [...new Map(matched.map(m => [m.occ.tag, m.occ])).values()];
-  const key = tags.map(t => t.tag).join(',');
+  const key = tags.map(t => t.tag).join(',') + '|' + (wxNow ? wxNow.band + wxNow.rainy : '');
+  lastTags = tags;
+  lastKey = key;
   renderAgenda(matched, events);
 
   const byId = new Map(garments.map(g => [g.id, g]));
@@ -542,10 +655,14 @@ function renderToday(garments, looks) {
         ev.manual && ev.tag ? esc(tg[0]) + ' (aggiunto da te)' : esc(ev.title) + (ev.manual ? '' : ', ' + esc(eventTime(ev))) + ' (' + esc(tg.join(', ')) + ')').join(' e ') + '.</p>'
     : '';
 
+  const extra = (idea.why ? '<p class="small">' + esc(idea.why) + ' <a href="https://www.google.com/search?tbm=isch&q=' + encodeURIComponent((idea.person || '') + ' outfit') + '" target="_blank" rel="noopener">Vedi foto di riferimento</a></p>' : '') +
+    (wxNow ? '<p class="small">Meteo: ' + esc(wxText(weather)) + (wxNow.rainy ? '. Porta un ombrello' : '') + '.</p>' : '') +
+    (idea.warn ? '<p class="warn">' + esc(idea.warn) + '</p>' : '');
+
   if (idea.missing) {
     $('#idea').innerHTML = '<p class="muted">Per comporre un outfit servono capi lavati: ti mancano ' + idea.missing.join(', ') + '.</p>';
   } else {
-    $('#idea').innerHTML = '<h3>' + esc(idea.title) + '</h3>' + note + '<div class="strip">' + idea.ids.map(id => {
+    $('#idea').innerHTML = '<h3>' + esc(idea.title) + '</h3>' + note + extra + '<div class="strip">' + idea.ids.map(id => {
       const g = byId.get(id);
       return '<figure>' + photoHtml(id, 'strip-img fade', g.tipo || 'Capo') + '<figcaption>' + esc(g.tipo || 'Capo') + '</figcaption></figure>';
     }).join('') + '</div>';
@@ -593,6 +710,38 @@ $('#manualForm').onsubmit = async e => {
   e.preventDefault();
   await addManual($('#manualText').value);
   $('#manualText').value = '';
+};
+
+$('#inspoForm').onsubmit = async e => {
+  e.preventDefault();
+  const person = $('#inspoName').value.trim();
+  const out = $('#inspoStatus');
+  if (!person) return;
+  if (!window.atelierToken?.()) { out.textContent = "Accedi con Google per usare l'ispirazione di stile."; return; }
+  const garments = (await all()).filter(g => !washing(g));
+  if (garments.length < 3) { out.textContent = 'Servono almeno tre capi lavati.'; return; }
+  $('#inspoBtn').disabled = true;
+  out.textContent = 'Sto componendo un outfit con i tuoi capi…';
+  try {
+    const r = await fetch('/api/inspire', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + window.atelierToken() },
+      body: JSON.stringify({
+        person,
+        garments: garments.map(g => ({ id: g.id, categoria: catOf(g), tipo: g.tipo, colore: g.colore, materiale: g.materiale, stagione: g.stagione, occasioni: g.occasioni })),
+        contesto: { occasioni: lastTags.map(t => t.tag), meteo: weather ? wxText(weather) : '' }
+      })
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw Error(data.error || 'Errore ' + r.status);
+    idea = { title: 'Ispirato a ' + person, ids: data.ids, why: data.motivo, person, key: lastKey };
+    out.textContent = '';
+    await renderAll();
+  } catch (err) {
+    out.textContent = err instanceof TypeError ? 'Nessuna connessione.' : err.message;
+  } finally {
+    $('#inspoBtn').disabled = false;
+  }
 };
 
 $('#anotherIdea').onclick = async () => {
