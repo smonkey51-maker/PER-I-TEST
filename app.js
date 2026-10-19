@@ -660,18 +660,27 @@ function dayPhases(matched) {
   return { afterEvents, afterTags: uniqueTags(after.map(m => m.occ)), workEnd, next };
 }
 
-// Secondo outfit: tiene i capi del primo e cambia le scarpe (altrimenti il capo sopra), per adattarlo alla serata
+// Secondo outfit: tiene uno o due dei capi principali del primo (sopra, pantaloni, scarpe) e cambia gli altri,
+// per adattarlo alla serata. Le scarpe cambiano quasi sempre: si tengono sopra e pantaloni, oppure solo uno dei due.
+const SLOTS = { top: ['Maglieria', 'Camicie e T-shirt'], bottom: ['Pantaloni e jeans'], shoes: ['Scarpe'] };
+const KEEP_OPTIONS = [['top', 'bottom'], ['top', 'bottom'], ['top'], ['bottom']];
+
 function deriveOutfit(clean, baseIds, tags) {
   const byId = new Map(clean.map(g => [g.id, g]));
   const ids = baseIds.filter(id => byId.has(id));
-  const swap = cats => {
-    const alt = pickOne(clean.filter(g => cats.includes(catOf(g)) && !baseIds.includes(g.id)), tags, true);
-    const i = ids.findIndex(id => cats.includes(catOf(byId.get(id))));
-    if (!alt || i < 0) return false;
+  const swap = slot => {
+    const i = ids.findIndex(id => SLOTS[slot].includes(catOf(byId.get(id))));
+    if (i < 0) return false;
+    const alt = pickOne(clean.filter(g => SLOTS[slot].includes(catOf(g)) && !baseIds.includes(g.id) && !ids.includes(g.id)), tags, true);
+    if (!alt) return false;
     ids[i] = alt.id;
     return true;
   };
-  swap(['Scarpe']) || swap(['Maglieria', 'Camicie e T-shirt']);
+  const keep = KEEP_OPTIONS[Math.floor(Math.random() * KEEP_OPTIONS.length)];
+  let swapped = false;
+  for (const slot of ['shoes', 'top', 'bottom']) if (!keep.includes(slot)) swapped = swap(slot) || swapped;
+  // se mancano alternative per i capi scelti, cambia qualunque altro capo principale
+  if (!swapped) for (const slot of ['shoes', 'top', 'bottom']) if (swap(slot)) break;
   if (!ids.some(id => catOf(byId.get(id)) === 'Accessori') && Math.random() < .4) {
     const acc = pickOne(clean.filter(g => catOf(g) === 'Accessori'), tags, true);
     if (acc) ids.push(acc.id);
