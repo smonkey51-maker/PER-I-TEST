@@ -7,7 +7,7 @@ const SYSTEM_PROMPT =
   "Ripensa allo stile generale di quella persona (silhouette, colori, tessuti, abbinamenti) basandoti solo su ciò che è noto pubblicamente, senza inventare dettagli. " +
   'Se non la conosci abbastanza rispondi {"sconosciuto":true}. ' +
   'Altrimenti componi UN outfit scegliendo esclusivamente tra i capi forniti (usa i loro id): un capo sopra, pantaloni e scarpe se disponibili, ' +
-  'un capospalla solo se serve per meteo o occasione, al massimo un accessorio. Rispetta occasioni e meteo del contesto, se indicati. ' +
+  'un capospalla solo se serve per meteo o occasione, al massimo un accessorio. Rispetta occasioni e meteo del contesto, se indicati. Se il contesto indica uno «stile», dallo come preferenza di gusto dell\'utente (al lavoro sartorialità sobria e autorevole, fuori dal lavoro sartorialità rétro, più espressiva ed eccentrica) interpretando lo stile della persona in quella direzione. ' +
   'Se è presente «riferimento», è la descrizione di un look reale di quella persona: riproducilo il più fedelmente possibile con i capi disponibili. ' +
   'Rispondi solo con JSON: {"ids":["..."],"motivo":"una frase in italiano che collega l\'outfit allo stile della persona"}.';
 
@@ -49,6 +49,7 @@ export default async function handler(req, res) {
   const riferimento = text(req.body?.riferimento, 900);
   const contesto = {
     occasioni: (Array.isArray(req.body?.contesto?.occasioni) ? req.body.contesto.occasioni : []).slice(0, 6).map(o => text(o, 20)),
+    stile: text(req.body?.contesto?.stile, 60),
     meteo: text(req.body?.contesto?.meteo, 120)
   };
 

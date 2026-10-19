@@ -488,6 +488,10 @@ $('#weatherForm').onsubmit = async e => {
 // Parole che iniziano con questi testi (così «riunioni» e «cene» valgono, «scena» e «transport» no)
 const startsWith = words => new RegExp('(?<![a-zàèéìòù])(?:' + words.join('|') + ')', 'i');
 
+// Turni in ufficio: «Mattino SW», «Centrale SW», «Sera SW», anche senza SW o con «Reperibile», e il turno scritto per esteso
+const SHIFT = /^\s*(?:(?:mattin[oa]|centrale|sera|pomeriggio|notte)(?:\s+(?:sw|reperibile))*|turno\b.*|.*\bsw\b.*)\s*$/i;
+const anyOf = (...res) => ({ test: t => res.some(r => r.test(t)) });
+
 // re: parole nel titolo dell'impegno; kw: parole nel campo «occasioni» dei capi. Un impegno può avere più occasioni.
 const OCCASIONS = [
   {
@@ -502,7 +506,7 @@ const OCCASIONS = [
   },
   {
     tag: 'lavoro',
-    re: startsWith(['riunion', 'meeting', 'call', 'videocall', 'videochiamat', 'cliente', 'clienti', 'colloquio', 'presentazion', 'ufficio', 'lavoro', 'workshop', 'intervist', 'review', 'demo\\b', 'stand-?up', 'kick-?off', 'conferenz', 'convegno', 'congresso', 'fiera', 'seminari', 'formazione', 'trattativa', 'consulenza', 'assemblea', 'direttivo', 'board', 'sopralluogo', 'esame', 'lezione', 'sync']),
+    re: anyOf(SHIFT, startsWith(['riunion', 'meeting', 'call', 'videocall', 'videochiamat', 'cliente', 'clienti', 'colloquio', 'presentazion', 'ufficio', 'lavoro', 'workshop', 'intervist', 'review', 'demo\\b', 'stand-?up', 'kick-?off', 'conferenz', 'convegno', 'congresso', 'fiera', 'seminari', 'formazione', 'trattativa', 'consulenza', 'assemblea', 'direttivo', 'board', 'sopralluogo', 'esame', 'lezione', 'sync'])),
     kw: startsWith(['lavoro', 'ufficio', 'business', 'formal', 'elegan', 'riunion', 'smart', 'professional'])
   },
   {
@@ -569,9 +573,24 @@ function affinity(g) {
   return f;
 }
 
+// Stile: al lavoro sartorialità sobria e autorevole, fuori dal lavoro sartorialità rétro, più espressiva ed eccentrica
+const STYLE_SOBER = startsWith(['sartorial', 'sartoria', 'classic', 'elegan', 'formal', 'sobri', 'blazer', 'giacca', 'camicia', 'oxford', 'derby', 'stringat', 'mocassin', 'lana', 'flanella', 'cashmere', 'gessat', 'tinta unita', 'pinces', 'cappotto', 'navy', 'blu notte', 'grigio', 'antracite', 'tortora', 'azzurro']);
+const STYLE_RETRO = startsWith(['retr', 'vintage', 'anni', 'velluto', 'coste', 'cord', 'tweed', 'galles', 'pied', 'fantasia', 'stamp', 'righe', 'quadr', 'check', 'jacquard', 'camoscio', 'suede', 'bomber', 'college', 'varsity', 'foulard', 'occhiali', 'cappello', 'bordeaux', 'senape', 'mattone', 'cammello', 'oliva', 'lilla', 'viola', 'eccentric', 'originale', 'carattere']);
+const dayStyle = tags => tags.some(t => t.tag === 'lavoro') ? 'sobrio' : tags.length && tags.every(t => t.tag === 'cerimonia') ? '' : 'retro';
+const STYLE_NAME = { sobrio: 'sartoriale sobrio e autorevole', retro: 'sartoriale rétro, espressivo ed eccentrico' };
+
+function styleFit(g, tags) {
+  const mode = dayStyle(tags);
+  if (!mode) return 1;
+  const text = [g.tipo, g.colore, g.materiale, g.vestibilita, g.compatibilita, g.occasioni].filter(Boolean).join(' ').toLowerCase();
+  const sober = STYLE_SOBER.test(text), retro = STYLE_RETRO.test(text);
+  if (mode === 'sobrio') return sober && !retro ? 1.8 : retro && !sober ? .5 : 1;
+  return retro ? 1.8 : sober ? .8 : 1;
+}
+
 function weight(g, tags) {
   const s = seasonFit(g);
-  return s ? (s === 2 ? 3 : 1) * occasionFit(g, tags) * affinity(g) : 0;
+  return s ? (s === 2 ? 3 : 1) * occasionFit(g, tags) * styleFit(g, tags) * affinity(g) : 0;
 }
 
 // Sceglie a caso, ma con più probabilità i capi adatti alla stagione e agli impegni di oggi
@@ -820,7 +839,7 @@ async function requestInspiration(person, riferimento = '') {
         person,
         ...(riferimento ? { riferimento } : {}),
         garments: garments.map(g => ({ id: g.id, categoria: catOf(g), tipo: g.tipo, colore: g.colore, materiale: g.materiale, stagione: g.stagione, occasioni: g.occasioni })),
-        contesto: { occasioni: lastTags.map(t => t.tag), meteo: weather ? wxText(weather) : '' }
+        contesto: { occasioni: lastTags.map(t => t.tag), stile: STYLE_NAME[dayStyle(lastTags)] || '', meteo: weather ? wxText(weather) : '' }
       })
     });
     const data = await r.json().catch(() => ({}));
