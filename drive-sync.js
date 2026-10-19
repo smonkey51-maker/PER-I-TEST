@@ -204,14 +204,14 @@
       singleEvents: 'true',
       orderBy: 'startTime',
       maxResults: '25',
-      fields: 'items(summary,status,transparency,start,attendees(self,responseStatus))'
+      fields: 'items(summary,status,transparency,start,end,attendees(self,responseStatus))'
     }));
     if (r.status === 403) throw Error('Calendario non disponibile: abilita Google Calendar API nel progetto Google Cloud.');
     if (!r.ok) throw Error('Calendario non raggiungibile (' + r.status + ')');
     const j = await r.json();
     return (j.items || [])
       .filter(e => e.status !== 'cancelled' && e.transparency !== 'transparent' && !e.attendees?.some(a => a.self && a.responseStatus === 'declined'))
-      .map(e => ({ title: e.summary || 'Impegno', allDay: !e.start?.dateTime, start: e.start?.dateTime || e.start?.date }));
+      .map(e => ({ title: e.summary || 'Impegno', allDay: !e.start?.dateTime, start: e.start?.dateTime || e.start?.date, end: e.end?.dateTime || e.end?.date }));
   };
 
   /* ---------- Cartelle ---------- */

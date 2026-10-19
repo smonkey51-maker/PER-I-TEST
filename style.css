@@ -460,3 +460,6 @@ label.btn:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; 
 #detailFav[aria-pressed='true'] { color: var(--accent); }
 #detailFav.bump svg { animation: bump .35s ease-out; }
 @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
+
+.phase { margin: 2px 0 0; font-size: 14px; color: var(--accent); }
+.phase-block { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line, rgba(255,255,255,.12)); }

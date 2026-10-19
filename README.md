@@ -47,6 +47,9 @@ Nell'idea del giorno, scrivi un nome e premi «Cerca i suoi look»: `/api/celebr
 
 Costo: ogni ricerca usa lo strumento di ricerca sul web a pagamento di OpenAI, di norma qualche centesimo; per questo i risultati restano in memoria 24 ore sul dispositivo e c'è un limite di 15 ricerche al giorno. Ricerca e risposta possono richiedere fino a un minuto: `vercel.json` porta il limite della funzione a 60 secondi. Le informazioni raccolte dal web possono essere incomplete o imprecise.
 
+### Due outfit nella stessa giornata
+L'app legge anche gli orari di inizio e fine. Se hai un impegno di lavoro e più tardi (da mezz'ora prima della fine del lavoro in poi) un impegno non lavorativo, per esempio lavoro fino alle 16 e una cena alle 18, «Oggi» propone due outfit: uno per il lavoro (stile sobrio) e uno per «Dopo il lavoro» (stile rétro) che tiene i capi del primo e cambia le scarpe, oppure il capo sopra se non hai altre scarpe adatte. Gli impegni aggiunti a mano (Serata, Sport…) senza orario contano come «dopo il lavoro» se c'è già un impegno di lavoro. «Indosso questo» segna tutti i capi di entrambi gli outfit.
+
 ### Preferenza di stile
 Nei giorni con un impegno di lavoro (compresi i turni) l'idea del giorno privilegia una sartorialità sobria e autorevole (giacche, camicie, lana, tinte unite e neutre, scarpe classiche); negli altri giorni una sartorialità rétro, più espressiva ed eccentrica (vintage, velluto, tweed, fantasie, colori di carattere). È una preferenza, non un obbligo: pesa sulla scelta a sorte dei capi in base ai dati della scheda. Lo stesso indirizzo viene passato all'ispirazione di stile. Gli eventi a tutto giorno «REC…» e «PER…» del calendario non sono considerati turni.
 
