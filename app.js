@@ -10,7 +10,7 @@ const LABELS = {
 };
 const FIELDS = Object.keys(LABELS);
 const MAIN_FIELDS = ['tipo', 'colore'];
-const TABS = ['today', 'wardrobe', 'looks', 'add'];
+const TABS = ['today', 'week', 'wardrobe', 'looks', 'add'];
 const MAX_PHOTOS = 40;
 const PARALLEL = 3;
 const PHOTO_W = 720;
@@ -24,12 +24,15 @@ let editingLookId = null;
 let ideaN = 0;
 let idea = null;
 let second = null; // secondo outfit, per dopo il lavoro
-let todayEvents = null; // null = calendario non collegato
+let allEvents = null;   // eventi di oggi e dei prossimi giorni; null = calendario non collegato
+let todayEvents = null; // gli eventi di oggi
 let eventsError = '';
 let eventsAt = 0;
 let place = null;       // luogo scelto per il meteo: { name, lat, lon }
 try { place = JSON.parse(localStorage.getItem('atelier_place')); } catch { /* nessun luogo salvato */ }
 let weather = null;     // previsioni di oggi: { tmin, tmax, rain }
+let weekWx = [];        // previsioni di oggi e dei prossimi giorni, stessa forma
+let avoidIds = new Set(); // capi da evitare nella pianificazione (già usati in un altro giorno)
 let weatherError = '';
 let weatherAt = 0;
 let wxNow = null;       // profilo del meteo usato per scegliere i capi
@@ -210,7 +213,7 @@ function showTab(name) {
   document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
   try { sessionStorage.setItem('atelier_tab', name); } catch { /* storage non disponibile */ }
   window.scrollTo(0, 0);
-  if (name === 'today') { refreshEvents(); refreshWeather(); }
+  if (name === 'today' || name === 'week') { refreshEvents(); refreshWeather(); }
 }
 
 const known = v => (v && !/^non determinabile$/i.test(v) ? v : '');
@@ -227,6 +230,7 @@ async function renderAll() {
   renderWardrobe(garments);
   renderToday(garments, looks);
   renderLooks(looks, garments);
+  if (typeof renderPlans === 'function') renderPlans(garments);
   revealImages();
 }
 
@@ -285,6 +289,7 @@ async function openDetail(id) {
   $('#detailPhotoLabel').classList.toggle('hidden', !!src);
   $('#detailTitle').textContent = item.tipo || 'Capo';
   const rows = [['Categoria', catOf(item)], ...FIELDS.filter(f => f !== 'tipo').map(f => [LABELS[f], known(item[f])])];
+  rows.push(['Stile', STYLES[garmentStyle(item)] + (STYLES[item.stile] ? '' : ' (automatico)')]);
   rows.push(['Indossato', wornText(item)]);
   if (washing(item)) rows.unshift(['Stato', 'In lavatrice']);
   $('#detailFields').innerHTML = rows.filter(r => r[1]).map(r => '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>').join('');
@@ -293,6 +298,7 @@ async function openDetail(id) {
   $('#editForm').innerHTML =
     '<label>Categoria<select name="categoria">' + CATS.map(c => '<option' + (c === catOf(item) ? ' selected' : '') + '>' + c + '</option>').join('') + '</select></label>' +
     FIELDS.map(f => '<label>' + LABELS[f] + '<input name="' + f + '" value="' + esc(item[f]) + '" autocomplete="off"></label>').join('') +
+    '<label>Stile<select name="stile"><option value="">Automatico (' + STYLES[garmentStyle({ ...item, stile: '' })] + ')</option>' + Object.entries(STYLES).map(([k, v]) => '<option value="' + k + '"' + (item.stile === k ? ' selected' : '') + '>' + v + '</option>').join('') + '</select></label>' +
     '<div class="actions"><button type="submit" class="btn">Salva modifiche</button><button type="button" class="btn secondary" id="editCancel">Annulla</button></div>';
   setEditing(false);
   $('#detail').showModal();
@@ -415,15 +421,17 @@ async function refreshWeather(force = false) {
   weatherAt = Date.now();
   try {
     const r = await fetch('https://api.open-meteo.com/v1/forecast?' + new URLSearchParams({
-      latitude: place.lat, longitude: place.lon, timezone: 'auto', forecast_days: '1',
+      latitude: place.lat, longitude: place.lon, timezone: 'auto', forecast_days: '8',
       daily: 'apparent_temperature_max,apparent_temperature_min,precipitation_probability_max'
     }));
     if (!r.ok) throw Error('Meteo non raggiungibile (' + r.status + ')');
     const d = (await r.json()).daily;
-    weather = { tmin: Math.round(d.apparent_temperature_min[0]), tmax: Math.round(d.apparent_temperature_max[0]), rain: d.precipitation_probability_max?.[0] ?? 0 };
+    weekWx = d.apparent_temperature_max.map((_, i) => ({ tmin: Math.round(d.apparent_temperature_min[i]), tmax: Math.round(d.apparent_temperature_max[i]), rain: d.precipitation_probability_max?.[i] ?? 0 }));
+    weather = weekWx[0];
     weatherError = '';
   } catch (e) {
     weather = null;
+    weekWx = [];
     weatherError = e instanceof TypeError ? 'Meteo non disponibile senza connessione.' : e.message;
   }
   idea = null;
@@ -580,18 +588,27 @@ const STYLE_RETRO = startsWith(['retr', 'vintage', 'anni', 'velluto', 'coste', '
 const dayStyle = tags => tags.some(t => t.tag === 'lavoro') ? 'sobrio' : tags.length && tags.every(t => t.tag === 'cerimonia') ? '' : 'retro';
 const STYLE_NAME = { sobrio: 'sartoriale sobrio e autorevole', retro: 'sartoriale rétro, espressivo ed eccentrico' };
 
+// Stile di un capo: quello scelto a mano nella scheda, altrimenti dedotto dalle parole della scheda
+const STYLES = { sobrio: 'Sobrio', retro: 'Rétro', neutro: 'Neutro' };
+function garmentStyle(g) {
+  if (STYLES[g.stile]) return g.stile;
+  const text = [g.tipo, g.colore, g.materiale, g.vestibilita, g.compatibilita, g.occasioni].filter(Boolean).join(' ').toLowerCase();
+  const sober = STYLE_SOBER.test(text), retro = STYLE_RETRO.test(text);
+  return sober && !retro ? 'sobrio' : retro && !sober ? 'retro' : 'neutro';
+}
+
 function styleFit(g, tags) {
   const mode = dayStyle(tags);
   if (!mode) return 1;
-  const text = [g.tipo, g.colore, g.materiale, g.vestibilita, g.compatibilita, g.occasioni].filter(Boolean).join(' ').toLowerCase();
-  const sober = STYLE_SOBER.test(text), retro = STYLE_RETRO.test(text);
-  if (mode === 'sobrio') return sober && !retro ? 1.8 : retro && !sober ? .5 : 1;
-  return retro ? 1.8 : sober ? .8 : 1;
+  const st = garmentStyle(g);
+  if (mode === 'sobrio') return st === 'sobrio' ? 1.8 : st === 'retro' ? .5 : 1;
+  return st === 'retro' ? 1.8 : st === 'sobrio' ? .8 : 1;
 }
 
 function weight(g, tags) {
   const s = seasonFit(g);
-  return s ? (s === 2 ? 3 : 1) * occasionFit(g, tags) * styleFit(g, tags) * affinity(g) : 0;
+  // in lavatrice o già scelto per un altro giorno: meno probabile (conta solo nella pianificazione)
+  return s ? (s === 2 ? 3 : 1) * occasionFit(g, tags) * styleFit(g, tags) * affinity(g) * (washing(g) ? .3 : 1) * (avoidIds.has(g.id) ? .35 : 1) : 0;
 }
 
 // Sceglie a caso, ma con più probabilità i capi adatti alla stagione e agli impegni di oggi
@@ -700,6 +717,15 @@ const todayStr = () => {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 };
+
+const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+
+// Eventi che cadono in un giorno (data locale AAAA-MM-GG): quelli a tutto giorno possono durare più giorni
+function eventsOnDay(list, key) {
+  return (list || []).filter(ev => ev.allDay
+    ? ev.start <= key && (ev.end ? key < ev.end : key === ev.start)
+    : ymd(new Date(ev.start)) === key);
+}
 
 function readManual() {
   try {
@@ -862,9 +888,11 @@ async function refreshEvents(force = false) {
   if (!force && Date.now() - eventsAt < 5 * 60 * 1000) return;
   eventsAt = Date.now();
   try {
-    todayEvents = (await window.atelierEvents?.()) ?? null;
+    allEvents = (await window.atelierEvents?.(8)) ?? null;
+    todayEvents = allEvents && eventsOnDay(allEvents, todayStr());
     eventsError = '';
   } catch (e) {
+    allEvents = null;
     todayEvents = null;
     eventsError = e.message;
   }

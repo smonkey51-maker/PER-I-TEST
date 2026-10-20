@@ -50,6 +50,15 @@ Costo: ogni ricerca usa lo strumento di ricerca sul web a pagamento di OpenAI, d
 ### Due outfit nella stessa giornata
 L'app legge anche gli orari di inizio e fine. Se hai un impegno di lavoro e più tardi (da mezz'ora prima della fine del lavoro in poi) un impegno non lavorativo, per esempio lavoro fino alle 16 e una cena alle 18, «Oggi» propone due outfit: uno per il lavoro (stile sobrio) e uno per «Dopo il lavoro» (stile rétro) che tiene uno o due capi del primo e cambia gli altri: di solito camicia e pantaloni con scarpe diverse (mocassini → sneakers), a volte solo la camicia o solo i pantaloni con tutto il resto cambiato. Se mancano alternative per un capo, resta quello del primo outfit. Gli impegni aggiunti a mano (Serata, Sport…) senza orario contano come «dopo il lavoro» se c'è già un impegno di lavoro. «Indosso questo» segna tutti i capi di entrambi gli outfit.
 
+### Domani e i prossimi giorni
+Con il calendario collegato l'app legge gli impegni dei prossimi 8 giorni e, se hai indicato il luogo, le previsioni del meteo.
+- **Domani** (in «Oggi»): outfit per il giorno dopo, con il primo impegno e il meteo, così la sera prima sai cosa preparare.
+- **Settimana**: un outfit per ognuno dei 7 giorni successivi, con impegni e meteo del giorno, e due outfit quando c'è lavoro e poi un impegno non lavorativo. I capi già scelti per un giorno vengono evitati negli altri. «Un'altra idea» rigenera un solo giorno.
+- **Lavatrice**: i capi scelti per un giorno futuro possono essere in lavatrice (pesano meno nella scelta); se ci sono, l'app avvisa di lavarli prima di quel giorno.
+
+### Stile dei capi e «Cosa ti manca»
+Ogni capo ha uno stile: Sobrio, Rétro o Neutro. È dedotto dalle parole della scheda, ma si può scegliere a mano da «Modifica» («Automatico» lo riporta alla deduzione) e vale per tutte le idee e i piani. In fondo a «Guardaroba», «Cosa ti manca» confronta il guardaroba con il tuo stile (pochi capi sopra o pantaloni, nessuna scarpa da lavoro o sneakers, pochi capi sobri per il lavoro o rétro per il tempo libero). Il calcolo avviene sul dispositivo, senza AI.
+
 ### Preferenza di stile
 Nei giorni con un impegno di lavoro (compresi i turni) l'idea del giorno privilegia una sartorialità sobria e autorevole (giacche, camicie, lana, tinte unite e neutre, scarpe classiche); negli altri giorni una sartorialità rétro, più espressiva ed eccentrica (vintage, velluto, tweed, fantasie, colori di carattere). È una preferenza, non un obbligo: pesa sulla scelta a sorte dei capi in base ai dati della scheda. Lo stesso indirizzo viene passato all'ispirazione di stile. Gli eventi a tutto giorno «REC…» e «PER…» del calendario non sono considerati turni.
 
@@ -69,4 +78,4 @@ Il titolo dell'impegno viene confrontato con queste parole (iniziano con il test
 Da Chrome apri `https://atelier-personal-wardrobe.vercel.app`: compare il pulsante **Installa app** (oppure menu ⋮ → «Installa app» / «Aggiungi a schermata Home»). L'app si apre a schermo intero e, grazie al service worker, anche senza connessione: i capi restano sul dispositivo e si sincronizzano al ritorno online.
 
 ## Struttura
-`index.html` (markup), `style.css` (tema scuro fisso), `app.js` (archivio locale, foto, caricamento multiplo, modifica, lavatrice, idea del giorno, looks), `drive-sync.js` (accesso Google e sincronizzazione Drive), `manifest.json` e `sw.js` (installazione e uso offline), `icons/`, `fonts/` (Cormorant Garamond, licenza SIL OFL in `fonts/OFL.txt`), `api/` (analisi AI, ispirazione di stile, look delle celebrità e configurazione), `vercel.json` (durata massima della funzione di ricerca).
+`index.html` (markup), `style.css` (tema scuro fisso), `plan.js` (domani, prossimi giorni, cosa manca), `app.js` (archivio locale, foto, caricamento multiplo, modifica, lavatrice, idea del giorno, looks), `drive-sync.js` (accesso Google e sincronizzazione Drive), `manifest.json` e `sw.js` (installazione e uso offline), `icons/`, `fonts/` (Cormorant Garamond, licenza SIL OFL in `fonts/OFL.txt`), `api/` (analisi AI, ispirazione di stile, look delle celebrità e configurazione), `vercel.json` (durata massima della funzione di ricerca).
