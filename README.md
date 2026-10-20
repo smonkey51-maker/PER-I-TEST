@@ -74,6 +74,9 @@ Il titolo dell'impegno viene confrontato con queste parole (iniziano con il test
 ## Analisi AI e sicurezza
 `/api/analyze`, `/api/inspire` e `/api/celebrity` rispondono solo se la richiesta porta il token dell'account Google collegato all'app (verificato con Google, deve appartenere a questo Client ID). Per limitarla a specifici indirizzi, su Vercel aggiungi `ALLOWED_EMAILS` con gli indirizzi separati da virgola. Il credito OpenAI è prepagato: tienilo senza ricarica automatica.
 
+## Pagine legali
+`privacy.html`, `cookie.html` e `termini.html` (Privacy policy, Cookie policy, Termini e condizioni), collegate in fondo all'app. Descrivono i flussi reali dei dati (Google, Vercel, OpenAI, Open-Meteo, Wikipedia). Se aggiungi un servizio esterno o uno strumento di analisi, vanno aggiornate. Nome e contatto del titolare vanno inseriti al posto dei segnaposto tra parentesi quadre.
+
 ## Installazione come app
 Da Chrome apri `https://atelier-personal-wardrobe.vercel.app`: compare il pulsante **Installa app** (oppure menu ⋮ → «Installa app» / «Aggiungi a schermata Home»). L'app si apre a schermo intero e, grazie al service worker, anche senza connessione: i capi restano sul dispositivo e si sincronizzano al ritorno online.
 
