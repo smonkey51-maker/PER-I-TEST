@@ -1100,6 +1100,7 @@ function updatePicked() {
   $('#analyze').textContent = n ? 'Analizza ' + n + (n === 1 ? ' fotografia' : ' fotografie') : 'Analizza le fotografie';
   $('#analyze').disabled = !n || tooMany || analyzing;
   $('#manual').disabled = !n || tooMany || analyzing;
+  $('#noPhoto').disabled = analyzing;
 }
 
 photosInput.addEventListener('change', () => {
@@ -1122,7 +1123,8 @@ zone.addEventListener('drop', e => {
 
 function draftHtml(d, i) {
   const input = f => '<label>' + LABELS[f] + '<input data-index="' + i + '" data-field="' + f + '" value="' + esc(d[f]) + '"></label>';
-  return '<article class="draft' + (d.pending ? ' pending' : '') + '" id="draft-' + i + '"><img src="' + d.preview + '" alt="Capo da rivedere">' +
+  const pic = d.preview ? '<img src="' + d.preview + '" alt="Capo da rivedere">' : '<div class="draft-ph ph"><span>Senza foto</span></div>';
+  return '<article class="draft' + (d.pending ? ' pending' : '') + '" id="draft-' + i + '">' + pic +
     '<div class="draft-body"><div class="draft-head"><span class="status">' + esc(d.state) + '</span>' +
     '<button class="discard" data-discard="' + i + '">Scarta</button></div>' +
     '<label>Categoria<select data-index="' + i + '" data-field="categoria">' +
@@ -1156,7 +1158,7 @@ $('#review').addEventListener('click', e => {
   const b = e.target.closest('[data-discard]');
   if (!b) return;
   const i = +b.dataset.discard;
-  if (drafts[i]) URL.revokeObjectURL(drafts[i].preview);
+  if (drafts[i]?.preview) URL.revokeObjectURL(drafts[i].preview);
   drafts[i] = null;
   document.getElementById('draft-' + i)?.remove();
   updateSave();
@@ -1191,8 +1193,10 @@ async function prepare(analyze) {
 
   analyzing = true;
   updatePicked();
-  drafts.forEach(d => d && URL.revokeObjectURL(d.preview));
-  drafts = files.map(() => null);
+  // le schede senza foto già aperte restano
+  drafts.forEach(d => d?.blob && URL.revokeObjectURL(d.preview));
+  const kept = drafts.filter(d => d && !d.blob);
+  drafts = [...kept, ...files.map(() => null)];
   $('#review').innerHTML = '';
   $('#save').classList.add('hidden');
   const bar = $('#bar');
@@ -1205,7 +1209,7 @@ async function prepare(analyze) {
 
   const worker = async () => {
     while (next < files.length) {
-      const i = next++;
+      const i = kept.length + next++;
       try {
         const blob = await photo(files[i]);
         const d = { id: crypto.randomUUID(), blob, preview: URL.createObjectURL(blob), categoria: 'Altro', state: analyze ? 'Analisi in corso…' : 'Da compilare', pending: analyze };
@@ -1229,7 +1233,7 @@ async function prepare(analyze) {
 
   analyzing = false;
   bar.classList.add('hidden');
-  const ok = drafts.filter(Boolean).length;
+  const ok = drafts.filter(d => d?.blob).length;
   $('#status').textContent = ok
     ? (analyze ? 'Controlla le schede, correggi quello che serve e poi salva.' : 'Compila le schede e poi salva.')
     : 'Nessuna fotografia leggibile.';
@@ -1238,18 +1242,31 @@ async function prepare(analyze) {
   updateSave();
 }
 
+$('#noPhoto').onclick = () => {
+  const d = { id: crypto.randomUUID(), blob: null, preview: '', categoria: 'Altro', state: 'Senza foto · compila la scheda' };
+  for (const f of FIELDS) d[f] = '';
+  drafts.push(d);
+  renderDrafts();
+  updateSave();
+  document.getElementById('draft-' + (drafts.length - 1))?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
+
 $('#analyze').onclick = () => prepare(true);
 $('#manual').onclick = () => prepare(false);
 
 $('#save').onclick = async () => {
   const items = drafts.filter(Boolean);
+  if (items.some(d => !d.blob && !d.tipo.trim())) {
+    $('#status').textContent = 'Per un capo senza foto scrivi almeno il tipo (es. «Camicia bianca»).';
+    return;
+  }
   const now = Date.now();
   for (const d of items) {
     const meta = { id: d.id, categoria: d.categoria, createdAt: now, updatedAt: now };
     for (const f of FIELDS) meta[f] = d[f];
     await put(meta);
-    await put({ id: d.id, blob: d.blob }, 'photos');
-    URL.revokeObjectURL(d.preview);
+    if (d.blob) await put({ id: d.id, blob: d.blob }, 'photos');
+    if (d.preview) URL.revokeObjectURL(d.preview);
   }
   drafts = [];
   $('#review').innerHTML = '';

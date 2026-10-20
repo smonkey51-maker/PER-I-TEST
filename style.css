@@ -273,6 +273,7 @@ progress::-moz-progress-bar { background: var(--accent); }
 /* Schede da rivedere */
 .draft { background: var(--surface); border-radius: var(--radius); overflow: hidden; }
 .draft img { width: 100%; height: 220px; object-fit: contain; background: var(--surface-2); display: block; }
+.draft-ph { display: flex; align-items: center; justify-content: center; height: 120px; color: var(--muted, #9a9a9a); }
 .draft-body { padding: 4px 14px 16px; }
 .draft-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 12px; }
 .draft-head .status { margin: 0; }
