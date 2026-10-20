@@ -22,6 +22,7 @@
       <span class="brand">ATELIER</span>
       <nav class="tabs" role="tablist" aria-label="Sezioni">
         <button class="tab" role="tab" data-tab="today" aria-selected="true">Oggi</button>
+        <button class="tab" role="tab" data-tab="week" aria-selected="false">Settimana</button>
         <button class="tab" role="tab" data-tab="wardrobe" aria-selected="false">Guardaroba</button>
         <button class="tab" role="tab" data-tab="looks" aria-selected="false">Looks</button>
         <button class="tab" role="tab" data-tab="add" aria-selected="false">Aggiungi</button>
@@ -104,6 +105,7 @@
             <div id="celeb" class="celeb hidden"></div>
           </div>
         </div>
+        <div id="tomorrow" class="idea-card hidden"></div>
         <div class="view-head sec">
           <h2>Lavati <span id="cleanCount" class="muted">0</span></h2>
         </div>
@@ -116,12 +118,21 @@
       </div>
     </section>
 
+    <section id="view-week" role="tabpanel" class="hidden">
+      <div class="view-head">
+        <h1>I prossimi giorni</h1>
+        <p class="small">Un outfit per ogni giorno, in base a impegni e meteo, senza ripetere gli stessi capi. I capi ancora in lavatrice sono segnalati.</p>
+      </div>
+      <div id="weekList"></div>
+    </section>
+
     <section id="view-wardrobe" role="tabpanel" class="hidden">
       <div class="view-head">
         <h1>Guardaroba <span id="count" class="muted">0</span></h1>
       </div>
       <div id="chips" class="chips" role="group" aria-label="Filtra per categoria"></div>
       <div id="wardrobe"></div>
+      <div id="gaps" class="idea-card hidden"></div>
       <div id="empty" class="empty">
         <h2>Il tuo guardaroba comincia da qui</h2>
         <p>Fotografa i capi che ami: ATELIER li riconosce e li mette in ordine per te.</p>
@@ -222,6 +233,7 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="/app.js"></script>
+  <script src="/plan.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="/drive-sync.js"></script>
 </body>

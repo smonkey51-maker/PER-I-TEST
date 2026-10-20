@@ -192,18 +192,19 @@
   };
 
   // Impegni di oggi: restano nel browser, non vengono salvati né inviati al server o all'analisi AI
-  window.atelierEvents = async () => {
+  // Eventi da oggi per i prossimi `days` giorni (di default solo oggi)
+  window.atelierEvents = async (days = 1) => {
     if (!token || !calendarOk) return null;
     const start = new Date();
     start.setHours(0, 0, 0, 0);
     const end = new Date(start);
-    end.setDate(end.getDate() + 1);
+    end.setDate(end.getDate() + days);
     const r = await authFetch(CAL_API + '?' + new URLSearchParams({
       timeMin: start.toISOString(),
       timeMax: end.toISOString(),
       singleEvents: 'true',
       orderBy: 'startTime',
-      maxResults: '25',
+      maxResults: '100',
       fields: 'items(summary,status,transparency,start,end,attendees(self,responseStatus))'
     }));
     if (r.status === 403) throw Error('Calendario non disponibile: abilita Google Calendar API nel progetto Google Cloud.');

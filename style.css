@@ -464,3 +464,9 @@ label.btn:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; 
 
 .phase { margin: 2px 0 0; font-size: 14px; color: var(--accent); }
 .phase-block { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line, rgba(255,255,255,.12)); }
+.day-card { margin-bottom: 16px; }
+.day-card h3 { margin: 0 0 4px; }
+.phase-block h4 { margin: 0; font-size: 16px; }
+.gaps { margin: 12px 0 0; padding-left: 20px; }
+.gaps li { margin: 6px 0; }
+#tomorrow { margin-top: 24px; }
