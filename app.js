@@ -23,6 +23,7 @@ let detailId = null;
 let editingLookId = null;
 let ideaN = 0;
 let idea = null;
+let second = null; // secondo outfit, per dopo il lavoro
 let todayEvents = null; // null = calendario non collegato
 let eventsError = '';
 let eventsAt = 0;
@@ -488,6 +489,10 @@ $('#weatherForm').onsubmit = async e => {
 // Parole che iniziano con questi testi (così «riunioni» e «cene» valgono, «scena» e «transport» no)
 const startsWith = words => new RegExp('(?<![a-zàèéìòù])(?:' + words.join('|') + ')', 'i');
 
+// Turni in ufficio: «Mattino SW», «Centrale SW», «Sera SW», anche senza SW o con «Reperibile», e il turno scritto per esteso
+const SHIFT = /^\s*(?:(?:mattin[oa]|centrale|sera|pomeriggio|notte)(?:\s+(?:sw|reperibile))*|turno\b.*|.*\bsw\b.*)\s*$/i;
+const anyOf = (...res) => ({ test: t => res.some(r => r.test(t)) });
+
 // re: parole nel titolo dell'impegno; kw: parole nel campo «occasioni» dei capi. Un impegno può avere più occasioni.
 const OCCASIONS = [
   {
@@ -502,7 +507,7 @@ const OCCASIONS = [
   },
   {
     tag: 'lavoro',
-    re: startsWith(['riunion', 'meeting', 'call', 'videocall', 'videochiamat', 'cliente', 'clienti', 'colloquio', 'presentazion', 'ufficio', 'lavoro', 'workshop', 'intervist', 'review', 'demo\\b', 'stand-?up', 'kick-?off', 'conferenz', 'convegno', 'congresso', 'fiera', 'seminari', 'formazione', 'trattativa', 'consulenza', 'assemblea', 'direttivo', 'board', 'sopralluogo', 'esame', 'lezione', 'sync']),
+    re: anyOf(SHIFT, startsWith(['riunion', 'meeting', 'call', 'videocall', 'videochiamat', 'cliente', 'clienti', 'colloquio', 'presentazion', 'ufficio', 'lavoro', 'workshop', 'intervist', 'review', 'demo\\b', 'stand-?up', 'kick-?off', 'conferenz', 'convegno', 'congresso', 'fiera', 'seminari', 'formazione', 'trattativa', 'consulenza', 'assemblea', 'direttivo', 'board', 'sopralluogo', 'esame', 'lezione', 'sync'])),
     kw: startsWith(['lavoro', 'ufficio', 'business', 'formal', 'elegan', 'riunion', 'smart', 'professional'])
   },
   {
@@ -569,9 +574,24 @@ function affinity(g) {
   return f;
 }
 
+// Stile: al lavoro sartorialità sobria e autorevole, fuori dal lavoro sartorialità rétro, più espressiva ed eccentrica
+const STYLE_SOBER = startsWith(['sartorial', 'sartoria', 'classic', 'elegan', 'formal', 'sobri', 'blazer', 'giacca', 'camicia', 'oxford', 'derby', 'stringat', 'mocassin', 'lana', 'flanella', 'cashmere', 'gessat', 'tinta unita', 'pinces', 'cappotto', 'navy', 'blu notte', 'grigio', 'antracite', 'tortora', 'azzurro']);
+const STYLE_RETRO = startsWith(['retr', 'vintage', 'anni', 'velluto', 'coste', 'cord', 'tweed', 'galles', 'pied', 'fantasia', 'stamp', 'righe', 'quadr', 'check', 'jacquard', 'camoscio', 'suede', 'bomber', 'sneaker', 'college', 'varsity', 'foulard', 'occhiali', 'cappello', 'bordeaux', 'senape', 'mattone', 'cammello', 'oliva', 'lilla', 'viola', 'eccentric', 'originale', 'carattere']);
+const dayStyle = tags => tags.some(t => t.tag === 'lavoro') ? 'sobrio' : tags.length && tags.every(t => t.tag === 'cerimonia') ? '' : 'retro';
+const STYLE_NAME = { sobrio: 'sartoriale sobrio e autorevole', retro: 'sartoriale rétro, espressivo ed eccentrico' };
+
+function styleFit(g, tags) {
+  const mode = dayStyle(tags);
+  if (!mode) return 1;
+  const text = [g.tipo, g.colore, g.materiale, g.vestibilita, g.compatibilita, g.occasioni].filter(Boolean).join(' ').toLowerCase();
+  const sober = STYLE_SOBER.test(text), retro = STYLE_RETRO.test(text);
+  if (mode === 'sobrio') return sober && !retro ? 1.8 : retro && !sober ? .5 : 1;
+  return retro ? 1.8 : sober ? .8 : 1;
+}
+
 function weight(g, tags) {
   const s = seasonFit(g);
-  return s ? (s === 2 ? 3 : 1) * occasionFit(g, tags) * affinity(g) : 0;
+  return s ? (s === 2 ? 3 : 1) * occasionFit(g, tags) * styleFit(g, tags) * affinity(g) : 0;
 }
 
 // Sceglie a caso, ma con più probabilità i capi adatti alla stagione e agli impegni di oggi
@@ -619,6 +639,55 @@ function makeIdea(clean, looks, n, tags) {
   const slot = slots[n];
   if (slot && slot !== 'gen') return slot;
   return generateOutfit(clean, tags);
+}
+
+const hhmm = t => new Date(t).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+const uniqueTags = occs => [...new Map(occs.map(o => [o.tag, o])).values()];
+
+// Se dopo il lavoro c'è un impegno non lavorativo (sera, sport...) servono due outfit.
+// Gli impegni aggiunti a mano, senza orario, contano come «dopo il lavoro» quando c'è un impegno di lavoro.
+function dayPhases(matched) {
+  const workEvents = new Set(matched.filter(m => m.occ.tag === 'lavoro').map(m => m.ev));
+  if (!workEvents.size) return null;
+  const ms = t => new Date(t).getTime();
+  const timed = [...workEvents].filter(e => !e.manual && !e.allDay);
+  const workEnd = timed.length ? Math.max(...timed.map(e => e.end ? ms(e.end) : ms(e.start) + 3600000)) : null;
+  const limit = (workEnd ?? new Date().setHours(18, 0, 0, 0)) - 30 * 60000;
+  const after = matched.filter(m => m.occ.tag !== 'lavoro' && !workEvents.has(m.ev) && (m.ev.manual || (!m.ev.allDay && ms(m.ev.start) >= limit)));
+  if (!after.length) return null;
+  const afterEvents = new Set(after.map(m => m.ev));
+  const next = [...afterEvents].sort((a, b) => (a.manual ? Infinity : ms(a.start)) - (b.manual ? Infinity : ms(b.start)))[0];
+  return { afterEvents, afterTags: uniqueTags(after.map(m => m.occ)), workEnd, next };
+}
+
+// Secondo outfit: tiene uno o due dei capi principali del primo (sopra, pantaloni, scarpe) e cambia gli altri,
+// per adattarlo alla serata. Le scarpe cambiano quasi sempre: si tengono sopra e pantaloni, oppure solo uno dei due.
+const SLOTS = { top: ['Maglieria', 'Camicie e T-shirt'], bottom: ['Pantaloni e jeans'], shoes: ['Scarpe'] };
+const KEEP_OPTIONS = [['top', 'bottom'], ['top', 'bottom'], ['top'], ['bottom']];
+
+function deriveOutfit(clean, baseIds, tags) {
+  const byId = new Map(clean.map(g => [g.id, g]));
+  const ids = baseIds.filter(id => byId.has(id));
+  const swap = slot => {
+    const i = ids.findIndex(id => SLOTS[slot].includes(catOf(byId.get(id))));
+    if (i < 0) return false;
+    const alt = pickOne(clean.filter(g => SLOTS[slot].includes(catOf(g)) && !baseIds.includes(g.id) && !ids.includes(g.id)), tags, true);
+    if (!alt) return false;
+    ids[i] = alt.id;
+    return true;
+  };
+  const keep = KEEP_OPTIONS[Math.floor(Math.random() * KEEP_OPTIONS.length)];
+  let swapped = false;
+  for (const slot of ['shoes', 'top', 'bottom']) if (!keep.includes(slot)) swapped = swap(slot) || swapped;
+  // se mancano alternative per i capi scelti, cambia qualunque altro capo principale
+  if (!swapped) for (const slot of ['shoes', 'top', 'bottom']) if (swap(slot)) break;
+  if (!ids.some(id => catOf(byId.get(id)) === 'Accessori') && Math.random() < .4) {
+    const acc = pickOne(clean.filter(g => catOf(g) === 'Accessori'), tags, true);
+    if (acc) ids.push(acc.id);
+  }
+  const kept = ids.filter(id => baseIds.includes(id));
+  const changed = ids.filter(id => !baseIds.includes(id));
+  return { ids, kept, changed, same: !changed.length };
 }
 
 function miniHtml(d, on) {
@@ -715,8 +784,9 @@ function renderToday(garments, looks) {
   renderWeather();
   const events = [...(todayEvents || []), ...manualEvents];
   const matched = dayOccasions(events);
-  const tags = [...new Map(matched.map(m => [m.occ.tag, m.occ])).values()];
-  const key = tags.map(t => t.tag).join(',') + '|' + (wxNow ? wxNow.band + wxNow.rainy : '');
+  const phases = dayPhases(matched);
+  const tags = uniqueTags((phases ? matched.filter(m => !phases.afterEvents.has(m.ev)) : matched).map(m => m.occ));
+  const key = tags.map(t => t.tag).join(',') + '|' + (wxNow ? wxNow.band + wxNow.rainy : '') + (phases ? '|' + phases.afterTags.map(t => t.tag).join(',') + phases.next.start : '');
   lastTags = tags;
   lastKey = key;
   renderAgenda(matched, events);
@@ -724,6 +794,10 @@ function renderToday(garments, looks) {
   const byId = new Map(garments.map(g => [g.id, g]));
   if (!idea || idea.key !== key || idea.missing || !idea.ids?.every(id => byId.has(id) && !washing(byId.get(id)))) {
     idea = { ...makeIdea(clean, looks, ideaN, tags), key };
+  }
+  if (!phases || idea.missing) second = null;
+  else if (!second || second.base !== idea.ids.join(',') || !second.ids.every(id => byId.has(id) && !washing(byId.get(id)))) {
+    second = { ...deriveOutfit(clean, idea.ids, phases.afterTags), base: idea.ids.join(',') };
   }
   const byEvent = new Map();
   for (const m of matched) byEvent.set(m.ev, [...(byEvent.get(m.ev) || []), m.occ.tag]);
@@ -743,18 +817,31 @@ function renderToday(garments, looks) {
   if (idea.missing) {
     $('#idea').innerHTML = '<p class="muted">Per comporre un outfit servono capi lavati: ti mancano ' + idea.missing.join(', ') + '.</p>';
   } else {
-    const sig = idea.ids.join(',');
+    const sig = idea.ids.join(',') + (second ? '|' + second.ids.join(',') : '');
     const enter = sig !== shownIdea;
     shownIdea = sig;
-    $('#idea').innerHTML = '<h3>' + esc(idea.title) + '</h3>' + note + extra + memory + '<div class="strip' + (enter ? ' enter' : '') + '">' + idea.ids.map((id, i) => {
+    const strip = ids => '<div class="strip' + (enter ? ' enter' : '') + '">' + ids.map((id, i) => {
       const g = byId.get(id);
       return '<figure style="--i:' + i + '">' + photoHtml(id, 'strip-img fade', g.tipo || 'Capo') + (photoSrc(id) ? '<figcaption>' + esc(g.tipo || 'Capo') + '</figcaption>' : '') + '</figure>';
     }).join('') + '</div>';
+    const names = ids => ids.map(id => (byId.get(id).tipo || 'capo').toLowerCase()).join(', ');
+    let html = '<h3>' + esc(idea.title) + '</h3>';
+    if (phases) html += '<p class="phase">Per il lavoro' + (phases.workEnd ? ', fino alle ' + hhmm(phases.workEnd) : '') + '</p>';
+    html += note + extra + memory + strip(idea.ids);
+    if (second) {
+      const nx = phases.next;
+      html += '<div class="phase-block"><h3>Dopo il lavoro</h3><p class="phase">' + esc(nx.title) + (nx.manual ? '' : ', ' + esc(eventTime(nx))) + '</p>' +
+        (second.same
+          ? '<p class="small">Puoi tenere lo stesso outfit: non hai altri capi adatti da cambiare.</p>'
+          : '<p class="small">Tieni ' + esc(names(second.kept)) + '; cambia con ' + esc(names(second.changed)) + '.</p>' + strip(second.ids)) +
+        '</div>';
+    }
+    $('#idea').innerHTML = html;
   }
 
   renderGreeting(events, garments.length);
   const wear = $('#wearIdea');
-  const wornAll = !idea.missing && idea.ids.every(id => wornToday(byId.get(id)));
+  const wornAll = !idea.missing && [...idea.ids, ...(second?.ids || [])].every(id => wornToday(byId.get(id)));
   wear.classList.toggle('hidden', !!idea.missing);
   wear.classList.toggle('done', wornAll);
   wear.disabled = wornAll;
@@ -820,7 +907,7 @@ async function requestInspiration(person, riferimento = '') {
         person,
         ...(riferimento ? { riferimento } : {}),
         garments: garments.map(g => ({ id: g.id, categoria: catOf(g), tipo: g.tipo, colore: g.colore, materiale: g.materiale, stagione: g.stagione, occasioni: g.occasioni })),
-        contesto: { occasioni: lastTags.map(t => t.tag), meteo: weather ? wxText(weather) : '' }
+        contesto: { occasioni: lastTags.map(t => t.tag), stile: STYLE_NAME[dayStyle(lastTags)] || '', meteo: weather ? wxText(weather) : '' }
       })
     });
     const data = await r.json().catch(() => ({}));
@@ -969,7 +1056,7 @@ $('#wearIdea').onclick = async () => {
   if (!idea?.ids) return;
   const today = todayStr();
   const garments = await all();
-  for (const id of idea.ids) {
+  for (const id of new Set([...idea.ids, ...(second?.ids || [])])) {
     const g = garments.find(x => x.id === id);
     if (g && !wornToday(g)) await update('garments', id, { indossato: [...(g.indossato || []), today].slice(-60) });
   }
@@ -983,6 +1070,7 @@ $('#wearIdea').onclick = async () => {
 $('#anotherIdea').onclick = async () => {
   ideaN++;
   idea = null;
+  second = null;
   await renderAll();
 };
 
@@ -1012,6 +1100,7 @@ function updatePicked() {
   $('#analyze').textContent = n ? 'Analizza ' + n + (n === 1 ? ' fotografia' : ' fotografie') : 'Analizza le fotografie';
   $('#analyze').disabled = !n || tooMany || analyzing;
   $('#manual').disabled = !n || tooMany || analyzing;
+  $('#noPhoto').disabled = analyzing;
 }
 
 photosInput.addEventListener('change', () => {
@@ -1034,7 +1123,8 @@ zone.addEventListener('drop', e => {
 
 function draftHtml(d, i) {
   const input = f => '<label>' + LABELS[f] + '<input data-index="' + i + '" data-field="' + f + '" value="' + esc(d[f]) + '"></label>';
-  return '<article class="draft' + (d.pending ? ' pending' : '') + '" id="draft-' + i + '"><img src="' + d.preview + '" alt="Capo da rivedere">' +
+  const pic = d.preview ? '<img src="' + d.preview + '" alt="Capo da rivedere">' : '<div class="draft-ph ph"><span>Senza foto</span></div>';
+  return '<article class="draft' + (d.pending ? ' pending' : '') + '" id="draft-' + i + '">' + pic +
     '<div class="draft-body"><div class="draft-head"><span class="status">' + esc(d.state) + '</span>' +
     '<button class="discard" data-discard="' + i + '">Scarta</button></div>' +
     '<label>Categoria<select data-index="' + i + '" data-field="categoria">' +
@@ -1068,7 +1158,7 @@ $('#review').addEventListener('click', e => {
   const b = e.target.closest('[data-discard]');
   if (!b) return;
   const i = +b.dataset.discard;
-  if (drafts[i]) URL.revokeObjectURL(drafts[i].preview);
+  if (drafts[i]?.preview) URL.revokeObjectURL(drafts[i].preview);
   drafts[i] = null;
   document.getElementById('draft-' + i)?.remove();
   updateSave();
@@ -1103,8 +1193,10 @@ async function prepare(analyze) {
 
   analyzing = true;
   updatePicked();
-  drafts.forEach(d => d && URL.revokeObjectURL(d.preview));
-  drafts = files.map(() => null);
+  // le schede senza foto già aperte restano
+  drafts.forEach(d => d?.blob && URL.revokeObjectURL(d.preview));
+  const kept = drafts.filter(d => d && !d.blob);
+  drafts = [...kept, ...files.map(() => null)];
   $('#review').innerHTML = '';
   $('#save').classList.add('hidden');
   const bar = $('#bar');
@@ -1117,7 +1209,7 @@ async function prepare(analyze) {
 
   const worker = async () => {
     while (next < files.length) {
-      const i = next++;
+      const i = kept.length + next++;
       try {
         const blob = await photo(files[i]);
         const d = { id: crypto.randomUUID(), blob, preview: URL.createObjectURL(blob), categoria: 'Altro', state: analyze ? 'Analisi in corso…' : 'Da compilare', pending: analyze };
@@ -1141,7 +1233,7 @@ async function prepare(analyze) {
 
   analyzing = false;
   bar.classList.add('hidden');
-  const ok = drafts.filter(Boolean).length;
+  const ok = drafts.filter(d => d?.blob).length;
   $('#status').textContent = ok
     ? (analyze ? 'Controlla le schede, correggi quello che serve e poi salva.' : 'Compila le schede e poi salva.')
     : 'Nessuna fotografia leggibile.';
@@ -1150,18 +1242,31 @@ async function prepare(analyze) {
   updateSave();
 }
 
+$('#noPhoto').onclick = () => {
+  const d = { id: crypto.randomUUID(), blob: null, preview: '', categoria: 'Altro', state: 'Senza foto · compila la scheda' };
+  for (const f of FIELDS) d[f] = '';
+  drafts.push(d);
+  renderDrafts();
+  updateSave();
+  document.getElementById('draft-' + (drafts.length - 1))?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
+
 $('#analyze').onclick = () => prepare(true);
 $('#manual').onclick = () => prepare(false);
 
 $('#save').onclick = async () => {
   const items = drafts.filter(Boolean);
+  if (items.some(d => !d.blob && !d.tipo.trim())) {
+    $('#status').textContent = 'Per un capo senza foto scrivi almeno il tipo (es. «Camicia bianca»).';
+    return;
+  }
   const now = Date.now();
   for (const d of items) {
     const meta = { id: d.id, categoria: d.categoria, createdAt: now, updatedAt: now };
     for (const f of FIELDS) meta[f] = d[f];
     await put(meta);
-    await put({ id: d.id, blob: d.blob }, 'photos');
-    URL.revokeObjectURL(d.preview);
+    if (d.blob) await put({ id: d.id, blob: d.blob }, 'photos');
+    if (d.preview) URL.revokeObjectURL(d.preview);
   }
   drafts = [];
   $('#review').innerHTML = '';

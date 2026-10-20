@@ -273,6 +273,7 @@ progress::-moz-progress-bar { background: var(--accent); }
 /* Schede da rivedere */
 .draft { background: var(--surface); border-radius: var(--radius); overflow: hidden; }
 .draft img { width: 100%; height: 220px; object-fit: contain; background: var(--surface-2); display: block; }
+.draft-ph { display: flex; align-items: center; justify-content: center; height: 120px; color: var(--muted, #9a9a9a); }
 .draft-body { padding: 4px 14px 16px; }
 .draft-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 12px; }
 .draft-head .status { margin: 0; }
@@ -460,3 +461,6 @@ label.btn:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; 
 #detailFav[aria-pressed='true'] { color: var(--accent); }
 #detailFav.bump svg { animation: bump .35s ease-out; }
 @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
+
+.phase { margin: 2px 0 0; font-size: 14px; color: var(--accent); }
+.phase-block { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line, rgba(255,255,255,.12)); }
