@@ -1,0 +1,77 @@
+/* ATELIER 2.0 — a mobile-first private dressing room */
+:root{--bg:#101315;--surface:#1c2123;--surface-2:#262c2d;--surface-3:#343b3b;--text:#f0ece4;--muted:#b3b6b1;--accent:#c8ae85;--accent-ink:#171a19;--radius:12px;--bar-h:72px}
+body{background:var(--bg);background-image:radial-gradient(ellipse 100% 48% at 50% -20%,#2a3333 0%,transparent 100%);font-size:16px}
+.top{background:#111516ed;backdrop-filter:blur(18px);border:0}
+.top-inner{min-height:65px;justify-content:center}
+.brand{font-size:27px;letter-spacing:.26em;font-weight:500}
+main{padding-top:18px}
+.account{margin:0 auto}.account-inner{background:transparent;padding:6px 10px}.account-text{font-size:12px}.account .btn{min-height:34px;padding:6px 12px;font-size:12px}
+#view-today>.greet{margin:10px 0 12px}
+#view-today .greet h1{font-size:clamp(43px,11vw,62px);line-height:.97;letter-spacing:-.025em}
+#view-today .greet .date{font-size:12px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+#view-today .greet .lede{margin-top:9px;color:var(--muted);font-size:14px}
+.atelier-home-kicker{font-size:10px!important;letter-spacing:.22em!important;color:var(--accent)!important;margin-bottom:9px!important}
+#view-today .wardrobe-stage{position:relative;isolation:isolate;min-height:335px;margin:18px -12px 18px;border-radius:0;overflow:hidden;background:linear-gradient(145deg,#292b29,#14191b 65%);box-shadow:inset 0 0 65px #050708a8}
+#view-today .wardrobe-stage:after{content:"";position:absolute;inset:0;z-index:-1;background:repeating-linear-gradient(90deg,transparent 0,transparent 36px,#ffffff06 37px,transparent 39px);pointer-events:none}
+#view-today .wardrobe-stage__heading{position:relative;z-index:2;padding:24px 22px 8px}
+#view-today .wardrobe-stage__heading h2{font-size:34px;letter-spacing:-.02em}
+#view-today .wardrobe-stage__heading span{font-size:12px;color:#ddd2c3}
+#view-today .wardrobe-rail{position:relative;z-index:2;padding:28px 16px 20px;scroll-snap-type:x mandatory;scrollbar-width:none}
+#view-today .wardrobe-rail::-webkit-scrollbar{display:none}
+#view-today .wardrobe-hanger{scroll-snap-align:start;transition:transform .2s}
+#view-today .wardrobe-hanger:active{transform:translateY(5px)}
+#view-today .atelier-weather-window{z-index:0}
+#view-today #todayContent{display:flex;flex-direction:column;gap:14px}
+#view-today #todayContent.hidden{display:none}
+#view-today #todayContent>.idea-card:first-child{order:-5;background:#222725;border-radius:16px;padding:20px 16px;box-shadow:0 12px 40px #0003}
+#view-today #todayContent>.idea-card:first-child>h2{font-size:34px;margin-bottom:12px}
+#view-today #idea .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(65px,1fr));gap:6px}
+#view-today #idea .strip figure{min-width:0}
+#view-today #todayContent>.idea-card:first-child>.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#view-today #todayContent>.idea-card:first-child>.actions .btn{font-size:13px;padding:10px 6px;min-width:0}
+#view-today #todayContent>.idea-card:first-child>.actions #atelierSwap{grid-column:1/-1;background:#353d39}
+#view-today .atelier-utilities{order:-4;background:transparent;padding:4px 0}
+#view-today .atelier-utilities h2{font-size:27px}
+#view-today #tomorrow{order:-3}
+.atelier-context{margin:14px 0 18px;border:1px solid #ffffff12;border-radius:12px;background:#1a2020}
+.atelier-context>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;font-size:14px;font-weight:600}
+.atelier-context>summary::-webkit-details-marker{display:none}
+.atelier-context>summary:after{content:"⌄";color:var(--accent);font-size:22px}
+.atelier-context[open]>summary:after{content:"⌃"}
+.atelier-context>#weather,.atelier-context>#agenda{margin:0;background:transparent;border-radius:0}
+#view-wardrobe .view-head h1,#view-looks .view-head h1{font-size:39px}
+#view-wardrobe #wardrobe.grid,#view-wardrobe .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#view-wardrobe .card{border-radius:9px}
+#view-wardrobe .card-img-wrap{aspect-ratio:4/4.6}
+#view-wardrobe .card-body{padding:9px 10px}
+#view-wardrobe .card-body strong{font-size:13px}
+#view-wardrobe .card-body span{font-size:12px}
+#view-wardrobe .chips{display:flex;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;margin:0 -12px 16px;padding:0 12px 6px}
+#view-wardrobe .chip{white-space:nowrap;flex-shrink:0}
+#view-looks .look{border-radius:12px;padding:12px;margin-bottom:10px}
+#view-looks .look h3{font-size:23px}
+#view-looks .palette{display:none}
+.tabs{background:#171d1cfa;border-top:1px solid #ffffff14;box-shadow:0 -12px 28px #0004}
+.tab{font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 0;line-height:1.2}
+.tab:before{font-size:19px;line-height:1.2;font-family:system-ui}
+.tab[data-tab="today"]:before{content:"⌂"}
+.tab[data-tab="week"]:before{content:"▦"}
+.tab[data-tab="wardrobe"]:before{content:"♧"}
+.tab[data-tab="looks"]:before{content:"◇"}
+.tab[data-tab="add"]:before{content:"+";font-size:23px}
+.tab[aria-selected="true"]{background:#303936;color:#f4e8d7}
+.atelier-opening{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:#080b0b;overflow:hidden;pointer-events:all;perspective:1100px}
+.atelier-opening__interior{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#39443e 0%,#141b1a 60%,#080b0b 100%);gap:9px}
+.atelier-opening__interior span{font:500 49px var(--serif);letter-spacing:.25em;color:#e5d5bd}
+.atelier-opening__interior small{font-size:9px;letter-spacing:.3em;color:#c3b49c}
+.atelier-opening__door{position:absolute;top:0;bottom:0;width:50.3%;background:repeating-linear-gradient(90deg,#211b17 0,#30251d 5%,#3b2e23 12%,#2b211a 21%,#211b17 31%);box-shadow:inset 0 0 35px #0009,0 0 24px #0009;transition:transform 1.35s cubic-bezier(.65,.05,.23,1);will-change:transform}
+.atelier-opening__door:before{content:"";position:absolute;inset:18px;border:2px solid #c4a47724;box-shadow:inset 0 0 0 9px #100c0b22}
+.atelier-opening__door--left{left:0;transform-origin:left center;border-right:2px solid #130f0c}
+.atelier-opening__door--right{right:0;transform-origin:right center;border-left:2px solid #130f0c}
+.atelier-opening__door i{position:absolute;top:46%;height:64px;width:5px;border-radius:5px;background:linear-gradient(90deg,#9b7950,#e5c99b,#8c6940);box-shadow:0 2px 7px #0009}
+.atelier-opening__door--left i{right:17px}.atelier-opening__door--right i{left:17px}
+.atelier-opening.is-opening .atelier-opening__door--left{transform:rotateY(-104deg)}
+.atelier-opening.is-opening .atelier-opening__door--right{transform:rotateY(104deg)}
+.atelier-opening.is-finished{opacity:0;pointer-events:none;transition:opacity .3s}
+@media(prefers-reduced-motion:reduce){.atelier-opening{display:none!important}.atelier-opening__door{transition:none}}
+@media(min-width:760px){#view-today .wardrobe-stage{margin:20px 0;border-radius:14px}.tabs{box-shadow:none}.tab:before{display:none}}
