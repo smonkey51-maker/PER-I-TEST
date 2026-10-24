@@ -126,6 +126,16 @@
     await renderAll();
   });
 
+  const laundryNote=document.createElement('div');
+  laundryNote.id='v3LaundryNote';laundryNote.className='v3-laundry-note';
+  swap.after(laundryNote);
+  laundryNote.addEventListener('click',e=>{if(e.target.closest('button'))$('#washAll')?.click();});
+  async function refreshLaundry(){
+    const dirty=(await all()).filter(washing);
+    laundryNote.hidden=!dirty.length;
+    laundryNote.innerHTML=dirty.length?'<span>'+dirty.length+' capi in lavatrice, esclusi dai suggerimenti</span><button>Segna lavati</button>':'';
+  }
+
   // Product link: import accessible direct images; fall back to a real editable draft.
   const add=$('#view-add');
   const modes=document.createElement('div');modes.className='v3-add-modes';
@@ -231,7 +241,7 @@
     await coreRender();
     if(refreshPending)return;
     refreshPending=true;
-    try{await refreshWardrobe();await renderSwap();await refreshEditorial();}finally{refreshPending=false;}
+    try{await refreshWardrobe();await renderSwap();await refreshEditorial();await refreshLaundry();}finally{refreshPending=false;}
   };
   document.addEventListener('DOMContentLoaded',()=>renderAll().catch(console.error),{once:true});
 })();
