@@ -66,7 +66,7 @@ export default async function handler(req,res){
       price=decode(meta(html,'product:price:amount')||meta(html,'og:price:amount'));
       image=meta(html,'og:image:secure_url')||meta(html,'og:image')||meta(html,'twitter:image');
       // Many shops publish structured Product data rather than price meta tags.
-      for(const match of html.matchAll(/<script\\b[^>]*type=[\"']application\\/ld\\+json[\"'][^>]*>([\\s\\S]*?)<\\/script>/gi)){
+      for(const match of html.matchAll(/<script\b[^>]*type=[\"']application\/ld\+json[\"'][^>]*>([\s\S]*?)<\/script>/gi)){
         try{
           const json=JSON.parse(match[1]);
           const queue=Array.isArray(json)?json:[json];
