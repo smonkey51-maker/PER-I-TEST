@@ -107,7 +107,7 @@
         try{
           const converted=await cutout(entry.blob);
           if(!converted)continue;
-          await put({...entry,blob:converted,originalBlob:entry.blob},'photos');
+          await put({...entry,blob:converted,originalBlob:entry.blob,at:Date.now()},'photos');
           forgetPhoto(entry.id);count++;
         }catch{/* Leave original unchanged. */}
       }
@@ -120,7 +120,7 @@
     const status=$('#v3CutoutStatus');let count=0;
     for(const entry of await all('photos')){
       if(!entry.originalBlob)continue;
-      await put({id:entry.id,blob:entry.originalBlob},'photos');forgetPhoto(entry.id);count++;
+      await put({id:entry.id,blob:entry.originalBlob,at:Date.now()},'photos');forgetPhoto(entry.id);count++;
     }
     status.textContent=count?count+' fotografie originali ripristinate.':'Non ci sono fotografie da ripristinare.';
     if(count){await renderAll();await window.atelierDriveSync?.();}

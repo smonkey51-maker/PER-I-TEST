@@ -232,6 +232,61 @@ async function renderAll() {
   renderLooks(looks, garments);
   if (typeof renderPlans === 'function') renderPlans(garments);
   revealImages();
+  scheduleIllustrations();
+}
+
+/* ---------- Immagini illustrative per i capi senza foto ---------- */
+
+// L'AI crea una foto prodotto «standard» dalla descrizione (es. camicia zebrata); la tua foto la sostituisce sempre.
+// Limite giornaliero per non consumare troppo credito; un errore su un capo si riprova dopo un giorno.
+const ILLUSTRATE_DAILY = 30;
+let illustrating = false, illustrateTimer = null, illustrateOff = false;
+
+function scheduleIllustrations() {
+  clearTimeout(illustrateTimer);
+  illustrateTimer = setTimeout(illustrateMissing, 2000);
+}
+
+async function illustrateMissing() {
+  if (illustrating || illustrateOff || !window.atelierToken?.() || !window.atelierSynced?.() || !navigator.onLine) return;
+  illustrating = true;
+  let made = 0;
+  try {
+    const withPhoto = new Set((await all('photos')).map(p => p.id));
+    const fails = readJson('atelier_illustrate_fail', {});
+    const day = todayStr();
+    const quota = readJson('atelier_illustrate_quota', {});
+    let used = quota.day === day ? quota.n : 0;
+    const todo = (await all()).filter(g => (!withPhoto.has(g.id) || g.fotoDaRigenerare) && known(g.tipo) && Date.now() - (fails[g.id] || 0) > 864e5);
+    for (const g of todo) {
+      if (used >= ILLUSTRATE_DAILY) break;
+      const r = await fetch('/api/illustrate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + window.atelierToken?.() },
+        body: JSON.stringify({ tipo: g.tipo, categoria: catOf(g), colore: g.colore, materiale: g.materiale, texture: g.texture, vestibilita: g.vestibilita })
+      });
+      writeJson('atelier_illustrate_quota', { day, n: ++used });
+      if (r.status === 503) { illustrateOff = true; break; }
+      if (r.status === 401) break;
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.image) { fails[g.id] = Date.now(); writeJson('atelier_illustrate_fail', fails); continue; }
+      // Nel frattempo potrebbe essere arrivata una foto vera o il capo potrebbe essere stato rimosso
+      const now = (await all()).find(x => x.id === g.id);
+      const hasPhoto = (await all('photos')).some(p => p.id === g.id);
+      if (!now || (hasPhoto && !now.fotoIllustrativa)) continue;
+      const blob = await (await fetch(j.image)).blob();
+      await put({ id: g.id, blob: await photo(new File([blob], 'illustrazione.jpg', { type: 'image/jpeg' })), at: Date.now() }, 'photos');
+      await update('garments', g.id, { fotoIllustrativa: true, fotoDaRigenerare: undefined });
+      forgetPhoto(g.id);
+      made++;
+    }
+  } catch { /* si riprova al prossimo aggiornamento */ } finally {
+    illustrating = false;
+  }
+  if (!made) return;
+  await renderAll();
+  toast(made === 1 ? 'Creata l’immagine di 1 capo senza foto' : 'Create le immagini di ' + made + ' capi senza foto');
+  await window.atelierDriveSync?.();
 }
 
 /* ---------- Guardaroba ---------- */
@@ -286,11 +341,14 @@ async function openDetail(id) {
   $('#detailImg').classList.toggle('hidden', !src);
   if (src) $('#detailImg').src = src;
   $('#detailImg').alt = item.tipo || 'Capo';
-  $('#detailPhotoLabel').classList.toggle('hidden', !!src);
+  // Una foto illustrativa si può sempre sostituire con la propria
+  $('#detailPhotoLabel').classList.toggle('hidden', !!src && !item.fotoIllustrativa);
+  $('#detailPhotoLabel').firstChild.nodeValue = item.fotoIllustrativa ? 'Usa la tua foto' : 'Aggiungi foto';
   $('#detailTitle').textContent = item.tipo || 'Capo';
   const rows = [['Categoria', catOf(item)], ...FIELDS.filter(f => f !== 'tipo').map(f => [LABELS[f], known(item[f])])];
   rows.push(['Stile', STYLES[garmentStyle(item)] + (STYLES[item.stile] ? '' : ' (automatico)')]);
   rows.push(['Indossato', wornText(item)]);
+  if (item.fotoIllustrativa && src) rows.push(['Foto', 'Illustrativa, creata dalla descrizione']);
   if (washing(item)) rows.unshift(['Stato', 'In lavatrice']);
   $('#detailFields').innerHTML = rows.filter(r => r[1]).map(r => '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>').join('');
   $('#detailWash').textContent = washing(item) ? 'Segna come lavato' : 'Metti in lavatrice';
@@ -335,12 +393,12 @@ $('#detailPhoto').onchange = async e => {
   e.target.value = '';
   if (!file || !detailId) return;
   try {
-    await put({ id: detailId, blob: await photo(file) }, 'photos');
+    await put({ id: detailId, blob: await photo(file), at: Date.now() }, 'photos');
   } catch {
     toast('Foto non leggibile');
     return;
   }
-  await update('garments', detailId, {});
+  await update('garments', detailId, { fotoIllustrativa: undefined, fotoDaRigenerare: undefined });
   forgetPhoto(detailId);
   $('#detail').close();
   await renderAll();
@@ -354,6 +412,9 @@ $('#editForm').addEventListener('click', e => { if (e.target.id === 'editCancel'
 $('#editForm').onsubmit = async e => {
   e.preventDefault();
   const data = Object.fromEntries(new FormData(e.target));
+  // Se cambia la descrizione, l'immagine illustrativa viene ricreata
+  const before = (await all()).find(d => d.id === detailId);
+  if (before?.fotoIllustrativa && ['tipo', 'colore', 'materiale', 'texture', 'categoria'].some(k => (data[k] ?? '') !== (k === 'categoria' ? catOf(before) : before[k] ?? ''))) data.fotoDaRigenerare = true;
   await update('garments', detailId, data);
   $('#detail').close();
   await renderAll();
@@ -1327,7 +1388,7 @@ $('#save').onclick = async () => {
     const meta = { id: d.id, categoria: d.categoria, createdAt: now, updatedAt: now };
     for (const f of FIELDS) meta[f] = d[f];
     await put(meta);
-    if (d.blob) await put({ id: d.id, blob: d.blob }, 'photos');
+    if (d.blob) await put({ id: d.id, blob: d.blob, at: Date.now() }, 'photos');
     if (d.preview) URL.revokeObjectURL(d.preview);
   }
   drafts = [];

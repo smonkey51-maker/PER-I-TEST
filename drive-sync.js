@@ -26,6 +26,7 @@
   let refreshTimer = null;
   let folderIds = {};
   let calendarOk = false;
+  let synced = false;
 
   const el = id => document.getElementById(id);
   const status = s => { el('driveStatus').textContent = s; };
@@ -164,8 +165,11 @@
     multipart('POST', UPLOAD + 'files?uploadType=multipart&fields=id', { name, mimeType: 'application/json', parents: [parent], appProperties: props(obj) }, 'application/json', JSON.stringify(obj));
   const updateJson = (fileId, obj) =>
     multipart('PATCH', UPLOAD + 'files/' + fileId + '?uploadType=multipart&fields=id', { appProperties: props(obj) }, 'application/json', JSON.stringify(obj));
-  const createPhoto = (name, parent, blob) =>
-    multipart('POST', UPLOAD + 'files?uploadType=multipart&fields=id', { name, mimeType: 'image/jpeg', parents: [parent] }, 'image/jpeg', blob);
+  // La data della foto («at») viaggia con il file, così una foto sostituita arriva anche sugli altri dispositivi
+  const createPhoto = (name, parent, blob, at) =>
+    multipart('POST', UPLOAD + 'files?uploadType=multipart&fields=id', { name, mimeType: 'image/jpeg', parents: [parent], appProperties: { at: String(at || 0) } }, 'image/jpeg', blob);
+  const updatePhoto = (fileId, blob, at) =>
+    multipart('PATCH', UPLOAD + 'files/' + fileId + '?uploadType=multipart&fields=id', { appProperties: { at: String(at || 0) } }, 'image/jpeg', blob);
 
   const readJson = async id => {
     const r = await authFetch(API + 'files/' + id + '?alt=media');
@@ -347,8 +351,11 @@
     const todo = [];
     for (const g of await all('garments')) {
       const row = rows.get(g.id), file = remote.get(g.id);
-      if (row && !file) todo.push(async () => { await createPhoto('photo-' + g.id + '.jpg', folder, row.blob); stats.up++; });
-      else if (!row && file) todo.push(async () => { await put({ id: g.id, blob: await readBlob(file.id) }, 'photos'); window.forgetPhoto?.(g.id); });
+      const localAt = row?.at || 0, remoteAt = Number(file?.appProperties?.at || 0);
+      if (row && !file) todo.push(async () => { await createPhoto('photo-' + g.id + '.jpg', folder, row.blob, localAt); stats.up++; });
+      else if (!row && file) todo.push(async () => { await put({ id: g.id, blob: await readBlob(file.id), at: remoteAt }, 'photos'); window.forgetPhoto?.(g.id); });
+      else if (row && file && localAt > remoteAt) todo.push(async () => { await updatePhoto(file.id, row.blob, localAt); stats.up++; });
+      else if (row && file && remoteAt > localAt) todo.push(async () => { await put({ id: g.id, blob: await readBlob(file.id), at: remoteAt }, 'photos'); window.forgetPhoto?.(g.id); stats.down++; });
     }
     await pool(todo, 4, fn => fn());
   };
@@ -366,6 +373,7 @@
       const gone = await syncDeletions(stats);
       for (const [kind, store] of KINDS) await syncKind(kind, store, gone, stats);
       await syncPhotos(gone, stats);
+      synced = true;
       await renderAll();
       window.refreshEvents?.();
       status('Sincronizzato · ' + stats.down + ' scaricati · ' + stats.up + ' caricati' + (stats.removed ? ' · ' + stats.removed + ' rimossi' : ''));
@@ -394,6 +402,8 @@
     status('Disconnesso. I dati locali restano sul dispositivo.');
   };
   window.atelierDriveSync = sync;
+  // Le immagini illustrative si creano solo dopo aver ricevuto da Drive quelle degli altri dispositivi
+  window.atelierSynced = () => synced && !busy;
   document.addEventListener('visibilitychange', () => { if (!document.hidden) sync(); });
   window.addEventListener('online', sync);
 

@@ -84,6 +84,8 @@
     'Es. Timothée Chalamet':'E.g. Timothée Chalamet','Maglione lilla, gurkha sabbia, sneakers panna':'Lilac sweater, sand gurkha trousers, cream sneakers',
     'Filtra per categoria':'Filter by category','Disponibilità':'Availability','Avanzamento':'Progress','Armadio interattivo':'Interactive wardrobe',
     'Nome di una persona nota':'Name of a well-known person','Domani':'Tomorrow','Vedi i prossimi giorni':'See the coming days',
+    'Foto':'Photo','Illustrativa, creata dalla descrizione':'Illustrative, created from the description','Usa la tua foto':'Use your own photo',
+    'Creata l’immagine di 1 capo senza foto':'Created the image of 1 item without a photo',
     'Per il lavoro':'For work','Dopo il lavoro':'After work','Indossato oggi':'Worn today'
   };
   const rules=[
@@ -97,6 +99,7 @@
     [/^Pioggia (\d+)%$/,'Rain $1%'],
     [/^(Buongiorno|Buon pomeriggio|Buonasera|Buonanotte)(, .+)?$/,(m,h,name)=>({'Buongiorno':'Good morning','Buon pomeriggio':'Good afternoon','Buonasera':'Good evening','Buonanotte':'Good night'}[h])+(name||'')],
     [/^Apri (.+)$/,'Open $1'],
+    [/^Create le immagini di (\d+) capi senza foto$/,'Created images for $1 items without a photo'],
     [/^Salva (\d+) capi$/,'Save $1 items'],[/^Salva 1 capo$/,'Save 1 item'],
     [/^(Sobrio|Rétro|Neutro)( \(automatico\))?$/,(m,st,auto)=>({'Sobrio':'Understated','Rétro':'Retro','Neutro':'Neutral'}[st])+(auto?' (automatic)':'')],
     [/^(\d+) volt[ae], l’ultima (oggi|ieri|(\d+) giorni fa)$/,(m,n,when,days)=>n+(n==='1'?' time':' times')+', last '+(when==='oggi'?'today':when==='ieri'?'yesterday':days+' days ago')],
