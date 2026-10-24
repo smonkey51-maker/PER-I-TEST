@@ -1,0 +1,26 @@
+/* ATELIER mobile tools and weather window */
+.atelier-weather-window{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.atelier-weather-orb{position:absolute;width:115px;height:115px;right:10%;top:4%;border-radius:50%;background:#e5c997;filter:blur(18px);opacity:.34;transition:background 1s,opacity 1s,transform 1s}
+.atelier-weather-cloud{position:absolute;inset:15% -20% auto 20%;height:100px;border-radius:50%;background:#c4cbd1;filter:blur(40px);opacity:.12;animation:atelier-drift 16s ease-in-out infinite alternate}
+.wardrobe-stage[data-light="night"] .atelier-weather-orb{background:#a5b8c8;opacity:.12;transform:translateY(35px)}
+.wardrobe-stage[data-light="morning"] .atelier-weather-orb{background:#f0cf91;opacity:.42}
+.wardrobe-stage[data-light="evening"] .atelier-weather-orb{background:#db987d;opacity:.35;transform:translateY(38px)}
+.wardrobe-stage[data-sky="rain"] .atelier-weather-orb{opacity:.07}
+@keyframes atelier-drift{to{transform:translateX(-35px)}}
+.atelier-utilities{margin-top:16px}.atelier-utilities h2{font-size:25px}
+.atelier-tool-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}
+.atelier-tool-actions .btn{padding:10px 8px;font-size:13px;min-height:44px}
+.atelier-tool-dialog{width:min(94vw,440px);max-height:85dvh;overflow-y:auto;background:var(--surface);color:var(--text);border:1px solid var(--surface-3);border-radius:16px;padding:18px}
+.atelier-tool-dialog::backdrop{background:rgba(0,0,0,.78)}
+.atelier-tool-dialog h2{font-size:28px;margin-bottom:10px}.atelier-tool-dialog h3{font-size:22px;margin:12px 0}
+.atelier-tool-dialog>.btn{margin-top:14px}
+.atelier-tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0}
+.atelier-tool-tile{border:0;border-radius:10px;background:var(--surface-2);color:var(--text);padding:8px;min-width:0;text-align:left;font-size:13px}
+.atelier-tool-tile img,.atelier-mini-empty{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:7px;display:grid;place-items:center;background:var(--surface-3);margin-bottom:5px}
+.atelier-tool-form input{display:block;width:100%;margin-top:7px;background:var(--surface-2);border:1px solid var(--surface-3);padding:10px;border-radius:8px}
+.atelier-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0}
+.atelier-stat{background:var(--surface);padding:10px 6px;border-radius:10px;text-align:center;min-width:0}
+.atelier-stat strong{display:block;font-size:22px;font-family:var(--serif)}
+.atelier-stat span{font-size:11px;color:var(--muted);line-height:1.3;display:block}
+.atelier-stats>p{grid-column:1/-1}
+@media(prefers-reduced-motion:reduce){.atelier-weather-cloud{animation:none}}
