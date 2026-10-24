@@ -9,8 +9,8 @@ const LABELS = {
   vestibilita: 'Vestibilità', stagione: 'Stagione', occasioni: 'Occasioni', compatibilita: 'Compatibilità'
 };
 const FIELDS = Object.keys(LABELS);
-const MAIN_FIELDS = ['tipo', 'colore'];
-const TABS = ['today', 'week', 'wardrobe', 'looks', 'add'];
+const MAIN_FIELDS = ['tipo', 'colore', 'stagione'];
+const TABS = ['today', 'week', 'wardrobe', 'looks', 'add', 'profile', 'diary'];
 const MAX_PHOTOS = 40;
 const PARALLEL = 3;
 const PHOTO_W = 720;
@@ -244,7 +244,7 @@ function illustrationSvg(g) {
   let base = colors[0] || (pattern === 'zebra' ? '#f2f0eb' : /jeans|denim/.test(text) ? '#5b7ea8' : '#9a9ca2');
   let ink = colors[1] || (pattern === 'zebra' ? (illusLight(base) ? '#1d1d1f' : '#f2f0eb') : pattern === 'leopard' ? '#2b1d14' : illusLight(base) ? illusShade(base, -.55) : illusShade(base, .55));
   if (pattern === 'leopard' && !colors[0]) base = '#c99a5b';
-  const line = illusShade(base, illusLight(base) ? -.28 : .22);
+  const line = illusShade(base, illusLight(base) ? -.28 : .5);
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250"><defs>' + illusPattern(pattern, ink, base) +
     '<clipPath id="cl"><path d="' + shape.d + '"/></clipPath>' +
     '<linearGradient id="sh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient></defs>' +
@@ -395,7 +395,7 @@ function scheduleIllustrations() {
 }
 
 async function illustrateMissing() {
-  if (illustrating || illustrateOff || !window.atelierToken?.() || !window.atelierSynced?.() || !navigator.onLine) return;
+  if (illustrating || illustrateOff || localStorage.getItem('atelier_ai_illustrate') === '0' || !window.atelierToken?.() || !window.atelierSynced?.() || !navigator.onLine) return;
   illustrating = true;
   let made = 0;
   try {
@@ -410,7 +410,7 @@ async function illustrateMissing() {
       const r = await fetch('/api/illustrate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + window.atelierToken?.() },
-        body: JSON.stringify({ tipo: g.tipo, categoria: catOf(g), colore: g.colore, materiale: g.materiale, texture: g.texture, vestibilita: g.vestibilita })
+        body: JSON.stringify({ tipo: g.tipo, categoria: catOf(g), colore: g.colore, materiale: g.materiale, texture: g.texture, vestibilita: known(g.vestibilita) || readJson('atelier_profile', {}).fit || '' })
       });
       writeJson('atelier_illustrate_quota', { day, n: ++used });
       const j = await r.json().catch(() => ({}));
@@ -531,7 +531,7 @@ function setEditing(on) {
 function setFav(on) {
   const b = $('#detailFav');
   b.setAttribute('aria-pressed', String(on));
-  b.innerHTML = (on ? HEART + ' ' : '') + (on ? 'Nei preferiti' : 'Aggiungi ai preferiti');
+  b.innerHTML = (on ? HEART + ' ' : '') + (on ? 'Pezzo Iconico' : 'Aggiungi ai Pezzi Iconici');
 }
 
 $('#detailFav').onclick = async () => {
@@ -649,17 +649,21 @@ function wxKind(w) {
   return 'sun';
 }
 const WX_LABEL = { sun: 'Soleggiato', partly: 'Poco nuvoloso', cloud: 'Nuvoloso', fog: 'Nebbia', rain: 'Pioggia', snow: 'Neve', storm: 'Temporale' };
-const WX_CLOUD = '<path class="cloud" d="M7.5 19h9.6a3.9 3.9 0 0 0 .5-7.77 5.4 5.4 0 0 0-10.4 1.2A3.3 3.3 0 0 0 7.5 19z"/>';
+// Icone a linea singola: sole con raggi distanziati, nuvola a tre archi, cristallo a sei punte, linee di vento
+const WX_CLOUD = '<path class="cloud" d="M7.2 15.5a3.3 3.3 0 0 1-.3-6.58 5 5 0 0 1 9.6 1.08 2.8 2.8 0 0 1 .4 5.5"/>';
+const WX_WIND = '<g class="wind"><path d="M3.5 9.5c2.5-1.6 4.5 1.6 7 0s4.5 1.6 7 0"/><path d="M6.5 13.5c2.5-1.6 4.5 1.6 7 0s4.5 1.6 7 0"/><path d="M3.5 17.5c2.5-1.6 4.5 1.6 7 0s3 1 4.5.6"/></g>';
 const WX_SVG = {
-  sun: '<g class="rays"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g><circle class="sun" cx="12" cy="12" r="4.4"/>',
-  partly: '<g class="rays small"><path d="M8.5 2.8v1.6M3.3 8h1.6M4.8 4.3l1.1 1.1M12.2 4.3l-1.1 1.1"/></g><circle class="sun" cx="8.5" cy="8" r="3.2"/>' + WX_CLOUD,
-  cloud: WX_CLOUD,
-  fog: '<g class="fog"><path d="M4 9h13M7 13h13M4 17h12"/></g>',
-  rain: '<g transform="translate(0 -3)">' + WX_CLOUD + '</g><g class="drops"><path d="M9 18.5l-1 2.5M13 18.5l-1 2.5M17 18.5l-1 2.5"/></g>',
-  snow: '<g transform="translate(0 -3)">' + WX_CLOUD + '</g><g class="flakes"><circle cx="9" cy="20" r="1"/><circle cx="13" cy="21" r="1"/><circle cx="17" cy="20" r="1"/></g>',
-  storm: '<g transform="translate(0 -3)">' + WX_CLOUD + '</g><path class="bolt" d="M12.5 15.5l-2.5 4h3l-2 3.5"/>'
+  sun: '<g class="rays"><path d="M12 2.6v2M12 19.4v2M2.6 12h2M19.4 12h2M5.4 5.4l1.4 1.4M17.2 17.2l1.4 1.4M5.4 18.6l1.4-1.4M17.2 6.8l1.4-1.4"/></g><circle class="core" cx="12" cy="12" r="4.2"/>',
+  partly: '<g class="rays small"><path d="M8.5 2.6v1.4M3.1 8h1.4M4.7 4.2l1 1M12.3 4.2l-1 1"/></g><circle class="core" cx="8.5" cy="8" r="2.8"/><g class="wind"><path d="M7 14.5c2.5-1.6 4.5 1.6 7 0s3.5 1.2 6 .2"/><path d="M4 18.5c2.5-1.6 4.5 1.6 7 0s3.5 1.2 6 .2"/></g>',
+  cloud: WX_WIND,
+  fog: WX_WIND,
+  rain: WX_CLOUD + '<g class="drops"><path d="M10.2 17.6l-1.3 2.8M14.6 17.6l-1.3 2.8"/></g>',
+  snow: '<g class="crystal"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/><path d="M10 4.8l2 1.6 2-1.6M10 19.2l2-1.6 2 1.6M5 10.3l2.4-.4-.9-2.3M19 13.7l-2.4.4.9 2.3M5 13.7l2.4.4-.9 2.3M19 10.3l-2.4-.4.9-2.3"/></g>',
+  storm: WX_CLOUD + '<path class="bolt" d="M12.6 15.6l-2 3.2h2.6l-1.6 3"/>'
 };
-const wxIcon = (w, cls = '') => { const k = wxKind(w); return '<span class="wx-ico wx-' + k + (cls ? ' ' + cls : '') + '" aria-hidden="true"><svg viewBox="0 0 24 24">' + WX_SVG[k] + '</svg></span>'; };
+// «active»: la condizione di adesso (scheda meteo e intestazione), il sole si accende di arancio zafferano
+const wxIcon = (w, cls = '', active = false) => { const k = wxKind(w); return '<span class="wx-ico wx-' + k + (active ? ' is-active' : '') + (cls ? ' ' + cls : '') + '" aria-hidden="true"><svg viewBox="0 0 24 24">' + WX_SVG[k] + '</svg></span>'; };
+const AI_MARK = '<span class="ai-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3c.7 4.6 2.6 6.6 7.2 7.3-4.6.7-6.5 2.6-7.2 7.2-.7-4.6-2.6-6.5-7.2-7.2C9.4 9.6 11.3 7.6 12 3z"/></svg></span>';
 
 async function refreshWeather(force = false) {
   if (!place) return;
@@ -699,7 +703,7 @@ function renderWeather() {
     html += '<p class="muted">' + esc(weatherError || 'Indica dove sei per avere capi adatti a temperatura e pioggia.') + '</p>';
     $('#weatherSetup').classList.remove('hidden');
   } else if (weather) {
-    html = '<div class="wx-card">' + wxIcon(weather) +
+    html = '<div class="wx-card">' + wxIcon(weather, '', true) +
       '<div class="wx-main"><span class="wx-city">' + esc(place.name) + '</span><span class="wx-temp">' + (weather.now ?? weather.tmax) + '°</span></div>' +
       '<div class="wx-side"><span>' + WX_LABEL[wxKind(weather)] + '</span><span><span>Max ' + weather.tmax + '°</span> <span>Min ' + weather.tmin + '°</span></span>' +
       '<span>Pioggia ' + weather.rain + '%</span></div></div>' +

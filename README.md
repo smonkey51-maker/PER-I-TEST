@@ -94,3 +94,14 @@ Quando un capo non ha una fotografia (aggiunto a mano, da un look descritto a pa
 - Lo sfondo grigio viene scontornato sul dispositivo come per le foto vere.
 - Nella scheda del capo la foto risulta «Illustrativa» e il pulsante «Usa la tua foto» la sostituisce. Se cambi tipo, categoria, colore, materiale o texture, l'immagine illustrativa viene ricreata.
 - Ogni foto porta la data dell'ultima modifica anche su Drive: una foto sostituita (tua, illustrativa o scontornata) arriva così anche sugli altri dispositivi.
+
+## Quiet Luxury Dark Mode (atelier-ios.css, atelier-studio.js)
+- **Palette 60-30-10**: 60% nero opaco `#121212` dietro i capi, 30% grigio titanio `#1C1E24` per schede e barre, 10% accento: lime `#DDF244` per le azioni principali, viola indaco `#6366F1` solo per ciò che fa l'AI (stella a quattro punte).
+- **Icone a linea singola**: sole con raggi distanziati (il centro si accende di arancio zafferano `#FDBA74` per la condizione attuale), nuvola a tre archi con due linee di pioggia (`#60A5FA`), cristallo di neve a sei punte (`#93C5FD`), linee di vento per coperto e nebbia (`#8F95A5`).
+- **Barra in basso in vetro**: grigio titanio al 75% con sfocatura 20px. **Micro-interazioni a molla** su pulsanti, capi, stagioni e outfit che cambiano.
+- **Lessico d'atelier**: L'Ispirazione (oggi), Componi Look, Il Caveau (guardaroba), I Pezzi Iconici (preferiti), Il Diario di Stile, Profilo Sartoriale; tutto tradotto anche in inglese.
+- **Profilo Sartoriale** (icona in alto): account Google, luogo per il meteo, misure (altezza, taglie, scarpe) e fit preferito salvati sul dispositivo, collegamenti a Diario e Pezzi Iconici, interruttori del consulente AI. Il fit preferito orienta le immagini dei capi senza foto.
+- **Il Diario di Stile**: i look indossati giorno per giorno (da «Indosso questo»), con giorni registrati, capi indossati e il capo più scelto.
+- **Suggerimenti** sotto il meteo: consigli sul clima (strati, pioggia, escursione termica) e sugli impegni, calcolati sul dispositivo.
+- **Stagioni a riquadri** nelle schede dei capi; **«Crea nuovo look»** fluttuante nei Look.
+- **Ritaglio AI degli sfondi complessi** (`/api/cutout`, OpenAI con sfondo trasparente e fedeltà alta all'originale; modello cambiabile con `CUTOUT_MODEL`): quando lo scontorno sul dispositivo non riesce (letti, pavimenti), la foto va in coda e viene ritagliata in background dopo l'accesso Google, massimo 40 al giorno, pochi centesimi a foto. L'originale resta sul dispositivo («Ripristina originali»). Si può spegnere dal Profilo o dalla pagina Aggiungi; «Ritaglio AI delle foto esistenti» nel Caveau ritaglia quelle già salvate.
