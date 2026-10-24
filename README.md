@@ -53,7 +53,7 @@ L'app legge anche gli orari di inizio e fine. Se hai un impegno di lavoro e più
 ### Domani e i prossimi giorni
 Con il calendario collegato l'app legge gli impegni dei prossimi 8 giorni e, se hai indicato il luogo, le previsioni del meteo.
 - **Domani** (in «Oggi»): outfit per il giorno dopo, con il primo impegno e il meteo, così la sera prima sai cosa preparare.
-- **Settimana**: un outfit per ognuno dei 7 giorni successivi, con impegni e meteo del giorno, e due outfit quando c'è lavoro e poi un impegno non lavorativo. I capi già scelti per un giorno vengono evitati negli altri. «Un'altra idea» rigenera un solo giorno.
+- **Settimana**: un outfit per ognuno dei 7 giorni successivi, con impegni e meteo del giorno, e due outfit quando c'è lavoro e poi un impegno non lavorativo. Nessun outfit si ripete nella settimana né rispetto a quello di oggi (stesso capo sopra, pantaloni e scarpe), e tra giorni vicini cambiano più capi possibile. «Cambia outfit» rigenera un solo giorno con un outfit nuovo. Se i capi lavati non bastano per combinazioni tutte diverse, la pagina lo segnala.
 - **Lavatrice**: i capi scelti per un giorno futuro possono essere in lavatrice (pesano meno nella scelta); se ci sono, l'app avvisa di lavarli prima di quel giorno.
 
 ### Stile dei capi e «Cosa ti manca»
