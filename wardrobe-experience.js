@@ -8,7 +8,16 @@
     stage.className = 'wardrobe-stage';
     stage.setAttribute('aria-label','Armadio interattivo');
     stage.innerHTML = '<div class="wardrobe-stage__heading"><h2>Il tuo armadio</h2><span>Scorri i capi</span></div><div class="wardrobe-rail" id="atelierRail"></div>';
-    target.insertBefore(stage,target.querySelector('#chips'));
+    const home = document.querySelector('#view-today');
+    const greeting = home.querySelector('.greet');
+    greeting.after(stage);
+    stage.querySelector('h2').textContent = 'Il tuo armadio';
+    const headline = document.createElement('p'); headline.className='atelier-home-kicker';headline.textContent='IL TUO STILE, OGGI';greeting.prepend(headline);
+    const todayContent = document.querySelector('#todayContent');
+    const ideaCard = todayContent?.querySelector('.idea-card');
+    if(ideaCard){ideaCard.classList.add('atelier-outfit-card');const actions=ideaCard.querySelector('.actions');if(actions){const change=document.createElement('button');change.className='btn secondary';change.type='button';change.textContent='Cambia un capo';change.id='atelierSwap';actions.append(change);change.addEventListener('click',openSwap)}}
+    const addTab = document.querySelector('[data-tab="add"]');if(addTab)addTab.textContent='+';
+    const wardrobeTab=document.querySelector('[data-tab="wardrobe"]');if(wardrobeTab)wardrobeTab.textContent='Armadio';
     let lastSignature = '';
     const sync = () => {
       if (typeof all !== 'function') return;
@@ -37,10 +46,34 @@
     sync();
     document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',sync));
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
-    const observer = new MutationObserver(()=>{if(!target.classList.contains('hidden'))sync()});
+    const observer = new MutationObserver(()=>{if(!home.classList.contains('hidden'))sync()});
     observer.observe(document.querySelector('#wardrobe'),{childList:true,subtree:false});
     const weatherObserver = new MutationObserver(sync);
     weatherObserver.observe(document.querySelector('#weatherInfo'),{childList:true});
+    function openSwap(){
+      if(typeof idea==='undefined'||!idea?.ids?.length){return}
+      const old=document.querySelector('#atelierSwapDialog');if(old)old.remove();
+      const dlg=document.createElement('dialog');dlg.id='atelierSwapDialog';dlg.className='atelier-swap-dialog';
+      const title=document.createElement('h2');title.textContent='Cambia un capo';dlg.append(title);
+      const hint=document.createElement('p');hint.className='small';hint.textContent='Scegli il capo da sostituire, poi una delle alternative disponibili.';dlg.append(hint);
+      const current=document.createElement('div');current.className='atelier-swap-options';dlg.append(current);
+      const close=document.createElement('button');close.type='button';close.className='btn secondary';close.textContent='Chiudi';close.onclick=()=>dlg.close();dlg.append(close);
+      document.body.append(dlg);
+      const showCurrent=async()=>{
+        current.replaceChildren();const items=await all();const byId=new Map(items.map(x=>[x.id,x]));
+        for(const id of idea.ids){const item=byId.get(id);if(!item)continue;
+          const b=document.createElement('button');b.className='atelier-swap-item';b.textContent=item.tipo||'Capo';
+          b.onclick=()=>showAlternatives(item,items,current,showCurrent);current.append(b)}
+      };showCurrent();dlg.showModal();dlg.addEventListener('close',()=>dlg.remove(),{once:true});
+    }
+    function showAlternatives(original,items,container,back){
+      container.replaceChildren();
+      const backBtn=document.createElement('button');backBtn.className='btn secondary';backBtn.textContent='← Indietro';backBtn.onclick=back;container.append(backBtn);
+      const alternatives=items.filter(x=>x.id!==original.id && !washing(x) && catOf(x)===catOf(original) && !idea.ids.includes(x.id));
+      if(!alternatives.length){const p=document.createElement('p');p.textContent='Nessuna alternativa lavata nella stessa categoria.';container.append(p);return}
+      for(const candidate of alternatives){const b=document.createElement('button');b.className='atelier-swap-item';b.textContent=(candidate.tipo||'Capo')+(candidate.colore?' · '+candidate.colore:'');
+        b.onclick=async()=>{idea.ids=idea.ids.map(id=>id===original.id?candidate.id:id);if(typeof second!=='undefined')second=null;document.querySelector('#atelierSwapDialog')?.close();await renderAll()};container.append(b)}
+    }
     if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
       const intro=document.createElement('div');intro.className='wardrobe-intro';intro.setAttribute('aria-hidden','true');
       intro.innerHTML='<div class="wardrobe-intro__door"></div><div class="wardrobe-intro__door"></div>';
