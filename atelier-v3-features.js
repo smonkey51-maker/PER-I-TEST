@@ -195,7 +195,11 @@
     await originalDetail(id);
     const garment=(await all()).find(g=>g.id===id);
     if(!garment)return;
+    const form=$('#editForm');
     const fields=$('#detailFields');
+    const extra=document.createElement('div');extra.className='v3-detail-extras';
+    extra.innerHTML='<label>Marca<input name="marca" value="'+safe(garment.marca||'')+'"></label><label>Prezzo (€)<input name="prezzo" type="number" min="0" step="0.01" value="'+safe(garment.prezzo||'')+'"></label>';
+    form.querySelector('.actions')?.before(extra);
     for(const [label,value] of [['Marca',garment.marca],['Prezzo',garment.prezzo?garment.prezzo+' €':''],['Origine',garment.origine]]){
       if(!value)continue;
       const dt=document.createElement('dt');dt.textContent=label;
