@@ -1,0 +1,101 @@
+/* ATELIER v3 — faithful adaptation of the supplied editorial concept.
+   Real garment photos and existing interactions remain the source of truth. */
+:root{color-scheme:dark;--bg:#12100e;--surface:#1a1714;--surface-2:#1a1714;--surface-3:#2d2823;--text:#f3ebdf;--muted:#a0968a;--accent:#e7c690;--accent-ink:#1c150b;--danger:#e9ae9e;--rule:rgba(240,228,210,.10);--serif:"Bodoni Moda","Didot",Georgia,serif;--sans:"Hanken Grotesk",system-ui,sans-serif}
+html,body,main,.top{background:#12100e!important;color:var(--text)!important}
+body{font:15px/1.5 var(--sans);padding-bottom:calc(98px + env(safe-area-inset-bottom));padding-left:max(0px,env(safe-area-inset-left));padding-right:max(0px,env(safe-area-inset-right))}
+main{max-width:560px;padding:4px 22px 36px}
+.top{position:relative;border:0!important}
+.top-inner{max-width:560px;min-height:64px;padding:22px 22px 5px}
+.brand{font-family:var(--serif);font-size:20px;font-weight:500;letter-spacing:.36em;color:var(--text)}
+h1,h2,h3{font-family:var(--serif)!important;font-weight:400!important;letter-spacing:-.01em!important;text-wrap:balance}
+.small,.muted,.lede{color:var(--muted)}
+#view-today>.greet{margin:12px 0 12px}
+#view-today .greet .date{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+#view-today .greet h1{font-size:38px!important;font-weight:400!important;line-height:1.05!important;letter-spacing:-.02em!important;margin:8px 0}
+#view-today .greet .lede{font-size:13px;margin:0}
+#view-today .atelier-context{margin:12px 0 24px!important;padding:0!important;display:grid;gap:10px!important;background:none!important}
+#view-today .atelier-context>#weather,#view-today .atelier-context>#agenda{padding:0!important;background:none!important;border:0!important}
+#view-today .atelier-context>#weather:before,#view-today .atelier-context>#agenda:before{font-size:10px;letter-spacing:.16em;color:var(--muted);margin-bottom:5px}
+#view-today #weatherInfo,#view-today #agendaInfo{font-size:13px}
+#view-today #todayContent>.idea-card:first-child>h2{font-family:var(--serif)!important;font-size:27px!important;font-weight:400!important;margin:14px 0 8px}
+#view-today #idea{margin-top:0}
+#view-today #idea>h3{font-family:var(--serif)!important;font-size:25px!important;line-height:1.17!important;margin:12px 0 8px}
+#view-today #idea .small{font-size:13px;line-height:1.55}
+#view-today #idea .strip{display:flex;align-items:center;justify-content:center;overflow:visible;gap:0;min-height:295px;padding:12px 0 8px;isolation:isolate;scroll-snap-type:none;background:radial-gradient(ellipse at center,rgba(231,198,144,.055),transparent 70%)}
+#view-today #idea .strip figure{min-width:0;flex:0 1 36%;max-width:38%;margin:0 -3%;transform:rotate(-5deg);position:relative;filter:drop-shadow(0 14px 16px #0008)}
+#view-today #idea .strip figure:nth-child(2){transform:translateY(35px) rotate(6deg);z-index:2}
+#view-today #idea .strip figure:nth-child(3){transform:translateY(78px) rotate(-8deg);z-index:3}
+#view-today #idea .strip figure:nth-child(n+4){transform:translateY(42px) rotate(5deg);z-index:4}
+#view-today #idea .strip-img{width:100%;height:auto;max-height:205px;object-fit:contain;border-radius:7px}
+#view-today #idea .strip figcaption{font-size:10px;text-align:center;color:var(--muted);margin-top:5px}
+#view-today #todayContent>.idea-card:first-child>.actions{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;margin:23px 0 0}
+.btn{min-height:48px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:14px;padding:12px 18px}
+.btn.secondary{background:transparent;color:var(--text);border-bottom:1px solid var(--accent);border-radius:0;padding:10px 3px;min-height:44px}
+.btn.danger{background:transparent;color:var(--danger);border:1px solid #65483f}
+#view-today #todayContent>.idea-card:first-child>.actions .btn{min-width:0}
+#view-today #todayContent>.idea-card:first-child>.manual{margin-top:32px;padding-top:18px;border-top:1px solid var(--rule)}
+#view-today .atelier-utilities{padding:0!important;margin:25px 0}
+#view-today .atelier-utilities h2{font-size:24px!important}
+#view-today .view-head.sec{border-top:1px solid var(--rule);padding-top:16px;margin-top:24px}
+#view-today .view-head.sec h2{font-size:23px}
+#view-week .view-head h1,#view-wardrobe .view-head h1,#view-looks .view-head h1,#view-add .view-head h1{font-family:var(--serif)!important;font-size:39px!important;font-weight:400!important;letter-spacing:-.015em!important;line-height:1.1}
+#view-week .view-head,#view-wardrobe .view-head,#view-looks .view-head,#view-add .view-head{margin:16px 0 18px}
+#view-week #weekList>*{border-bottom:1px solid var(--rule);border-radius:0!important;background:none!important;box-shadow:none!important}
+#view-wardrobe .chips{display:flex;flex-wrap:nowrap;gap:22px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--rule);margin:8px -22px 20px;padding:0 22px}
+#view-wardrobe .chips::-webkit-scrollbar{display:none}
+#view-wardrobe .chip{flex:0 0 auto;white-space:nowrap;background:none!important;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;color:var(--muted);font-size:13px;font-weight:600;padding:11px 0;margin:0}
+#view-wardrobe .chip[aria-pressed=true]{color:var(--text)!important;border-bottom-color:var(--accent)!important}
+#view-wardrobe .cat{font-family:var(--serif);font-size:23px;margin:22px 0 12px}
+#view-wardrobe .grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:21px 10px!important}
+#view-wardrobe .card{background:none!important;border:0!important;box-shadow:none!important;border-radius:0!important;min-width:0}
+#view-wardrobe .card-img-wrap{aspect-ratio:1/1.08;background:radial-gradient(ellipse,rgba(240,228,210,.065),transparent 70%)!important;border-radius:0;overflow:visible}
+#view-wardrobe .card-img{width:100%;height:100%;object-fit:contain;border-radius:0!important;filter:drop-shadow(0 9px 10px #0008)}
+#view-wardrobe .card.washing .card-img{opacity:.38}
+#view-wardrobe .card-body{padding:7px 0 0;text-align:center}
+#view-wardrobe .card-body strong{font-size:12px;line-height:1.25;display:block;font-weight:600}
+#view-wardrobe .card-body span{font-size:11px;color:var(--muted);display:block;margin-top:3px}
+#view-looks #looks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 14px}
+#view-looks .look{min-width:0;padding:0!important;border:0!important;background:none!important}
+#view-looks .look h3{font-family:var(--serif)!important;font-size:21px!important;margin:8px 0}
+#view-looks .look .board{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:0;aspect-ratio:1/1.05;background:radial-gradient(ellipse,rgba(231,198,144,.06),transparent 70%);margin:0}
+#view-looks .look .board figure{width:49%;margin:0 -5%;transform:rotate(-6deg)}
+#view-looks .look .board figure:nth-child(even){transform:translateY(18px) rotate(7deg)}
+#view-looks .look .board img{width:100%;height:100%;max-height:145px;object-fit:contain;filter:drop-shadow(0 7px 9px #0009)}
+#view-looks .look p{font-size:12px;color:var(--muted)}
+#view-looks .look .actions{gap:9px;margin-top:9px}
+#view-looks .look .actions .btn{min-height:32px;font-size:12px;padding:4px 0;border:0;border-bottom:1px solid var(--rule);border-radius:0;background:none;color:var(--muted)}
+#view-add .dropzone{background:none!important;border:1px dashed #554b3f!important;border-radius:12px!important;min-height:155px}
+#view-add .dropzone strong{font-family:var(--serif);font-size:24px;font-weight:400}
+#view-add .dropzone span{font-size:13px;color:var(--muted)}
+#view-add .actions{gap:12px}
+#view-add .actions .btn.secondary{border:1px solid var(--rule);border-radius:999px;padding:10px 14px}
+#view-add .review .card{background:none!important}
+input,textarea,select{background:#1a1714!important;color:var(--text)!important;border:1px solid #554b3f!important;border-radius:9px!important}
+.account{max-width:560px;padding:0 22px}
+.account-inner{background:none!important;border:0!important;border-top:1px solid var(--rule)!important;border-radius:0!important;padding:12px 0}
+.tabs{position:fixed!important;left:0!important;right:0!important;top:auto!important;bottom:0!important;transform:none!important;width:100%!important;max-width:none!important;height:calc(76px + env(safe-area-inset-bottom))!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;gap:0;padding:7px 8px env(safe-area-inset-bottom);background:#12100ef7!important;border:0!important;border-top:1px solid var(--rule)!important;box-shadow:none!important;z-index:100;backdrop-filter:blur(14px)}
+.tab{display:grid;place-items:center;gap:3px;min-width:0;min-height:56px;margin:0!important;padding:5px 1px!important;border-radius:0!important;background:none!important;color:#8f8579!important;font-size:10px!important;font-weight:600;line-height:1.15}
+.tab[aria-selected=true]{color:var(--text)!important;background:none!important}
+.tab:before{content:none!important}
+.tab svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tab[aria-selected=true] svg{stroke:var(--accent)}
+.tab[data-tab=add]{grid-column:3;grid-row:1;align-self:center}
+.tab[data-tab=today]{grid-column:1;grid-row:1}
+.tab[data-tab=week]{grid-column:2;grid-row:1}
+.tab[data-tab=wardrobe]{grid-column:4;grid-row:1}
+.tab[data-tab=looks]{grid-column:5;grid-row:1}
+.tab[data-tab=add] .nav-icon{width:46px;height:46px;border-radius:50%;background:var(--accent);display:grid;place-items:center}
+.tab[data-tab=add] svg{stroke:var(--accent-ink);stroke-width:2.3}
+.tab[data-tab=add] .nav-text{display:none}
+dialog#detail{position:fixed;inset:auto 0 0 0;margin:0 auto;width:min(100%,560px);max-height:92dvh;overflow:auto;background:#1a1714!important;border-radius:22px 22px 0 0!important}
+dialog#detail::backdrop{background:#000b}
+#detail .dialog-img{object-fit:contain;background:#12100e}
+#detailFields dt{color:var(--muted)}
+#detailFields dd{color:var(--text)}
+#detailActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#detailActions .btn{width:100%;padding:9px;font-size:12px}
+#detailClose{grid-column:1/-1}
+.atelier-opening,.wardrobe-intro,#atelierStage,.wardrobe-stage{display:none!important}
+@media(min-width:760px){.tabs{left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:min(100%,560px)!important}}
+@media(max-width:350px){#view-wardrobe .grid{gap:17px 7px!important}#view-wardrobe .card-body strong{font-size:11px}main{padding-left:16px;padding-right:16px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
