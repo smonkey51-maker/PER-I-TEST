@@ -136,6 +136,9 @@
     laundryNote.innerHTML=dirty.length?'<span>'+dirty.length+' capi in lavatrice, esclusi dai suggerimenti</span><button>Segna lavati</button>':'';
   }
 
+  const inspiration=$('#inspoForm')?.closest('.manual');
+  if(inspiration){const details=document.createElement('details');details.className='v3-inspiration';const summary=document.createElement('summary');summary.textContent='Ispirazione di stile';inspiration.before(details);details.append(summary,inspiration);}
+
   // Product link: import accessible direct images; fall back to a real editable draft.
   const add=$('#view-add');
   const modes=document.createElement('div');modes.className='v3-add-modes';
