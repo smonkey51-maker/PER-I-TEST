@@ -82,3 +82,12 @@ Da Chrome apri `https://atelier-personal-wardrobe.vercel.app`: compare il pulsan
 
 ## Aspetto (tema iOS)
 `atelier-ios.css`, caricato per ultimo, dà all'app un aspetto scuro in stile iOS: nero e grigi, accento azzurro, pulsanti a pillola, schede arrotondate. In «Oggi» l'outfit sta su un pannello chiaro, seguito dalla scheda meteo (città, temperatura attuale, condizione del cielo dal codice WMO di Open-Meteo, massima e minima, icona animata) e dagli impegni; il meteo compare anche nell'intestazione. «Settimana» è un elenco di giorni con miniature dell'outfit e meteo, da aprire con un tocco (`atelier-v3-week.js`); «Look» è una griglia con ricerca e menu ⋮. `atelier-ios.js` mette meteo e impegni sotto l'outfit e aggiorna le date quando cambia la lingua.
+
+## Immagini per i capi senza foto
+Quando un capo non ha una fotografia (aggiunto a mano, da un look descritto a parole o dai look di partenza), l'app crea un'immagine prodotto «standard» dalla sua descrizione: per esempio, per «Camicia zebrata» una camicia zebrata su fondo neutro. `/api/illustrate` usa la generazione di immagini di OpenAI (modello `gpt-image-1-mini`, si può cambiare con la variabile Vercel `IMAGE_MODEL`; ripiega su `gpt-image-1`), qualità bassa e formato verticale: di norma meno di un centesimo per immagine. All'AI vanno solo tipo, categoria, colore, materiale, texture e vestibilità.
+
+- Serve l'accesso Google; le immagini si creano dopo la prima sincronizzazione con Drive, così un'immagine già creata su un altro dispositivo non viene rifatta.
+- Al massimo 30 immagini al giorno per dispositivo; se una non riesce si riprova il giorno dopo.
+- Lo sfondo grigio viene scontornato sul dispositivo come per le foto vere.
+- Nella scheda del capo la foto risulta «Illustrativa» e il pulsante «Usa la tua foto» la sostituisce. Se cambi tipo, categoria, colore, materiale o texture, l'immagine illustrativa viene ricreata.
+- Ogni foto porta la data dell'ultima modifica anche su Drive: una foto sostituita (tua, illustrativa o scontornata) arriva così anche sugli altri dispositivi.
