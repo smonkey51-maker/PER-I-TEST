@@ -62,16 +62,23 @@
       const showCurrent=async()=>{
         current.replaceChildren();const items=await all();const byId=new Map(items.map(x=>[x.id,x]));
         for(const id of idea.ids){const item=byId.get(id);if(!item)continue;
-          const b=document.createElement('button');b.className='atelier-swap-item';b.textContent=item.tipo||'Capo';
+          const b=document.createElement('button');b.className='atelier-swap-item';b.append(swapPreview(item));
           b.onclick=()=>showAlternatives(item,items,current,showCurrent);current.append(b)}
       };showCurrent();dlg.showModal();dlg.addEventListener('close',()=>dlg.remove(),{once:true});
+    }
+    function swapPreview(item){
+      const wrap=document.createElement('span');wrap.className='atelier-swap-preview';
+      const src=typeof photoSrc==='function'?photoSrc(item.id):'';
+      if(src){const img=document.createElement('img');img.src=src;img.alt='';img.loading='lazy';wrap.append(img)}
+      const label=document.createElement('span');label.textContent=(item.tipo||'Capo')+(item.colore?' · '+item.colore:'');wrap.append(label);
+      return wrap;
     }
     function showAlternatives(original,items,container,back){
       container.replaceChildren();
       const backBtn=document.createElement('button');backBtn.className='btn secondary';backBtn.textContent='← Indietro';backBtn.onclick=back;container.append(backBtn);
       const alternatives=items.filter(x=>x.id!==original.id && !washing(x) && catOf(x)===catOf(original) && !idea.ids.includes(x.id));
       if(!alternatives.length){const p=document.createElement('p');p.textContent='Nessuna alternativa lavata nella stessa categoria.';container.append(p);return}
-      for(const candidate of alternatives){const b=document.createElement('button');b.className='atelier-swap-item';b.textContent=(candidate.tipo||'Capo')+(candidate.colore?' · '+candidate.colore:'');
+      for(const candidate of alternatives){const b=document.createElement('button');b.className='atelier-swap-item';b.append(swapPreview(candidate));
         b.onclick=async()=>{idea.ids=idea.ids.map(id=>id===original.id?candidate.id:id);if(typeof second!=='undefined')second=null;document.querySelector('#atelierSwapDialog')?.close();await renderAll()};container.append(b)}
     }
     if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches && !sessionStorage.getItem('atelier_intro_seen')){
