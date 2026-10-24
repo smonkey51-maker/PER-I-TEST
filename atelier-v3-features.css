@@ -57,3 +57,21 @@
 #view-today #idea .strip figure{flex-basis:46%;max-width:46%}
 #view-today #idea .strip-img{max-height:230px}
 @media(max-width:360px){.v3-weekday{grid-template-columns:39px 64px minmax(0,1fr);gap:7px}.v3-closet{gap:18px 7px}.v3-piece .v3-stage{height:80px}.v3-piece .v3-piece-img{height:80px}}
+
+/* Exact editorial hierarchy from the supplied reference: date, collage, look, actions. */
+.top-inner{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.v3-header-weather{font-size:11px;color:#a0968a;text-align:right;max-width:48%;line-height:1.3}
+#view-today .greet h1,#view-today .greet .lede{display:none!important}
+#view-today>.greet{margin:12px 0 5px!important}
+#view-today .greet .date{font-size:11px!important;letter-spacing:.14em!important}
+#view-today .atelier-context{margin:0 0 13px!important}
+#view-today #weather:before,#view-today #agenda:before{display:none!important}
+#view-today #weatherInfo,#view-today #agendaInfo{font-size:12px;line-height:1.4}
+#view-today #weatherSetup .manual,#view-today #agenda .manual{font-size:12px}
+#view-today #todayContent>.idea-card:first-child>h2{font-size:11px!important;font-family:"Hanken Grotesk",sans-serif!important;font-weight:600!important;text-transform:uppercase;letter-spacing:.16em!important;color:#a0968a;margin:10px 0 0}
+#view-today #idea .strip{margin-top:0}
+#v3AddHero{height:190px;display:flex;align-items:center;justify-content:center;margin:6px 0 18px;background:radial-gradient(ellipse,rgba(231,198,144,.06),transparent 70%)}
+#v3AddHero[hidden]{display:none}
+#v3AddHero img{width:37%;max-height:172px;object-fit:contain;margin:0 -3%;transform:rotate(-9deg);filter:drop-shadow(0 13px 13px #000a)}
+#v3AddHero img:nth-child(2){transform:translateY(-9px) rotate(4deg);z-index:2}
+#v3AddHero img:nth-child(3){transform:translateY(7px) rotate(9deg)}
