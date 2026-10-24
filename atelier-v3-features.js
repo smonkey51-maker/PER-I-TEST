@@ -92,7 +92,6 @@
     const costs=items.filter(g=>Number(g.prezzo)>0&&(g.indossato||[]).length).map(g=>Number(g.prezzo)/g.indossato.length);
     insights.innerHTML='<div><strong>'+never+'</strong><span>capi non indossati negli ultimi 90 giorni</span></div><div><strong>'+(costs.length?(costs.reduce((a,b)=>a+b,0)/costs.length).toLocaleString('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:2}):'—')+'</strong><span>costo per utilizzo'+(costs.length?' dei capi con prezzo registrato':' · aggiungi i prezzi per calcolarlo')+'</span></div>';
   }
-  $('#wardrobe').addEventListener('click',e=>{const b=e.target.closest('.v3-piece[data-open]');if(b)openDetail(b.dataset.open);});
 
   // Real outfit swapping: choose an available garment in the same category, preserve the rest.
   const swap=document.createElement('section');swap.id='v3Swap';swap.className='v3-swap';
