@@ -64,7 +64,14 @@
     'Imposta la città nella sezione Oggi per includere il meteo.':'Set your city in Today to include weather.',
     'Collega Google Calendar per includere i tuoi impegni.':'Connect Google Calendar to include your plans.',
     'In lavatrice, esclusi dai suggerimenti':'In laundry, excluded from suggestions',
-    'mai':'never'
+    'mai':'never',
+    'I tuoi outfit della settimana':'Your outfits for the week','Guardaroba ':'Wardrobe ','I tuoi capi':'Your items',
+    'Look ':'Looks ','I tuoi outfit salvati':'Your saved outfits','Cerca look…':'Search looks…','Cerca look':'Search looks',
+    'Aggiungi capo':'Add item','Opzioni':'Options','Cambia luogo':'Change location','Porta un ombrello.':'Bring an umbrella.',
+    'Soleggiato':'Sunny','Poco nuvoloso':'Partly cloudy','Nuvoloso':'Cloudy','Nebbia':'Fog','Pioggia':'Rain','Neve':'Snow','Temporale':'Storm',
+    '1 capo in lavatrice':'1 item in laundry','Meteo di oggi':"Today's weather",
+    'Impegni di oggi':"Today's plans",'Nessun impegno per oggi.':'No plans today.','Il tuo atelier':'Your atelier',
+    'Analizza il look':'Assess the look','Prepara la valigia':'Pack a suitcase','Statistiche':'Statistics'
   };
   const rules=[
     [/^Indossato (\d+) volte$/,'Worn $1 times'],[/^Indossato 1 volta$/,'Worn once'],
@@ -73,7 +80,8 @@
     [/^(\d+) foto scontornate\. Gli originali sono conservati su questo dispositivo\.$/,'$1 photos processed. Originals are kept on this device.'],
     [/^(\d+) fotografie originali ripristinate\.$/,'$1 original photos restored.'],
     [/^Scontorno (\d+) di (\d+)…$/,'Processing $1 of $2…'],
-    [/^In lavatrice · (.+)$/,'In laundry · $1']
+    [/^In lavatrice · (.+)$/,'In laundry · $1'],
+    [/^Pioggia (\d+)%$/,'Rain $1%']
   ];
   const attrNames=['placeholder','aria-label','title'];
   const originals=new WeakMap();

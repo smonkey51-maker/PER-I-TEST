@@ -1,22 +1,34 @@
-/* Compact real-data weekly planner in the supplied mockup's visual language. */
+/* Weekly planner as compact rows: day, outfit thumbnails, weather; tap a row for details. */
 (() => {
   const escV=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+  const openDays=new Set();
+  const locale=()=>window.atelierLanguage?.()==='en'?'en-GB':'it-IT';
   renderWeek=function(byId){
     const source=[...plans.values()];
     let html='';
     if(!place)html+='<p class="small">Imposta la città nella sezione Oggi per includere il meteo.</p>';
     if(allEvents===null)html+='<p class="small">Collega Google Calendar per includere i tuoi impegni.</p>';
-    html+=source.map(p=>{
+    html+='<div class="ios-week">'+source.map(p=>{
       const date=new Date(p.key+'T12:00:00');
-      const day=date.toLocaleDateString('it-IT',{weekday:'short'});
+      const day=date.toLocaleDateString(locale(),{weekday:'short'}).replace('.','');
+      const short=date.toLocaleDateString(locale(),{day:'numeric',month:'short'}).replace('.','');
       const ids=p.outfit.missing?[]:p.outfit.ids.filter(id=>byId.has(id)&&!washing(byId.get(id)));
       const items=ids.map(id=>byId.get(id)).filter(Boolean);
       const title=p.outfit.missing?'Nessun outfit completo disponibile':items.map(g=>g.tipo||'Capo').slice(0,2).join(' e ');
-      const images=items.slice(0,3).map(g=>photoSrc(g.id)?'<img src="'+photoSrc(g.id)+'" alt="'+escV(g.tipo||'Capo')+'">':'').join('');
+      const thumbs=items.slice(0,4).map(g=>photoSrc(g.id)?'<img src="'+photoSrc(g.id)+'" alt="">':'<i aria-hidden="true"></i>').join('');
       const dirty=items.filter(washing);
       const description=[p.wx?wxText(p.wx):null,firstEventLine(p)].filter(Boolean).join(' · ');
-      return '<article class="v3-weekday"><div class="v3-date">'+date.getDate()+'<small>'+escV(day)+'</small></div><div class="v3-mini">'+images+'</div><div class="v3-week-info"><strong>'+escV(title)+'</strong><span>'+escV(description)+'</span>'+(dirty.length?'<span class="warn">'+dirty.length+' capi in lavatrice</span>':'')+'<button data-regen="'+escV(p.key)+'">Cambia outfit</button></div></article>';
-    }).join('');
+      return '<details class="ios-day" data-day="'+escV(p.key)+'"'+(openDays.has(p.key)?' open':'')+'><summary>'+
+        '<span class="ios-day-name"><strong>'+escV(day.charAt(0).toUpperCase()+day.slice(1))+'</strong><small>'+escV(short)+'</small></span>'+
+        '<span class="ios-day-thumbs">'+thumbs+'</span>'+(p.wx?wxIcon(p.wx,'ios-day-wx'):'')+'<span class="ios-chev" aria-hidden="true"></span></summary>'+
+        '<div class="ios-day-body"><strong>'+escV(title)+'</strong><span>'+escV(description)+'</span>'+(dirty.length?'<span class="warn">'+dirty.length+' capi in lavatrice</span>':'')+
+        '<button class="btn secondary" data-regen="'+escV(p.key)+'">Cambia outfit</button></div></details>';
+    }).join('')+'</div>';
     $('#weekList').innerHTML=html;
   };
+  // Open days stay open when the list is redrawn
+  $('#weekList').addEventListener('toggle',e=>{
+    const d=e.target.closest?.('.ios-day');
+    if(d)d.open?openDays.add(d.dataset.day):openDays.delete(d.dataset.day);
+  },true);
 })();
