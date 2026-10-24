@@ -1,6 +1,6 @@
 /* ATELIER — service worker: apre l'app anche senza rete, i dati restano sul dispositivo */
-const CACHE = 'atelier-v14';
-const SHELL = ['/', '/index.html', '/style.css', '/wardrobe-experience.css', '/wardrobe-experience.js', '/atelier-tools.js', '/atelier-tools.css', '/atelier-redesign.css', '/atelier-redesign.js', '/atelier-clean.css', '/atelier-inspired.css', '/atelier-dark.css', '/atelier-flat.css', '/app.js', '/plan.js', '/drive-sync.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png', '/fonts/cormorant-garamond-latin-500-normal.woff2', '/fonts/cormorant-garamond-latin-600-normal.woff2'];
+const CACHE = 'atelier-v15';
+const SHELL = ['/', '/index.html', '/style.css', '/wardrobe-experience.css', '/wardrobe-experience.js', '/atelier-tools.js', '/atelier-tools.css', '/atelier-redesign.css', '/atelier-redesign.js', '/atelier-clean.css', '/atelier-inspired.css', '/atelier-dark.css', '/atelier-flat.css', '/atelier-premium.css', '/app.js', '/plan.js', '/drive-sync.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png', '/fonts/cormorant-garamond-latin-500-normal.woff2', '/fonts/cormorant-garamond-latin-600-normal.woff2'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)));
