@@ -56,6 +56,8 @@
     'Lavati':'Washed','Tutti lavati':'Mark all washed',
     'Accedi con Google':'Sign in with Google','Sincronizza ora':'Sync now','Esci':'Sign out','Installa app':'Install app',
     'Accedi con Google per ritrovare i tuoi capi su ogni dispositivo.':'Sign in with Google to access your wardrobe across devices.',
+    'Accedi con Google per ritrovare i tuoi capi su ogni dispositivo e creare le immagini dei capi senza foto.':'Sign in with Google to access your wardrobe across devices and create images for items without a photo.',
+    'Disegno provvisorio: l’immagine AI è in arrivo':'Temporary drawing: the AI image is on its way','Disegno provvisorio: accedi con Google per l’immagine AI':'Temporary drawing: sign in with Google for the AI image',
     'Imposta il meteo':'Set up weather',
     'Nessuna foto con sfondo uniforme da scontornare.':'No photos with uniform backgrounds to process.',
     'Non ci sono fotografie da ripristinare.':'No original photos to restore.',

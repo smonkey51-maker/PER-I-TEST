@@ -31,13 +31,15 @@
   const el = id => document.getElementById(id);
   const status = s => { el('driveStatus').textContent = s; };
 
+  // Da collegato la barra dell'account resta nascosta; compare solo quando serve accedere
   const setConnected = on => {
+    el('accountPanel').hidden = on;
     el('syncDrive').classList.toggle('hidden', !on);
     el('disconnectDrive').classList.toggle('hidden', !on);
     el('connectDrive').classList.toggle('hidden', on);
     el('accountDescription').textContent = on
       ? 'Connesso come ' + (signedInEmail || 'account Google') + '. I capi vengono sincronizzati con Drive.'
-      : 'Accedi con Google per ritrovare i tuoi capi su ogni dispositivo.';
+      : 'Accedi con Google per ritrovare i tuoi capi su ogni dispositivo e creare le immagini dei capi senza foto.';
   };
 
   /* ---------- Accesso ---------- */
@@ -373,7 +375,6 @@
       const gone = await syncDeletions(stats);
       for (const [kind, store] of KINDS) await syncKind(kind, store, gone, stats);
       await syncPhotos(gone, stats);
-      synced = true;
       await renderAll();
       window.refreshEvents?.();
       status('Sincronizzato · ' + stats.down + ' scaricati · ' + stats.up + ' caricati' + (stats.removed ? ' · ' + stats.removed + ' rimossi' : ''));
@@ -381,6 +382,7 @@
       status('Errore: ' + e.message);
     } finally {
       busy = false;
+      synced = true;
       el('syncDrive').disabled = false;
       if (again) { again = false; sync(); }
     }
@@ -407,7 +409,8 @@
   document.addEventListener('visibilitychange', () => { if (!document.hidden) sync(); });
   window.addEventListener('online', sync);
 
-  if (signedInEmail) {
+  if (!signedInEmail) setConnected(false);
+  else {
     status('Accesso automatico…');
     auth(false).then(sync).catch(() => {
       setConnected(false);
