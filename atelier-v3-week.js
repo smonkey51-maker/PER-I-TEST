@@ -9,9 +9,9 @@
     html+=source.map(p=>{
       const date=new Date(p.key+'T12:00:00');
       const day=date.toLocaleDateString('it-IT',{weekday:'short'});
-      const ids=p.outfit.missing?[]:p.outfit.ids;
+      const ids=p.outfit.missing?[]:p.outfit.ids.filter(id=>byId.has(id)&&!washing(byId.get(id)));
       const items=ids.map(id=>byId.get(id)).filter(Boolean);
-      const title=p.outfit.missing?'Completa il guardaroba':items.map(g=>g.tipo||'Capo').slice(0,2).join(' e ');
+      const title=p.outfit.missing?'Nessun outfit completo disponibile':items.map(g=>g.tipo||'Capo').slice(0,2).join(' e ');
       const images=items.slice(0,3).map(g=>photoSrc(g.id)?'<img src="'+photoSrc(g.id)+'" alt="'+escV(g.tipo||'Capo')+'">':'').join('');
       const dirty=items.filter(washing);
       const description=[p.wx?wxText(p.wx):null,firstEventLine(p)].filter(Boolean).join(' · ');

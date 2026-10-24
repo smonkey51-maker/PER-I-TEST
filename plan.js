@@ -8,9 +8,10 @@ const dayKey = offset => { const d = new Date(); d.setDate(d.getDate() + offset)
 const dayLabel = key => cap(new Date(key + 'T12:00:00').toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }));
 
 // Piano di un giorno: occasioni, fasi (lavoro / dopo il lavoro), meteo previsto e outfit
-// Il pool comprende anche i capi in lavatrice (che avranno il tempo di asciugarsi), ma pesano meno
+// Gli outfit sono composti solo da capi attualmente disponibili: nessuna disponibilità futura presunta.
 function buildPlan(offset, garments, avoid) {
   const key = dayKey(offset);
+  garments = garments.filter(g => !washing(g));
   const events = eventsOnDay(allEvents, key);
   const matched = dayOccasions(events);
   const phases = dayPhases(matched);
@@ -36,7 +37,7 @@ function idsOfPlan(p) {
 
 // Genera i piani solo se cambiano capi, eventi o meteo, così non si rimescolano a ogni aggiornamento
 function ensurePlans(garments) {
-  const sig = garments.map(g => g.id).join(',') + '|' + JSON.stringify(allEvents) + '|' + JSON.stringify(weekWx);
+  const sig = garments.map(g => g.id + ':' + (washing(g) ? 'lavatrice' : 'pronto')).join(',') + '|' + JSON.stringify(allEvents) + '|' + JSON.stringify(weekWx);
   if (sig === plansSig && plans.size) return;
   plansSig = sig;
   plans = new Map();
