@@ -206,6 +206,21 @@
     }
   };
 
+  // Live header and add-page hero use actual weather and the user's own garments.
+  const liveWeather=document.createElement('span');
+  liveWeather.id='v3HeaderWeather';liveWeather.className='v3-header-weather';
+  document.querySelector('.brand')?.after(liveWeather);
+  const addHero=document.createElement('div');addHero.id='v3AddHero';
+  add.querySelector('.view-head')?.after(addHero);
+  async function refreshEditorial(){
+    const city=place?.name||'';
+    liveWeather.textContent=weather?(wxText(weather)+(city?' · '+city:'')):(city||'Imposta il meteo');
+    const garments=await all();
+    const images=garments.filter(g=>photoSrc(g.id)).slice(0,3);
+    addHero.innerHTML=images.map(g=>'<img src="'+photoSrc(g.id)+'" alt="'+safe(g.tipo||'Capo')+'">').join('');
+    addHero.hidden=!images.length;
+  }
+
   // Re-render UI after core renders, retaining core storage and calendar behavior.
   const coreRender=renderAll;
   let refreshPending=false;
@@ -213,7 +228,7 @@
     await coreRender();
     if(refreshPending)return;
     refreshPending=true;
-    try{await refreshWardrobe();await renderSwap();}finally{refreshPending=false;}
+    try{await refreshWardrobe();await renderSwap();await refreshEditorial();}finally{refreshPending=false;}
   };
   document.addEventListener('DOMContentLoaded',()=>renderAll().catch(console.error),{once:true});
 })();
