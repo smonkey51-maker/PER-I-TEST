@@ -173,6 +173,14 @@
     }
   });
 
+  const coreDraftHtml=draftHtml;
+  draftHtml=function(d,i){
+    const base=coreDraftHtml(d,i);
+    const fields='<label>Marca<input data-index="'+i+'" data-field="marca" value="'+safe(d.marca||'')+'" placeholder="Facoltativa"></label>'+
+      '<label>Prezzo (€)<input type="number" min="0" step="0.01" data-index="'+i+'" data-field="prezzo" value="'+safe(d.prezzo||'')+'" placeholder="Facoltativo"></label>';
+    return base.replace('</details></div></article>','</details>'+fields+'</div></article>');
+  };
+
   // Persist optional product details without altering existing garment fields or sync schema.
   const originalPut=put;
   put=async function(item,store='garments'){
