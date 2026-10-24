@@ -34,3 +34,14 @@
 #view-looks .btn{padding:8px 12px;min-height:40px}
 @media(min-width:600px){#view-wardrobe .grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.wardrobe-stage{min-height:330px}}
 @media(prefers-reduced-motion:reduce){.wardrobe-intro{display:none}.wardrobe-hanger,.wardrobe-stage:before,.wardrobe-stage:after{animation:none!important}}
+
+/* Mobile home */
+.atelier-home-kicker{font-size:11px;letter-spacing:.18em;color:var(--accent);margin-bottom:6px}
+#view-today .wardrobe-stage{margin:12px 0 16px}
+#view-today .atelier-outfit-card>.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#atelierSwap{grid-column:1/-1}
+.atelier-swap-dialog{width:min(94vw,420px);max-height:80dvh;overflow:auto;background:var(--surface);color:var(--text);border:1px solid var(--surface-3);border-radius:18px;padding:20px}
+.atelier-swap-dialog::backdrop{background:rgba(0,0,0,.8)}
+.atelier-swap-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}
+.atelier-swap-item{min-height:52px;border:0;border-radius:10px;background:var(--surface-2);color:var(--text);padding:10px;text-align:left}
+@media(max-width:759px){main{padding:16px 12px 0}.account{padding:0 12px}.view-head{margin-bottom:12px}#view-looks .board{display:flex;overflow-x:auto}#view-looks .board figure{flex:0 0 80px}#view-looks .board-img{width:80px;height:100px;object-fit:cover}}
