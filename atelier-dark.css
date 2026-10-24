@@ -25,8 +25,8 @@ dialog{background:#1b2325;color:var(--text)}
 .atelier-context>#weather,.atelier-context>#agenda{display:block!important}
 .atelier-context>#weather{margin-bottom:12px}
 .atelier-context>#agenda{margin-bottom:0}
-#view-today .atelier-context{padding:15px;display:grid;gap:12px}
+#view-today .atelier-context{padding:0;display:grid;gap:22px;background:transparent;border:0;border-radius:0;box-shadow:none}
 #view-today .atelier-context>summary{display:none!important}
-#view-today .atelier-context>#weather,#view-today .atelier-context>#agenda{padding:14px;background:#263032;border-radius:14px;margin:0}
+#view-today .atelier-context>#weather,#view-today .atelier-context>#agenda{padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;margin:0}
 #view-today .atelier-context>#weather:before{content:"METEO";display:block;font-size:11px;letter-spacing:.13em;color:#b9c9bb;font-weight:750;margin-bottom:9px}
 #view-today .atelier-context>#agenda:before{content:"IMPEGNI";display:block;font-size:11px;letter-spacing:.13em;color:#b9c9bb;font-weight:750;margin-bottom:9px}
