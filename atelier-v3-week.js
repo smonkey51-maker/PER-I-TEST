@@ -2,7 +2,6 @@
 (() => {
   const escV=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
   const openDays=new Set();
-  const locale=()=>window.atelierLanguage?.()==='en'?'en-GB':'it-IT';
   renderWeek=function(byId){
     const source=[...plans.values()];
     let html='';
@@ -10,11 +9,11 @@
     if(allEvents===null)html+='<p class="small">Collega Google Calendar per includere i tuoi impegni.</p>';
     html+='<div class="ios-week">'+source.map(p=>{
       const date=new Date(p.key+'T12:00:00');
-      const day=date.toLocaleDateString(locale(),{weekday:'short'}).replace('.','');
-      const short=date.toLocaleDateString(locale(),{day:'numeric',month:'short'}).replace('.','');
+      const day=date.toLocaleDateString(appLocale(),{weekday:'short'}).replace('.','');
+      const short=date.toLocaleDateString(appLocale(),{day:'numeric',month:'short'}).replace('.','');
       const ids=p.outfit.missing?[]:p.outfit.ids.filter(id=>byId.has(id)&&!washing(byId.get(id)));
       const items=ids.map(id=>byId.get(id)).filter(Boolean);
-      const title=p.outfit.missing?'Nessun outfit completo disponibile':items.map(g=>g.tipo||'Capo').slice(0,2).join(' e ');
+      const title=p.outfit.missing?'Nessun outfit completo disponibile':items.map(g=>g.tipo||'Capo').slice(0,2).join(appLang()==='en'?' and ':' e ');
       const thumbs=items.slice(0,4).map(g=>photoSrc(g.id)?'<img src="'+photoSrc(g.id)+'" alt="">':'<i aria-hidden="true"></i>').join('');
       const dirty=items.filter(washing);
       const description=[p.wx?wxText(p.wx):null,firstEventLine(p)].filter(Boolean).join(' · ');

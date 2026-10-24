@@ -66,12 +66,25 @@
     'In lavatrice, esclusi dai suggerimenti':'In laundry, excluded from suggestions',
     'mai':'never',
     'I tuoi outfit della settimana':'Your outfits for the week','Guardaroba ':'Wardrobe ','I tuoi capi':'Your items',
-    'Look ':'Looks ','I tuoi outfit salvati':'Your saved outfits','Cerca look…':'Search looks…','Cerca look':'Search looks',
+    'Look ':'Looks ','Look':'Looks','I tuoi outfit salvati':'Your saved outfits','Cerca look…':'Search looks…','Cerca look':'Search looks',
     'Aggiungi capo':'Add item','Opzioni':'Options','Cambia luogo':'Change location','Porta un ombrello.':'Bring an umbrella.',
     'Soleggiato':'Sunny','Poco nuvoloso':'Partly cloudy','Nuvoloso':'Cloudy','Nebbia':'Fog','Pioggia':'Rain','Neve':'Snow','Temporale':'Storm',
     '1 capo in lavatrice':'1 item in laundry','Meteo di oggi':"Today's weather",
     'Impegni di oggi':"Today's plans",'Nessun impegno per oggi.':'No plans today.','Il tuo atelier':'Your atelier',
-    'Analizza il look':'Assess the look','Prepara la valigia':'Pack a suitcase','Statistiche':'Statistics'
+    'Analizza il look':'Assess the look','Prepara la valigia':'Pack a suitcase','Statistiche':'Statistics',
+    'Da te':'Added by you','Tutto il giorno':'All day','Nessun impegno':'No plans',
+    'Categoria':'Category','Stile':'Style','Indossato':'Worn','Non ancora':'Not yet','Preferito':'Favorite',
+    'Salva modifiche':'Save changes','Automatico':'Automatic','Sobrio':'Understated','Rétro':'Retro','Neutro':'Neutral',
+    'Senza foto':'No photo','Senza foto · compila la scheda':'No photo · fill in the details','Scarta':'Discard','Altri dettagli':'More details',
+    'Facoltativa':'Optional','Facoltativo':'Optional','Capo da rivedere':'Item to review',
+    'Cosa ti manca':"What you're missing",'Il guardaroba è ben bilanciato per il tuo stile.':'Your wardrobe is well balanced for your style.',
+    'Capi':'Items','Indossati almeno una volta':'Worn at least once','Utilizzi registrati':'Recorded wears',
+    'Il tuo guardaroba in numeri':'Your wardrobe in numbers','I più indossati':'Most worn','Analisi del look':'Look assessment',
+    'Giorni di viaggio':'Travel days','Componi valigia':'Pack',
+    'Es. Timothée Chalamet':'E.g. Timothée Chalamet','Maglione lilla, gurkha sabbia, sneakers panna':'Lilac sweater, sand gurkha trousers, cream sneakers',
+    'Filtra per categoria':'Filter by category','Disponibilità':'Availability','Avanzamento':'Progress','Armadio interattivo':'Interactive wardrobe',
+    'Nome di una persona nota':'Name of a well-known person','Domani':'Tomorrow','Vedi i prossimi giorni':'See the coming days',
+    'Per il lavoro':'For work','Dopo il lavoro':'After work','Indossato oggi':'Worn today'
   };
   const rules=[
     [/^Indossato (\d+) volte$/,'Worn $1 times'],[/^Indossato 1 volta$/,'Worn once'],
@@ -81,18 +94,57 @@
     [/^(\d+) fotografie originali ripristinate\.$/,'$1 original photos restored.'],
     [/^Scontorno (\d+) di (\d+)…$/,'Processing $1 of $2…'],
     [/^In lavatrice · (.+)$/,'In laundry · $1'],
-    [/^Pioggia (\d+)%$/,'Rain $1%']
+    [/^Pioggia (\d+)%$/,'Rain $1%'],
+    [/^(Buongiorno|Buon pomeriggio|Buonasera|Buonanotte)(, .+)?$/,(m,h,name)=>({'Buongiorno':'Good morning','Buon pomeriggio':'Good afternoon','Buonasera':'Good evening','Buonanotte':'Good night'}[h])+(name||'')],
+    [/^Apri (.+)$/,'Open $1'],
+    [/^Salva (\d+) capi$/,'Save $1 items'],[/^Salva 1 capo$/,'Save 1 item'],
+    [/^(Sobrio|Rétro|Neutro)( \(automatico\))?$/,(m,st,auto)=>({'Sobrio':'Understated','Rétro':'Retro','Neutro':'Neutral'}[st])+(auto?' (automatic)':'')],
+    [/^(\d+) volt[ae], l’ultima (oggi|ieri|(\d+) giorni fa)$/,(m,n,when,days)=>n+(n==='1'?' time':' times')+', last '+(when==='oggi'?'today':when==='ieri'?'yesterday':days+' days ago')],
+    [/^Da riscoprire: (.+)$/,'Rediscover: $1'],
+    [/^Hai (\d+) capi? sopra \(maglieria, camicie, t-shirt\): per cinque giorni senza ripetizioni ne servono almeno 5\.$/,'You have $1 tops (knitwear, shirts, T-shirts): five days without repeats need at least 5.'],
+    [/^Hai (\d+) (?:pantaloni o jeans|paio di pantaloni o jeans): ne servono almeno 3 per alternarli\.$/,'You have $1 trousers or jeans: you need at least 3 to rotate.'],
+    [/^Hai (\d+) pa(?:ia|io) di scarpe: ne servono almeno 3 tra lavoro e tempo libero\.$/,'You have $1 pairs of shoes: you need at least 3 for work and leisure.'],
+    [/^Hai (\d+) capispalla: ne servono almeno 2 \(uno leggero e uno più caldo\)\.$/,'You have $1 outerwear pieces: you need at least 2 (one light, one warmer).'],
+    [/^Non hai scarpe da lavoro sobrie \(mocassini, stringate, derby\): per i giorni in ufficio sono la base\.$/,'You have no understated work shoes (loafers, lace-ups, derbies): they are the basis for office days.'],
+    [/^Non hai sneakers: servono per il dopo lavoro e il tempo libero\.$/,'You have no sneakers: they are needed after work and for leisure.'],
+    [/^Per il lavoro \(sartoriale sobrio e autorevole\) hai solo (\d+) capi tra sopra e pantaloni: te ne servono almeno 3\.$/,'For work (understated, authoritative tailoring) you have only $1 tops and trousers: you need at least 3.'],
+    [/^Per il tempo libero \(rétro, più espressivo\) hai solo (\d+) capi con carattere: te ne servono almeno 2\.$/,'For leisure (retro, more expressive) you have only $1 pieces with character: you need at least 2.']
   ];
+  // Frasi del saluto e del meteo, tradotte una per una
+  const sentences=[
+    [/^(Fa freddo|Fa fresco|Il clima è mite|Fa caldo) \((-?\d+)–(-?\d+)°C\)( e può piovere)?$/,(m,f,a,b,r)=>({'Fa freddo':"It's cold",'Fa fresco':"It's cool",'Il clima è mite':"It's mild",'Fa caldo':"It's hot"}[f])+' ('+a+'–'+b+'°C)'+(r?' and it may rain':'')],
+    [/^Hai un impegno(, il primo alle (.+))?$/,(m,x,t)=>'You have one plan'+(t?', the first at '+t:'')],
+    [/^Hai (\d+) impegni(, il primo alle (.+))?$/,(m,n,x,t)=>'You have '+n+' plans'+(t?', the first at '+t:'')],
+    [/^Ti ho preparato un outfit$/,'I picked an outfit for you'],[/^Ecco un’idea per oggi$/,'Here is an idea for today'],
+    [/^Meteo: (.+)$/,(m,w)=>'Weather: '+w],[/^Porta un ombrello$/,'Bring an umbrella']
+  ];
+  // Parti sicure dentro testi composti (meteo e impegni), mai i nomi dei capi
+  const fragments=[[/, pioggia (\d+)%/g,', rain $1%'],[/ · Nessun impegno$/,' · No plans'],[/^Nessun impegno$/,'No plans']];
+  const bySentence=s=>{
+    if(!/\.$/.test(s))return null;
+    const parts=s.slice(0,-1).split('. ').map(x=>x.replace(/, pioggia (\d+)%/g,', rain $1%'));
+    const out=parts.map(x=>{for(const [re,r] of sentences)if(re.test(x))return x.replace(re,r);return null;});
+    return out.every(x=>x!==null)?out.join('. ')+'.':null;
+  };
   const attrNames=['placeholder','aria-label','title'];
   const originals=new WeakMap();
   const originalAttrs=new WeakMap();
   let lang=localStorage.getItem(KEY)==='en'?'en':'it';
   let busy=false,scheduled=false;
   const ignoreParent=el=>!!el?.closest('script,style,textarea,option,[contenteditable],#wardrobe .v3-piece strong,#detailTitle,#lookName,#lookParts,#manualText,#inspoName,#weatherCity');
-  const translate=s=>{
+  // Gli attributi dei campi (segnaposto, etichette) si traducono anche dove il testo inserito non va toccato
+  const ignoreAttrs=el=>!!el?.closest('script,style,[contenteditable],#wardrobe .v3-piece strong,#detailTitle');
+  const translateCore=s=>{
     if(Object.prototype.hasOwnProperty.call(translations,s))return translations[s];
     for(const [re,replacement] of rules)if(re.test(s))return s.replace(re,replacement);
-    return s;
+    const sentence=bySentence(s);if(sentence)return sentence;
+    let out=s;for(const [re,r] of fragments)out=out.replace(re,r);
+    return out;
+  };
+  // Gli spazi attorno al testo restano dove sono
+  const translate=s=>{
+    const m=/^(\s*)([\s\S]*?)(\s*)$/.exec(s);
+    return m[2]?m[1]+translateCore(m[2])+m[3]:s;
   };
   function nodeText(node){
     if(!node.nodeValue?.trim()||ignoreParent(node.parentElement))return;
@@ -103,7 +155,7 @@
     if(node.nodeValue!==next)node.nodeValue=next;
   }
   function attrs(el){
-    if(ignoreParent(el))return;
+    if(ignoreAttrs(el))return;
     let map=originalAttrs.get(el);if(!map){map={};originalAttrs.set(el,map);}
     for(const key of attrNames){
       if(!el.hasAttribute(key))continue;

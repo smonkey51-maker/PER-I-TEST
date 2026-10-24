@@ -5,7 +5,7 @@ let plans = new Map(); // data (AAAA-MM-GG) → piano del giorno
 let plansSig = '';
 
 const dayKey = offset => { const d = new Date(); d.setDate(d.getDate() + offset); return ymd(d); };
-const dayLabel = key => cap(new Date(key + 'T12:00:00').toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }));
+const dayLabel = key => cap(new Date(key + 'T12:00:00').toLocaleDateString(appLocale(), { weekday: 'long', day: 'numeric', month: 'long' }));
 
 // Piano di un giorno: occasioni, fasi (lavoro / dopo il lavoro), meteo previsto e outfit
 // Gli outfit sono composti solo da capi attualmente disponibili: nessuna disponibilità futura presunta.

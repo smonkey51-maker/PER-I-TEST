@@ -576,7 +576,10 @@ function dayOccasions(events) {
   return matched;
 }
 
-const eventTime = ev => (ev.manual ? 'Da te' : ev.allDay ? 'Tutto il giorno' : new Date(ev.start).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }));
+// Date e ore nella lingua scelta con il pulsante IT/EN
+const appLang = () => { try { return window.atelierLanguage?.() || localStorage.getItem('atelier_language') || 'it'; } catch { return 'it'; } };
+const appLocale = () => (appLang() === 'en' ? 'en-GB' : 'it-IT');
+const eventTime = ev => (ev.manual ? 'Da te' : ev.allDay ? 'Tutto il giorno' : new Date(ev.start).toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' }));
 
 function occasionFit(g, tags) {
   if (!tags.length) return 1;
@@ -689,7 +692,7 @@ function makeIdea(clean, looks, n, tags) {
   return generateOutfit(clean, tags);
 }
 
-const hhmm = t => new Date(t).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+const hhmm = t => new Date(t).toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' });
 const uniqueTags = occs => [...new Map(occs.map(o => [o.tag, o])).values()];
 
 // Se dopo il lavoro c'è un impegno non lavorativo (sera, sport...) servono due outfit.
@@ -816,7 +819,7 @@ function renderGreeting(events, count) {
   const hello = h < 5 ? 'Buonanotte' : h < 12 ? 'Buongiorno' : h < 18 ? 'Buon pomeriggio' : 'Buonasera';
   const name = localStorage.getItem('atelier_name');
   $('#greeting').textContent = name ? hello + ', ' + name : hello;
-  $('#todayDate').textContent = cap(now.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }));
+  $('#todayDate').textContent = cap(now.toLocaleDateString(appLocale(), { weekday: 'long', day: 'numeric', month: 'long' }));
 
   const bits = [];
   if (weather && wxNow) {

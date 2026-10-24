@@ -273,3 +273,14 @@ dialog::backdrop { background: rgba(0, 0, 0, .6) !important; -webkit-backdrop-fi
 .v3-piece .v3-piece-img.ph { width: 100% !important; height: 100% !important; background: transparent !important; }
 .v3-piece strong { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 dialog#detail, dialog#celebDialog, dialog#ask { background: var(--surface) !important; }
+
+/* Scheda del capo: nessun pulsante isolato su una riga */
+#detailActions #detailDelete, #detailActions #detailClose { grid-column: 1 / -1; }
+#detailActions:has(#detailPhotoLabel.hidden) #detailEdit { grid-column: 1 / -1; }
+
+/* Campi dentro le finestre: un grigio più chiaro dello sfondo, altrimenti non si vedono */
+dialog input, dialog select, dialog textarea, .ios-day input, .look-form input, .draft input, .draft select, #review input, #review select { background: var(--surface-2) !important; }
+dialog input, dialog select { min-height: 44px; padding: 10px 12px; }
+.atelier-tool-grid > p { grid-column: 1 / -1; }
+.atelier-tool-dialog, .atelier-swap-dialog { border: 0 !important; border-radius: 20px !important; box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 24px 64px rgba(0, 0, 0, .55); }
+.atelier-swap-item { border-radius: 14px !important; }
