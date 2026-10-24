@@ -123,8 +123,146 @@ const photoSrc = id => photoUrls.get(id) || '';
 function photoHtml(id, cls, alt) {
   const src = photoSrc(id);
   if (src) return '<img class="' + cls + '" src="' + src + '" alt="' + esc(alt) + '" loading="lazy" decoding="async">';
+  const drawn = illusSrc(id);
+  if (drawn) return '<img class="' + cls.replace(' fade', '') + ' illus" src="' + drawn + '" alt="' + esc(alt) + '">';
   return '<div class="' + cls.replace(' fade', '') + ' ph"><span>' + esc(alt) + '</span></div>';
 }
+
+/* ---------- Disegno automatico per i capi senza foto ---------- */
+
+// Un'illustrazione vettoriale ricavata dalla descrizione (forma dalla categoria e dal tipo, colori e fantasia
+// dalle parole): compare subito, senza rete né AI, e non viene salvata né sincronizzata. La foto AI o la tua la sostituiscono.
+const ILLUS_COLORS = [
+  ['grigio-blu', '#7d8ea0'], ['grigio blu', '#7d8ea0'], ['blu notte', '#1f2a44'], ['navy', '#1f2d4a'], ['azzurro', '#8db6d9'], ['celeste', '#a9cbe6'],
+  ['denim', '#5b7ea8'], ['blu', '#2b4c7e'], ['bianco', '#f2f0eb'], ['bianca', '#f2f0eb'], ['nero', '#1d1d1f'], ['nera', '#1d1d1f'],
+  ['antracite', '#3a3c40'], ['grigio', '#8a8d91'], ['grigia', '#8a8d91'], ['bordeaux', '#6d2433'], ['vinaccia', '#5e2230'], ['rosso', '#b0303a'], ['rossa', '#b0303a'],
+  ['rosa', '#e3a6b4'], ['lilla', '#b9a3cf'], ['lavanda', '#b8acd6'], ['viola', '#6b4c8a'], ['verde oliva', '#6b6b3a'], ['oliva', '#6b6b3a'],
+  ['verde bosco', '#2f4f3a'], ['salvia', '#9aab8f'], ['verde', '#3f6b47'], ['kaki', '#8f8a5b'], ['khaki', '#8f8a5b'], ['beige', '#d8c7a6'],
+  ['sabbia', '#cdb891'], ['cammello', '#b48a5a'], ['camel', '#b48a5a'], ['cognac', '#8a4f2a'], ['marrone', '#6b4a32'], ['cioccolato', '#4a3022'],
+  ['tortora', '#a39382'], ['panna', '#efe6d2'], ['crema', '#efe3c8'], ['avorio', '#f1ead9'], ['ecru', '#e8dfc9'], ['giallo', '#e2c044'], ['senape', '#c99a2e'],
+  ['arancione', '#d9772b'], ['arancio', '#d9772b'], ['ruggine', '#a2502a'], ['corallo', '#e07b6a'], ['turchese', '#3fa7a8'], ['petrolio', '#24566b'],
+  ['acquamarina', '#5fc2b5'], ['oro', '#c9a54a'], ['argento', '#b8bcc2'],
+  // plurali e femminili (mocassini neri, scarpe bianche…)
+  ['neri', '#1d1d1f'], ['nere', '#1d1d1f'], ['bianchi', '#f2f0eb'], ['bianche', '#f2f0eb'], ['grigi', '#8a8d91'], ['grigie', '#8a8d91'],
+  ['rossi', '#b0303a'], ['rosse', '#b0303a'], ['gialli', '#e2c044'], ['gialle', '#e2c044'], ['verdi', '#3f6b47'], ['marroni', '#6b4a32'],
+  ['azzurri', '#8db6d9'], ['azzurre', '#8db6d9'], ['celesti', '#a9cbe6'], ['arancioni', '#d9772b'], ['dorati', '#c9a54a'], ['dorato', '#c9a54a'], ['argentati', '#b8bcc2']
+];
+const ILLUS_PATTERNS = [
+  ['zebra', /zebrat|zebra/], ['leopard', /leopard|maculat|animalier/], ['check', /quadr|scozzes|tartan|check|pied de poule|pied-de-poule|vichy/],
+  ['stripes', /righ|rigat|striat|gessat|pinstripe|millerighe|marinière|mariniere/], ['dots', /pois|a punti|polka/], ['floral', /fior|floreal|flower/],
+  ['knit', /trecc|intreccia|cable/]
+];
+const illusCache = new Map();
+
+function illusShade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  const ch = s => Math.max(0, Math.min(255, Math.round(amt < 0 ? s * (1 + amt) : s + (255 - s) * amt)));
+  return '#' + [n >> 16, (n >> 8) & 255, n & 255].map(ch).map(x => x.toString(16).padStart(2, '0')).join('');
+}
+const illusLight = hex => { const n = parseInt(hex.slice(1), 16); return ((n >> 16) * 299 + ((n >> 8) & 255) * 587 + (n & 255) * 114) / 1000 > 150; };
+
+// I primi due colori citati, nell'ordine in cui compaiono; «chiaro» e «scuro» li schiariscono o scuriscono
+function illusColors(text) {
+  const found = [];
+  for (const [word, hex] of ILLUS_COLORS) {
+    const i = text.search(new RegExp('(^|[^a-z])' + word.replace(/ /g, '[ -]') + '([^a-z]|$)'));
+    if (i < 0 || found.some(f => i >= f.i && i < f.end)) continue;
+    const after = text.slice(i + word.length + 1, i + word.length + 10);
+    found.push({ i, end: i + word.length + 1, hex: /^ ?chiar/.test(after) ? illusShade(hex, .35) : /^ ?scur/.test(after) ? illusShade(hex, -.35) : hex });
+  }
+  return found.sort((a, b) => a.i - b.i).map(f => f.hex);
+}
+
+const ILLUS_SHAPES = {
+  tee: { d: 'M62 40 L86 30 Q100 44 114 30 L138 40 L172 72 L152 94 L140 84 L140 214 Q100 220 60 214 L60 84 L48 94 L28 72 Z', seams: 'M86 30 Q100 50 114 30' },
+  shirt: { d: 'M62 38 L86 28 L100 46 L114 28 L138 38 Q152 44 157 62 L178 192 L158 198 L140 98 L140 220 Q100 226 60 220 L60 98 L42 198 L22 192 L43 62 Q48 44 62 38 Z',
+    seams: 'M100 46 L100 220 M86 28 L80 46 L96 54 L100 46 M114 28 L120 46 L104 54 L100 46', buttons: [70, 98, 126, 154, 182] },
+  knit: { d: 'M62 38 Q100 54 138 38 Q152 44 158 62 L176 190 L156 196 L140 100 L140 214 Q100 220 60 214 L60 100 L44 196 L24 190 L42 62 Q48 44 62 38 Z',
+    seams: 'M66 40 Q100 62 134 40 M60 200 L140 200 M45 182 L59 180 M155 182 L141 180' },
+  jacket: { d: 'M60 36 L86 26 L100 40 L114 26 L140 36 Q154 42 159 60 L180 196 L160 202 L142 98 L142 226 Q100 232 58 226 L58 98 L40 202 L20 196 L41 60 Q46 42 60 36 Z',
+    seams: 'M86 26 L76 70 L100 120 M114 26 L124 70 L100 120 M100 120 L100 226 M66 168 L86 168 M114 168 L134 168', buttons: [140, 172] },
+  coat: { d: 'M58 34 L86 24 L100 38 L114 24 L142 34 Q156 40 161 58 L182 200 L162 206 L144 96 L150 238 Q100 244 50 238 L56 96 L38 206 L18 200 L39 58 Q44 40 58 34 Z',
+    seams: 'M86 24 L74 72 L100 116 M114 24 L126 72 L100 116 M100 116 L100 238 M62 176 L84 176 M116 176 L138 176', buttons: [132, 166, 200] },
+  trousers: { d: 'M64 24 L136 24 L144 232 L106 232 L100 94 L94 232 L56 232 Z', seams: 'M64 38 L136 38 M100 38 L100 92 M70 40 Q78 62 64 70 M130 40 Q122 62 136 70' },
+  shorts: { d: 'M64 60 L136 60 L146 168 L106 172 L100 120 L94 172 L54 168 Z', seams: 'M64 74 L136 74 M100 74 L100 118' },
+  skirt: { d: 'M70 50 L130 50 L156 200 Q100 212 44 200 Z', seams: 'M70 64 L130 64' },
+  sneaker: { d: 'M22 176 Q22 148 46 142 L72 126 Q82 122 92 132 L124 154 Q164 160 176 174 Q180 188 168 192 L30 192 Q20 190 22 176 Z',
+    seams: 'M22 182 L178 182 M72 132 L92 150 M66 140 L86 156 M60 148 L80 162', sole: true },
+  loafer: { d: 'M20 180 Q22 160 44 156 Q76 150 104 152 Q150 154 174 168 Q182 180 170 188 L30 190 Q20 188 20 180 Z',
+    seams: 'M22 184 L176 184 M86 156 Q108 150 128 158 M96 162 L118 162', sole: true },
+  boot: { d: 'M58 70 L104 70 L106 150 Q150 156 170 172 Q178 186 166 192 L40 192 Q30 190 32 178 L40 150 Z', seams: 'M36 184 L172 184 M58 84 L104 84', sole: true },
+  bag: { d: 'M44 100 L156 100 L166 214 Q100 222 34 214 Z', seams: 'M72 100 Q72 50 100 50 Q128 50 128 100 M44 120 L156 120' },
+  scarf: { d: 'M70 30 L130 30 L126 150 L150 230 L118 236 L100 160 L82 236 L50 230 L74 150 Z', seams: 'M60 226 L60 236 M140 226 L140 236' },
+  hat: { d: 'M50 150 Q50 80 100 80 Q150 80 150 150 Q186 156 186 168 Q100 186 14 168 Q14 156 50 150 Z', seams: 'M50 146 Q100 160 150 146' },
+  belt: { d: 'M16 112 L184 112 L184 138 L16 138 Z', seams: 'M60 108 L60 142 L84 142 L84 108 Z M72 125 L100 125' }
+};
+
+function illusShape(g) {
+  const t = norm(g.tipo || '');
+  const c = catOf(g);
+  if (/sneaker|ginnastica|running|scarpe da tennis|converse|vans/.test(t)) return 'sneaker';
+  if (/stivale|stivaletto|anfibio|chelsea|boot/.test(t)) return 'boot';
+  if (/mocassin|loafer|stringat|derby|oxford|francesin|ballerin|decollet|sandal/.test(t) || c === 'Scarpe') return /scarp/.test(t) && !/mocassin|stringat|derby|oxford/.test(t) ? 'sneaker' : 'loafer';
+  if (/borsa|zaino|tote|pochette|marsupio/.test(t)) return 'bag';
+  if (/sciarpa|foulard|stola|scialle/.test(t)) return 'scarf';
+  if (/cappello|berretto|cuffia|basco|fedora|cap\b/.test(t)) return 'hat';
+  if (/cintura|cintur/.test(t)) return 'belt';
+  if (/cappotto|trench|parka|piumino|montgomery|loden|soprabito/.test(t)) return 'coat';
+  if (/giacca|blazer|giubbotto|giubbino|bomber|chiodo|cardigan|gilet|overshirt|sahariana/.test(t) || c === 'Giacche e capispalla') return /cardigan/.test(t) ? 'knit' : 'jacket';
+  if (/bermuda|shorts|pantaloncin/.test(t)) return 'shorts';
+  if (/gonna/.test(t)) return 'skirt';
+  if (/pantalon|jeans|chino|gurkha|cargo|jogger|tuta/.test(t) || c === 'Pantaloni e jeans') return 'trousers';
+  if (/t-shirt|tshirt|maglietta|polo|canotta|top\b/.test(t)) return 'tee';
+  if (/camicia|camicetta|blusa/.test(t)) return 'shirt';
+  if (/maglion|maglia|pullover|felpa|dolcevita|girocollo|lupetto/.test(t) || c === 'Maglieria') return 'knit';
+  if (c === 'Accessori') return 'bag';
+  return c === 'Camicie e T-shirt' ? 'shirt' : 'tee';
+}
+
+function illusPattern(kind, ink, base) {
+  const p = (w, h, body, extra = '') => '<pattern id="pt" width="' + w + '" height="' + h + '" patternUnits="userSpaceOnUse"' + extra + '>' + body + '</pattern>';
+  switch (kind) {
+    case 'zebra': return p(46, 46, '<path d="M-4 6 Q8 1 16 7 T36 6 T52 8" stroke="' + ink + '" stroke-width="5.5" fill="none" stroke-linecap="round"/><path d="M-4 22 Q10 15 20 23 T44 20" stroke="' + ink + '" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M2 38 Q14 31 26 39 T50 36" stroke="' + ink + '" stroke-width="6" fill="none" stroke-linecap="round"/>', ' patternTransform="rotate(-18)"');
+    case 'leopard': return p(34, 34, '<g fill="none" stroke="' + ink + '" stroke-width="2.6" stroke-linecap="round"><path d="M5 8 q4 -5 9 0 M8 13 q-3 2 -4 -2"/><path d="M21 22 q5 -4 9 1 M24 28 q-4 2 -5 -3"/></g><g fill="' + illusShade(base, -.35) + '"><ellipse cx="10" cy="10" rx="2.6" ry="2"/><ellipse cx="26" cy="25" rx="2.6" ry="2"/></g>');
+    case 'check': return p(28, 28, '<rect width="28" height="9" fill="' + ink + '" opacity=".45"/><rect width="9" height="28" fill="' + ink + '" opacity=".45"/><path d="M0 18 H28 M18 0 V28" stroke="' + ink + '" stroke-width="1.2" opacity=".7"/>');
+    case 'stripes': return p(14, 14, '<rect width="5" height="14" fill="' + ink + '"/>');
+    case 'dots': return p(16, 16, '<circle cx="4" cy="4" r="2.6" fill="' + ink + '"/><circle cx="12" cy="12" r="2.6" fill="' + ink + '"/>');
+    case 'floral': return p(30, 30, '<g fill="' + ink + '"><circle cx="8" cy="5" r="2.4"/><circle cx="12" cy="9" r="2.4"/><circle cx="8" cy="13" r="2.4"/><circle cx="4" cy="9" r="2.4"/><circle cx="23" cy="20" r="2.4"/><circle cx="27" cy="24" r="2.4"/><circle cx="23" cy="28" r="2.4"/><circle cx="19" cy="24" r="2.4"/></g>');
+    case 'knit': return p(18, 14, '<path d="M2 0 Q9 7 2 14 M16 0 Q9 7 16 14" stroke="' + ink + '" stroke-width="1.6" fill="none" opacity=".45"/>');
+    case 'denim': return p(6, 6, '<path d="M0 6 L6 0" stroke="' + ink + '" stroke-width="1" opacity=".25"/>');
+    default: return '';
+  }
+}
+
+function illustrationSvg(g) {
+  const text = norm([g.colore, g.texture, g.tipo, g.materiale].filter(v => known(v)).join(' '));
+  const key = illusShape(g) + '|' + text;
+  if (illusCache.has(key)) return illusCache.get(key);
+  const shape = ILLUS_SHAPES[illusShape(g)];
+  let pattern = (ILLUS_PATTERNS.find(([, re]) => re.test(text)) || [])[0] || (/jeans|denim/.test(text) ? 'denim' : '');
+  const colors = illusColors(text);
+  let base = colors[0] || (pattern === 'zebra' ? '#f2f0eb' : /jeans|denim/.test(text) ? '#5b7ea8' : '#9a9ca2');
+  let ink = colors[1] || (pattern === 'zebra' ? (illusLight(base) ? '#1d1d1f' : '#f2f0eb') : pattern === 'leopard' ? '#2b1d14' : illusLight(base) ? illusShade(base, -.55) : illusShade(base, .55));
+  if (pattern === 'leopard' && !colors[0]) base = '#c99a5b';
+  const line = illusShade(base, illusLight(base) ? -.28 : .22);
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250"><defs>' + illusPattern(pattern, ink, base) +
+    '<clipPath id="cl"><path d="' + shape.d + '"/></clipPath>' +
+    '<linearGradient id="sh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient></defs>' +
+    '<g clip-path="url(#cl)"><rect width="200" height="250" fill="' + base + '"/>' + (pattern ? '<rect width="200" height="250" fill="url(#pt)"/>' : '') +
+    '<rect width="200" height="250" fill="url(#sh)"/></g>' +
+    '<path d="' + shape.d + '" fill="none" stroke="' + line + '" stroke-width="1.6" stroke-linejoin="round"/>' +
+    (shape.seams ? '<path d="' + shape.seams + '" fill="none" stroke="' + line + '" stroke-width="1.3" stroke-linecap="round" opacity=".85"/>' : '') +
+    (shape.sole ? '<path d="M24 186 L176 186" stroke="' + (illusLight(base) ? '#d8d6d0' : '#f2f0eb') + '" stroke-width="7" stroke-linecap="round"/>' : '') +
+    (shape.buttons || []).map(y => '<circle cx="100" cy="' + y + '" r="2.3" fill="' + line + '"/>').join('') + '</svg>';
+  const uri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  illusCache.set(key, uri);
+  return uri;
+}
+
+// Disegno per un capo dell'archivio, se manca la foto
+const garmentById = new Map();
+const illusSrc = id => (garmentById.has(id) ? illustrationSvg(garmentById.get(id)) : '');
+
 
 // Le fotografie vecchie salvate dentro la scheda passano all'archivio foto
 async function migrateLocalPhotos() {
@@ -227,6 +365,8 @@ const revealImages = () => document.querySelectorAll('img.fade').forEach(i => { 
 async function renderAll() {
   await loadPhotos();
   const [garments, looks] = await Promise.all([all(), all('looks')]);
+  garmentById.clear();
+  for (const g of garments) garmentById.set(g.id, g);
   renderWardrobe(garments);
   renderToday(garments, looks);
   renderLooks(looks, garments);
@@ -240,7 +380,14 @@ async function renderAll() {
 // L'AI crea una foto prodotto «standard» dalla descrizione (es. camicia zebrata); la tua foto la sostituisce sempre.
 // Limite giornaliero per non consumare troppo credito; un errore su un capo si riprova dopo un giorno.
 const ILLUSTRATE_DAILY = 30;
-let illustrating = false, illustrateTimer = null, illustrateOff = false;
+let illustrating = false, illustrateTimer = null, illustrateOff = false, illustrateWarned = false;
+const illustrateError = () => { const e = readJson('atelier_illustrate_err', null); return e && Date.now() - e.at < 864e5 ? e.text : ''; };
+
+// Il motivo per cui l'immagine AI non è stata creata resta visibile nella scheda del capo, e lo si dice una volta
+function illustrateFailed(text) {
+  writeJson('atelier_illustrate_err', { text, at: Date.now() });
+  if (!illustrateWarned) { illustrateWarned = true; toast(text); }
+}
 
 function scheduleIllustrations() {
   clearTimeout(illustrateTimer);
@@ -266,10 +413,16 @@ async function illustrateMissing() {
         body: JSON.stringify({ tipo: g.tipo, categoria: catOf(g), colore: g.colore, materiale: g.materiale, texture: g.texture, vestibilita: g.vestibilita })
       });
       writeJson('atelier_illustrate_quota', { day, n: ++used });
-      if (r.status === 503) { illustrateOff = true; break; }
-      if (r.status === 401) break;
       const j = await r.json().catch(() => ({}));
-      if (!r.ok || !j.image) { fails[g.id] = Date.now(); writeJson('atelier_illustrate_fail', fails); continue; }
+      if (r.status === 503) { illustrateOff = true; illustrateFailed(j.error || 'Servizio immagini non configurato.'); break; }
+      if (r.status === 401) { illustrateFailed(j.error || 'Accedi di nuovo con Google per creare le immagini.'); break; }
+      if (!r.ok || !j.image) {
+        fails[g.id] = Date.now();
+        writeJson('atelier_illustrate_fail', fails);
+        illustrateFailed(j.error || 'Immagine non creata: servizio non raggiungibile.');
+        continue;
+      }
+      localStorage.removeItem('atelier_illustrate_err');
       // Nel frattempo potrebbe essere arrivata una foto vera o il capo potrebbe essere stato rimosso
       const now = (await all()).find(x => x.id === g.id);
       const hasPhoto = (await all('photos')).some(p => p.id === g.id);
@@ -337,18 +490,25 @@ async function openDetail(id) {
   if (!item) return;
   detailId = id;
   await loadPhotos();
-  const src = photoSrc(id);
+  const real = photoSrc(id);
+  const src = real || illustrationSvg(item);
   $('#detailImg').classList.toggle('hidden', !src);
   if (src) $('#detailImg').src = src;
   $('#detailImg').alt = item.tipo || 'Capo';
   // Una foto illustrativa si può sempre sostituire con la propria
-  $('#detailPhotoLabel').classList.toggle('hidden', !!src && !item.fotoIllustrativa);
+  $('#detailPhotoLabel').classList.toggle('hidden', !!real && !item.fotoIllustrativa);
   $('#detailPhotoLabel').firstChild.nodeValue = item.fotoIllustrativa ? 'Usa la tua foto' : 'Aggiungi foto';
   $('#detailTitle').textContent = item.tipo || 'Capo';
   const rows = [['Categoria', catOf(item)], ...FIELDS.filter(f => f !== 'tipo').map(f => [LABELS[f], known(item[f])])];
   rows.push(['Stile', STYLES[garmentStyle(item)] + (STYLES[item.stile] ? '' : ' (automatico)')]);
   rows.push(['Indossato', wornText(item)]);
-  if (item.fotoIllustrativa && src) rows.push(['Foto', 'Illustrativa, creata dalla descrizione']);
+  if (item.fotoIllustrativa && real) rows.push(['Foto', 'Illustrativa, creata dalla descrizione']);
+  else if (!real) {
+    rows.push(['Foto', window.atelierToken?.() ? (illustrateError() || 'Disegno provvisorio: l’immagine AI è in arrivo') : 'Disegno provvisorio: accedi con Google per l’immagine AI']);
+    // Aprire la scheda fa ripartire subito un tentativo che era fallito
+    const fails = readJson('atelier_illustrate_fail', {});
+    if (fails[id]) { delete fails[id]; writeJson('atelier_illustrate_fail', fails); scheduleIllustrations(); }
+  }
   if (washing(item)) rows.unshift(['Stato', 'In lavatrice']);
   $('#detailFields').innerHTML = rows.filter(r => r[1]).map(r => '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>').join('');
   $('#detailWash').textContent = washing(item) ? 'Segna come lavato' : 'Metti in lavatrice';

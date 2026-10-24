@@ -14,7 +14,7 @@
       const ids=p.outfit.missing?[]:p.outfit.ids.filter(id=>byId.has(id)&&!washing(byId.get(id)));
       const items=ids.map(id=>byId.get(id)).filter(Boolean);
       const title=p.outfit.missing?'Nessun outfit completo disponibile':items.map(g=>g.tipo||'Capo').slice(0,2).join(appLang()==='en'?' and ':' e ');
-      const thumbs=items.slice(0,4).map(g=>photoSrc(g.id)?'<img src="'+photoSrc(g.id)+'" alt="">':'<i aria-hidden="true"></i>').join('');
+      const thumbs=items.slice(0,4).map(g=>(photoSrc(g.id)||illusSrc(g.id))?'<img src="'+(photoSrc(g.id)||illusSrc(g.id))+'" alt="">':'<i aria-hidden="true"></i>').join('');
       const dirty=items.filter(washing);
       const description=[p.wx?wxText(p.wx):null,firstEventLine(p)].filter(Boolean).join(' · ');
       return '<details class="ios-day" data-day="'+escV(p.key)+'"'+(openDays.has(p.key)?' open':'')+'><summary>'+
