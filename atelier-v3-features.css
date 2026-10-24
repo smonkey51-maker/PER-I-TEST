@@ -86,3 +86,8 @@
 .v3-detail-extras{display:grid;gap:9px;margin:15px 0}
 .v3-detail-extras label{display:grid;gap:4px;color:#a0968a;font-size:12px}
 .v3-detail-extras input{padding:10px}
+
+.v3-photo-actions{display:flex;flex-wrap:wrap;gap:9px 18px;margin:21px 0 0;padding-top:15px;border-top:1px solid rgba(240,228,210,.1)}
+.v3-photo-actions button{background:none;border:0;border-bottom:1px solid #786f64;color:#a0968a;font-size:12px;padding:5px 0}
+.v3-photo-actions button:disabled{opacity:.45}
+.v3-photo-actions p{width:100%;margin:0;color:#a0968a;font-size:12px}
