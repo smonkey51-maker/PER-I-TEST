@@ -20,8 +20,8 @@
    if(!home||!greet)return;
    const weather=document.querySelector('#weather'),agenda=document.querySelector('#agenda');
    if(weather&&agenda&&!document.querySelector('.atelier-context')){
-     const details=document.createElement('details');details.className='atelier-context';
-     const summary=document.createElement('summary');summary.textContent='Meteo e impegni';details.append(summary,weather,agenda);
+     const details=document.createElement('details');details.className='atelier-context';details.open=true;
+     const summary=document.createElement('summary');summary.textContent='Meteo e impegni';details.append(summary,weather,agenda);details.addEventListener('toggle',()=>{if(!details.open)details.open=true});
      const stage=document.querySelector('#atelierStage');
      if(stage)stage.after(details);else greet.after(details);
    }
