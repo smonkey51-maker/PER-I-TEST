@@ -1,0 +1,36 @@
+/* ATELIER mobile-first wardrobe experience */
+.wardrobe-stage{position:relative;overflow:hidden;isolation:isolate;border-radius:18px;background:linear-gradient(165deg,#313a42,#151b21);min-height:310px;margin:0 0 20px;padding:18px 0 16px}
+.wardrobe-stage[data-sky="sun"]{background:linear-gradient(165deg,#576e7c,#283c49 70%,#202b35)}
+.wardrobe-stage[data-sky="rain"]{background:linear-gradient(165deg,#384b5c,#1b2936)}
+.wardrobe-stage[data-sky="cold"]{background:linear-gradient(165deg,#536572,#273744)}
+.wardrobe-stage:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.3;background:radial-gradient(ellipse at 75% 15%,#d2d5ca55,transparent 60%);animation:atelier-cloud 14s ease-in-out infinite alternate}
+.wardrobe-stage[data-sky="rain"]:after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.23;background:repeating-linear-gradient(105deg,transparent 0 18px,#c6d5df 19px,transparent 20px 42px);animation:atelier-rain 1.6s linear infinite}
+@keyframes atelier-cloud{to{transform:translateX(-18%)}}
+@keyframes atelier-rain{to{background-position:-42px 80px}}
+.wardrobe-stage__heading{position:relative;z-index:1;padding:0 18px 10px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.wardrobe-stage__heading h2{font-size:26px}.wardrobe-stage__heading span{font-size:12px;color:#d2d8dc}
+.wardrobe-rail{position:relative;z-index:1;display:flex;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding:35px 18px 12px;scrollbar-width:thin;touch-action:pan-x}
+.wardrobe-rail:before{content:"";position:absolute;top:19px;left:0;right:0;height:5px;background:linear-gradient(#b7b4a9,#777d7e);box-shadow:0 2px 4px #0005}
+.wardrobe-hanger{position:relative;flex:0 0 116px;scroll-snap-align:center;border:0;background:transparent;color:#f3f1eb;padding:0;cursor:pointer;transform-origin:50% 0;animation:atelier-sway 4.5s ease-in-out infinite alternate}
+.wardrobe-hanger:nth-child(2n){animation-delay:-2s}.wardrobe-hanger:before{content:"";position:absolute;top:-24px;left:calc(50% - 7px);width:14px;height:19px;border:3px solid #d1cbc0;border-bottom:0;border-radius:50% 50% 0 0}
+.wardrobe-hanger img,.wardrobe-hanger .ph{display:block;width:116px;height:145px;object-fit:cover;border-radius:9px;background:#39414a;box-shadow:0 7px 14px #0006}
+.wardrobe-hanger__name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;margin-top:7px}
+@keyframes atelier-sway{from{transform:rotate(-1.7deg)}to{transform:rotate(1.7deg)}}
+.wardrobe-intro{position:fixed;inset:0;z-index:100;display:grid;grid-template-columns:1fr 1fr;pointer-events:none;perspective:900px}
+.wardrobe-intro__door{background:repeating-linear-gradient(90deg,#292c2d 0 10px,#323536 11px 24px);border:5px solid #414343;box-shadow:inset 0 0 35px #0009;transition:transform 1.25s cubic-bezier(.24,.72,.2,1)}
+.wardrobe-intro__door:first-child{transform-origin:left center}.wardrobe-intro__door:last-child{transform-origin:right center}
+.wardrobe-intro__door:after{content:"";display:block;width:5px;height:48px;background:#bca781;border-radius:5px;position:absolute;top:48%;box-shadow:0 0 0 3px #181b1b}
+.wardrobe-intro__door:first-child:after{right:14px}.wardrobe-intro__door:last-child:after{left:14px}
+.wardrobe-intro.is-open .wardrobe-intro__door:first-child{transform:rotateY(-105deg)}
+.wardrobe-intro.is-open .wardrobe-intro__door:last-child{transform:rotateY(105deg)}
+#view-wardrobe .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#view-wardrobe .card-body{padding:8px 9px}#view-wardrobe .cat{margin:16px 0 8px}
+#view-wardrobe .chips{gap:6px}#view-wardrobe .chip{padding:6px 10px}
+#view-looks .look{padding:12px;margin-bottom:12px}
+#view-looks .look h3{font-size:22px}
+#view-looks .board{gap:5px}
+#view-looks .board figure{min-width:0}
+#view-looks .actions{margin-top:10px;gap:7px}
+#view-looks .btn{padding:8px 12px;min-height:40px}
+@media(min-width:600px){#view-wardrobe .grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.wardrobe-stage{min-height:330px}}
+@media(prefers-reduced-motion:reduce){.wardrobe-intro{display:none}.wardrobe-hanger,.wardrobe-stage:before,.wardrobe-stage:after{animation:none!important}}
