@@ -1,0 +1,45 @@
+/* ATELIER flat editorial layout: content without enclosing cards. */
+:root{--bg:#111618;--surface:#111618;--surface-2:#1b2325}
+body,main,.view,.page,.section{background:#111618}
+#view-today #todayContent>.idea-card:first-child,
+#view-today .atelier-utilities,
+#view-today .atelier-context,
+#view-today #weather,
+#view-today #agenda,
+#view-today #tomorrow,
+#view-week .idea-card,
+#view-week .card,
+#view-wardrobe .card,
+#view-wardrobe .atelier-stats,
+#view-looks .look,
+#view-looks .idea-card,
+#view-add .dropzone,
+.atelier-utilities,
+.atelier-stats,
+.idea-card,
+.look,
+.card{
+ background:transparent!important;
+ background-image:none!important;
+ border:0!important;
+ border-radius:0!important;
+ box-shadow:none!important;
+ outline:0;
+}
+#view-today #todayContent>.idea-card:first-child{padding:0!important;margin:0 0 24px}
+#view-today .atelier-utilities{padding:0!important}
+#view-today .atelier-context{padding:0!important}
+#view-today .atelier-context>#weather,#view-today .atelier-context>#agenda{padding:0!important}
+#view-wardrobe .card{overflow:visible}
+#view-wardrobe .card-img-wrap{border-radius:12px;overflow:hidden;background:#283134}
+#view-wardrobe .card-img{border-radius:12px}
+#view-wardrobe .card-body{padding:10px 0 14px}
+#view-looks .look{padding:12px 0!important}
+#view-add .dropzone{border:1px dashed #54635e!important;border-radius:12px!important}
+#view-today #todayContent{gap:26px}
+#view-today #todayContent>.idea-card:first-child>.actions{background:transparent!important;box-shadow:none!important;padding:0!important}
+#view-today #idea .strip img{border-radius:12px}
+#view-wardrobe .grid{row-gap:20px}
+#view-today #tomorrow{padding:0!important}
+.tabs{background:#1a2224f2!important}
+dialog{background:#1b2325!important;border-radius:18px!important}
