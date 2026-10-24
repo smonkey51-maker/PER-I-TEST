@@ -65,6 +65,24 @@ export default async function handler(req,res){
       brand=decode(meta(html,'product:brand')||meta(html,'og:site_name'));
       price=decode(meta(html,'product:price:amount')||meta(html,'og:price:amount'));
       image=meta(html,'og:image:secure_url')||meta(html,'og:image')||meta(html,'twitter:image');
+      // Many shops publish structured Product data rather than price meta tags.
+      for(const match of html.matchAll(/<script\\b[^>]*type=[\"']application\\/ld\\+json[\"'][^>]*>([\\s\\S]*?)<\\/script>/gi)){
+        try{
+          const json=JSON.parse(match[1]);
+          const queue=Array.isArray(json)?json:[json];
+          while(queue.length){
+            const node=queue.shift();if(!node||typeof node!=='object')continue;
+            if(Array.isArray(node['@graph']))queue.push(...node['@graph']);
+            const types=[].concat(node['@type']||[]);
+            if(!types.some(t=>String(t).toLowerCase()==='product'))continue;
+            title=title||decode(node.name);
+            brand=brand||decode(typeof node.brand==='string'?node.brand:node.brand?.name);
+            const offer=Array.isArray(node.offers)?node.offers[0]:node.offers;
+            price=price||decode(offer?.price||offer?.lowPrice);
+            image=image||(Array.isArray(node.image)?node.image[0]:typeof node.image==='object'?node.image?.url:node.image)||'';
+          }
+        }catch{/* Ignore invalid structured data. */}
+      }
     }else throw Error('Formato del link non supportato.');
     let imageData=null;
     if(image){
