@@ -81,15 +81,7 @@
       for(const candidate of alternatives){const b=document.createElement('button');b.className='atelier-swap-item';b.append(swapPreview(candidate));
         b.onclick=async()=>{idea.ids=idea.ids.map(id=>id===original.id?candidate.id:id);if(typeof second!=='undefined')second=null;document.querySelector('#atelierSwapDialog')?.close();await renderAll()};container.append(b)}
     }
-    if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches && !sessionStorage.getItem('atelier_intro_seen')){
-      sessionStorage.setItem('atelier_intro_seen','1');
-      const intro=document.createElement('div');intro.className='wardrobe-intro';intro.setAttribute('aria-hidden','true');
-      intro.innerHTML='<div class="wardrobe-intro__door"></div><div class="wardrobe-intro__door"></div>';
-      document.body.append(intro);
-      requestAnimationFrame(()=>requestAnimationFrame(()=>intro.classList.add('is-open')));
-      intro.addEventListener('transitionend',()=>intro.remove(),{once:true});
-      setTimeout(()=>intro.remove(),2200);
-    }
+
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
