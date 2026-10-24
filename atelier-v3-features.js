@@ -138,23 +138,65 @@
   $('#v3LinkForm').addEventListener('submit',async e=>{
     e.preventDefault();const input=$('#v3ProductUrl'),out=$('#v3LinkStatus');
     let url;try{url=new URL(input.value);if(!['https:','http:'].includes(url.protocol))throw Error();}catch{out.textContent='Inserisci un URL http o https valido.';return;}
-    out.textContent='Verifico se la fotografia è accessibile…';
+    out.textContent='Leggo i dati del prodotto…';
     try{
-      const response=await fetch(url.href,{mode:'cors',redirect:'follow'});
-      if(!response.ok)throw Error('Immagine non accessibile');
-      const blob=await response.blob();
-      if(!blob.type.startsWith('image/')||blob.size>15*1024*1024)throw Error('Il link non restituisce una fotografia supportata');
-      const dt=new DataTransfer();dt.items.add(new File([blob],'prodotto.'+(blob.type.split('/')[1]||'jpg'),{type:blob.type}));
-      $('#photos').files=dt.files;$('#photos').dispatchEvent(new Event('change'));
-      out.textContent='Fotografia caricata. Premi «Compila a mano» oppure «Analizza» per completare la scheda.';
-      $('#dropzone').scrollIntoView({behavior:'smooth',block:'center'});
-    }catch{
+      if(!window.atelierToken?.())throw Error('Accedi con Google per importare automaticamente dal negozio.');
+      const response=await fetch('/api/product',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+window.atelierToken()},body:JSON.stringify({url:url.href})});
+      const product=await response.json();
+      if(!response.ok)throw Error(product.error||'Prodotto non accessibile');
+      let file=null;
+      if(product.imageData){
+        const blob=await(await fetch(product.imageData)).blob();
+        file=new File([blob],'prodotto.'+(blob.type.split('/')[1]||'png'),{type:blob.type});
+      }
+      if(file){
+        const dt=new DataTransfer();dt.items.add(file);
+        $('#photos').files=dt.files;$('#photos').dispatchEvent(new Event('change'));
+        await prepare(false);
+      }else $('#noPhoto').click();
+      const draft=drafts.filter(Boolean).at(-1);
+      if(draft){
+        draft.tipo=(product.title||'Capo').slice(0,80);
+        draft.marca=product.brand||'';
+        draft.prezzo=product.price||'';
+        draft.origine=url.href;
+        draft.state='Importato dal negozio · verifica i dati';
+        renderDrafts();updateSave();
+      }
+      out.textContent='Dati importati. Verifica la scheda e premi «Salva i capi».';
+      $('#review').scrollIntoView({behavior:'smooth',block:'center'});
+    }catch(error){
       $('#noPhoto').click();
-      const draft=drafts.at(-1);
-      if(draft){draft.tipo=(decodeURIComponent(url.pathname.split('/').filter(Boolean).at(-1)||'Capo').replace(/[-_]+/g,' ').replace(/\.[^.]+$/,'').slice(0,70)||'Capo');renderDrafts();updateSave();}
-      out.textContent='Il negozio non permette l’importazione diretta. Ho preparato una scheda modificabile: completa i dati e aggiungi la foto, se disponibile.';
+      const draft=drafts.filter(Boolean).at(-1);
+      if(draft){draft.tipo=(decodeURIComponent(url.pathname.split('/').filter(Boolean).at(-1)||'Capo').replace(/[-_]+/g,' ').replace(/\\.[^.]+$/,'').slice(0,70)||'Capo');draft.origine=url.href;renderDrafts();updateSave();}
+      out.textContent=error.message+' Ho preparato una scheda manuale.';
     }
   });
+
+  // Persist optional product details without altering existing garment fields or sync schema.
+  const originalPut=put;
+  put=async function(item,store='garments'){
+    if(store==='garments'&&item?.id){
+      const draft=drafts.find(d=>d?.id===item.id);
+      if(draft){item={...item,marca:draft.marca||'',prezzo:draft.prezzo||'',origine:draft.origine||''};}
+    }
+    return originalPut(item,store);
+  };
+  const originalDetail=openDetail;
+  openDetail=async function(id){
+    await originalDetail(id);
+    const garment=(await all()).find(g=>g.id===id);
+    if(!garment)return;
+    const fields=$('#detailFields');
+    for(const [label,value] of [['Marca',garment.marca],['Prezzo',garment.prezzo?garment.prezzo+' €':''],['Origine',garment.origine]]){
+      if(!value)continue;
+      const dt=document.createElement('dt');dt.textContent=label;
+      const dd=document.createElement('dd');
+      if(label==='Origine'){const a=document.createElement('a');a.href=value;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Apri il prodotto';dd.append(a);}
+      else dd.textContent=value;
+      fields.append(dt,dd);
+    }
+  };
 
   // Re-render UI after core renders, retaining core storage and calendar behavior.
   const coreRender=renderAll;
