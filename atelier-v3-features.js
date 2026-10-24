@@ -263,7 +263,8 @@
   add.querySelector('.view-head')?.after(addHero);
   async function refreshEditorial(){
     const city=place?.name||'';
-    liveWeather.textContent=weather?(wxText(weather)+(city?' · '+city:'')):(city||'Imposta il meteo');
+    liveWeather.innerHTML=weather?wxIcon(weather)+'<span>'+(weather.now??weather.tmax)+'°</span>':'';
+    liveWeather.title=weather?(wxText(weather)+(city?' · '+city:'')):'';
     const garments=await all();
     const images=garments.filter(g=>photoSrc(g.id)).slice(0,3);
     addHero.innerHTML=images.map(g=>'<img src="'+photoSrc(g.id)+'" alt="'+safe(g.tipo||'Capo')+'">').join('');
@@ -272,12 +273,13 @@
 
   // Re-render UI after core renders, retaining core storage and calendar behavior.
   const coreRender=renderAll;
-  let refreshPending=false;
+  let refreshPending=false,refreshAgain=false;
   renderAll=async function(){
     await coreRender();
-    if(refreshPending)return;
+    // A render that lands while another is refreshing must not leave the core markup on screen
+    if(refreshPending){refreshAgain=true;return;}
     refreshPending=true;
-    try{await refreshWardrobe();await renderSwap();await refreshEditorial();await refreshLaundry();}finally{refreshPending=false;}
+    try{do{refreshAgain=false;await refreshWardrobe();await renderSwap();await refreshEditorial();await refreshLaundry();}while(refreshAgain);}finally{refreshPending=false;}
   };
   document.addEventListener('DOMContentLoaded',()=>renderAll().catch(console.error),{once:true});
 })();

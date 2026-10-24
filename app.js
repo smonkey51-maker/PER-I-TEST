@@ -415,6 +415,31 @@ function wxProfile(w) {
 
 const wxText = w => w.tmin + '–' + w.tmax + '°C, pioggia ' + w.rain + '%';
 
+// Condizione del cielo dal codice WMO di Open-Meteo, con un'icona animata
+function wxKind(w) {
+  const c = w?.code;
+  if (c == null) return w?.rain >= 50 ? 'rain' : 'sun';
+  if (c >= 95) return 'storm';
+  if ((c >= 71 && c <= 77) || c === 85 || c === 86) return 'snow';
+  if ((c >= 51 && c <= 67) || (c >= 80 && c <= 82)) return 'rain';
+  if (c === 45 || c === 48) return 'fog';
+  if (c === 3) return 'cloud';
+  if (c === 2) return 'partly';
+  return 'sun';
+}
+const WX_LABEL = { sun: 'Soleggiato', partly: 'Poco nuvoloso', cloud: 'Nuvoloso', fog: 'Nebbia', rain: 'Pioggia', snow: 'Neve', storm: 'Temporale' };
+const WX_CLOUD = '<path class="cloud" d="M7.5 19h9.6a3.9 3.9 0 0 0 .5-7.77 5.4 5.4 0 0 0-10.4 1.2A3.3 3.3 0 0 0 7.5 19z"/>';
+const WX_SVG = {
+  sun: '<g class="rays"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g><circle class="sun" cx="12" cy="12" r="4.4"/>',
+  partly: '<g class="rays small"><path d="M8.5 2.8v1.6M3.3 8h1.6M4.8 4.3l1.1 1.1M12.2 4.3l-1.1 1.1"/></g><circle class="sun" cx="8.5" cy="8" r="3.2"/>' + WX_CLOUD,
+  cloud: WX_CLOUD,
+  fog: '<g class="fog"><path d="M4 9h13M7 13h13M4 17h12"/></g>',
+  rain: '<g transform="translate(0 -3)">' + WX_CLOUD + '</g><g class="drops"><path d="M9 18.5l-1 2.5M13 18.5l-1 2.5M17 18.5l-1 2.5"/></g>',
+  snow: '<g transform="translate(0 -3)">' + WX_CLOUD + '</g><g class="flakes"><circle cx="9" cy="20" r="1"/><circle cx="13" cy="21" r="1"/><circle cx="17" cy="20" r="1"/></g>',
+  storm: '<g transform="translate(0 -3)">' + WX_CLOUD + '</g><path class="bolt" d="M12.5 15.5l-2.5 4h3l-2 3.5"/>'
+};
+const wxIcon = (w, cls = '') => { const k = wxKind(w); return '<span class="wx-ico wx-' + k + (cls ? ' ' + cls : '') + '" aria-hidden="true"><svg viewBox="0 0 24 24">' + WX_SVG[k] + '</svg></span>'; };
+
 async function refreshWeather(force = false) {
   if (!place) return;
   if (!force && weather && Date.now() - weatherAt < 30 * 60 * 1000) return;
@@ -422,12 +447,14 @@ async function refreshWeather(force = false) {
   try {
     const r = await fetch('https://api.open-meteo.com/v1/forecast?' + new URLSearchParams({
       latitude: place.lat, longitude: place.lon, timezone: 'auto', forecast_days: '8',
-      daily: 'apparent_temperature_max,apparent_temperature_min,precipitation_probability_max'
+      daily: 'apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,weather_code',
+      current: 'temperature_2m,weather_code'
     }));
     if (!r.ok) throw Error('Meteo non raggiungibile (' + r.status + ')');
-    const d = (await r.json()).daily;
-    weekWx = d.apparent_temperature_max.map((_, i) => ({ tmin: Math.round(d.apparent_temperature_min[i]), tmax: Math.round(d.apparent_temperature_max[i]), rain: d.precipitation_probability_max?.[i] ?? 0 }));
-    weather = weekWx[0];
+    const j = await r.json();
+    const d = j.daily;
+    weekWx = d.apparent_temperature_max.map((_, i) => ({ tmin: Math.round(d.apparent_temperature_min[i]), tmax: Math.round(d.apparent_temperature_max[i]), rain: d.precipitation_probability_max?.[i] ?? 0, code: d.weather_code?.[i] }));
+    weather = { ...weekWx[0], now: j.current ? Math.round(j.current.temperature_2m) : null, code: j.current?.weather_code ?? weekWx[0].code };
     weatherError = '';
   } catch (e) {
     weather = null;
@@ -451,7 +478,11 @@ function renderWeather() {
     html += '<p class="muted">' + esc(weatherError || 'Indica dove sei per avere capi adatti a temperatura e pioggia.') + '</p>';
     $('#weatherSetup').classList.remove('hidden');
   } else if (weather) {
-    html += '<p>' + esc(place.name) + ' · ' + esc(wxText(weather)) + (wxNow?.rainy ? '. Porta un ombrello.' : '') + '</p>' +
+    html = '<div class="wx-card">' + wxIcon(weather) +
+      '<div class="wx-main"><span class="wx-city">' + esc(place.name) + '</span><span class="wx-temp">' + (weather.now ?? weather.tmax) + '°</span></div>' +
+      '<div class="wx-side"><span>' + WX_LABEL[wxKind(weather)] + '</span><span><span>Max ' + weather.tmax + '°</span> <span>Min ' + weather.tmin + '°</span></span>' +
+      '<span>Pioggia ' + weather.rain + '%</span></div></div>' +
+      (wxNow?.rainy ? '<p class="small">Porta un ombrello.</p>' : '') +
       '<button class="link-btn neutral" data-wx="change">Cambia luogo</button>';
   } else if (weatherError) {
     html += '<p class="muted">' + esc(weatherError) + '</p><button class="link-btn neutral" data-wx="retry">Riprova</button> <button class="link-btn neutral" data-wx="change">Cambia luogo</button>';
@@ -1123,7 +1154,7 @@ const photosInput = $('#photos');
 function updatePicked() {
   const n = photosInput.files.length;
   const tooMany = n > MAX_PHOTOS;
-  $('#pickedTitle').textContent = n ? (n === 1 ? '1 fotografia selezionata' : n + ' fotografie selezionate') : 'Scegli le fotografie';
+  $('#pickedTitle').textContent = n ? (n === 1 ? '1 fotografia selezionata' : n + ' fotografie selezionate') : 'Aggiungi foto';
   $('#pickedHint').textContent = n ? 'Tocca per cambiare la selezione' : 'Tocca qui oppure trascina i file';
   $('#analyze').textContent = n ? 'Analizza ' + n + (n === 1 ? ' fotografia' : ' fotografie') : 'Analizza le fotografie';
   $('#analyze').disabled = !n || tooMany || analyzing;
@@ -1342,16 +1373,43 @@ function renderLooks(looks, garments) {
   $('#looks').innerHTML = looks.map(l => {
     const items = (l.capi || []).map(id => byId.get(id)).filter(Boolean);
     const inWash = items.filter(washing).length;
-    return '<div class="look"><h3>' + esc(l.nome) + '</h3>' +
-      (items.length ? '<div class="board">' + items.map(g => '<figure>' + photoHtml(g.id, 'board-img fade', g.tipo || 'Capo') + '</figure>').join('') + '</div>' : '') +
-      (l.composizione ? '<p>' + esc(l.composizione) + '</p>' : '') +
-      (inWash ? '<p class="warn">' + (inWash === 1 ? '1 capo è in lavatrice' : inWash + ' capi sono in lavatrice') + '</p>' : '') +
-      '<div class="actions"><button class="btn secondary" data-look-edit="' + l.id + '">Modifica</button>' +
-      '<button class="btn danger" data-look-delete="' + l.id + '">Rimuovi</button></div></div>';
+    const shown = items.slice(0, 4);
+    return '<article class="look" data-search="' + esc((l.nome + ' ' + (l.composizione || '')).toLowerCase()) + '">' +
+      '<div class="board n' + shown.length + '">' + (shown.length
+        ? shown.map(g => '<figure>' + photoHtml(g.id, 'board-img fade', g.tipo || 'Capo') + '</figure>').join('')
+        : '<p class="board-text">' + esc(l.composizione || '') + '</p>') + '</div>' +
+      '<button class="look-more" data-look-menu aria-label="Opzioni" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button>' +
+      '<div class="look-menu hidden"><button data-look-edit="' + l.id + '">Modifica</button><button class="danger" data-look-delete="' + l.id + '">Rimuovi</button></div>' +
+      '<h3>' + esc(l.nome) + '</h3>' +
+      (inWash ? '<p class="warn">' + (inWash === 1 ? '1 capo in lavatrice' : inWash + ' capi in lavatrice') + '</p>' : '') +
+      '</article>';
   }).join('');
+  filterLooks();
 }
 
+// Ricerca tra i look per nome e composizione
+function filterLooks() {
+  const q = norm($('#lookSearch').value.trim());
+  for (const el of document.querySelectorAll('#looks .look')) el.classList.toggle('hidden', !!q && !norm(el.dataset.search).includes(q));
+}
+$('#lookSearch').addEventListener('input', filterLooks);
+
+const closeLookMenus = except => document.querySelectorAll('#looks .look-menu').forEach(m => {
+  if (m === except) return;
+  m.classList.add('hidden');
+  m.previousElementSibling.setAttribute('aria-expanded', 'false');
+});
+document.addEventListener('click', e => { if (!e.target.closest('#looks .look-more, #looks .look-menu')) closeLookMenus(); });
+
 $('#looks').addEventListener('click', async e => {
+  const more = e.target.closest('[data-look-menu]');
+  if (more) {
+    const menu = more.nextElementSibling;
+    closeLookMenus(menu);
+    more.setAttribute('aria-expanded', String(!menu.classList.toggle('hidden')));
+    return;
+  }
+  closeLookMenus();
   const edit = e.target.closest('[data-look-edit]');
   if (edit) return openLookForm((await all('looks')).find(l => l.id === edit.dataset.lookEdit));
   const b = e.target.closest('[data-look-delete]');
@@ -1559,5 +1617,5 @@ updatePicked();
 migrateLocalPhotos()
   .then(seedLooks)
   .then(addSeedGarments)
-  .then(renderAll)
+  .then(() => renderAll()) // la versione corrente, compresa quella estesa dagli altri script
   .catch(e => toast('Archivio locale non disponibile: ' + e.message));

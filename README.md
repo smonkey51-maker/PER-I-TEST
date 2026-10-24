@@ -79,3 +79,6 @@ Da Chrome apri `https://atelier-personal-wardrobe.vercel.app`: compare il pulsan
 
 ## Struttura
 `index.html` (markup), `style.css` (tema scuro fisso), `plan.js` (domani, prossimi giorni, cosa manca), `app.js` (archivio locale, foto, caricamento multiplo, modifica, lavatrice, idea del giorno, looks), `drive-sync.js` (accesso Google e sincronizzazione Drive), `manifest.json` e `sw.js` (installazione e uso offline), `icons/`, `fonts/` (Cormorant Garamond, licenza SIL OFL in `fonts/OFL.txt`), `api/` (analisi AI, ispirazione di stile, look delle celebrità e configurazione), `vercel.json` (durata massima della funzione di ricerca).
+
+## Aspetto (tema iOS)
+`atelier-ios.css`, caricato per ultimo, dà all'app un aspetto scuro in stile iOS: nero e grigi, accento azzurro, pulsanti a pillola, schede arrotondate. In «Oggi» l'outfit sta su un pannello chiaro, seguito dalla scheda meteo (città, temperatura attuale, condizione del cielo dal codice WMO di Open-Meteo, massima e minima, icona animata) e dagli impegni; il meteo compare anche nell'intestazione. «Settimana» è un elenco di giorni con miniature dell'outfit e meteo, da aprire con un tocco (`atelier-v3-week.js`); «Look» è una griglia con ricerca e menu ⋮. `atelier-ios.js` mette meteo e impegni sotto l'outfit e aggiorna le date quando cambia la lingua.
