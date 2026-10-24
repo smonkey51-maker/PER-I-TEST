@@ -1,0 +1,32 @@
+/* ATELIER: restore the dark identity while preserving photographic mobile layouts. */
+:root{color-scheme:dark;--bg:#111618;--surface:#1b2325;--surface-2:#263032;--surface-3:#344042;--text:#f1f0eb;--muted:#b2bcb9;--accent:#b9c9bb;--accent-ink:#17241d;--danger:#f1aaa7}
+html,body{background:#111618!important;color:var(--text)}
+body{background-image:none!important}
+.top{background:#111618}
+.brand,.greet h1,.view-head h1{color:var(--text)}
+#view-today .greet .date,#view-today .greet .lede{color:var(--muted)}
+.account-inner{background:#1c2527}
+#view-today #todayContent>.idea-card:first-child,.idea-card,.atelier-context,#weather,#agenda,#view-wardrobe .card,#view-looks .look{background:#1b2325;color:var(--text);box-shadow:none}
+#view-today .atelier-utilities{background:transparent}
+#view-today #todayContent>.idea-card:first-child>.actions #atelierSwap,.btn.secondary{background:#34433e;color:#f0f4ef}
+.btn{background:#b9c9bb;color:#17241d}
+.btn.danger{background:#452e30;color:#ffc7c4}
+.chip{background:#263032;color:#e4eae6}
+.chip.active,.chip[aria-pressed=true]{background:#b9c9bb;color:#17241d}
+#view-wardrobe .card-img-wrap{background:#303a3c}
+input[type=text],input:not([type]),select,textarea{background:#263032;color:var(--text);border-color:#435052}
+.dropzone{background:#1b2325;border-color:#52615e}
+dialog{background:#1b2325;color:var(--text)}
+.tabs{background:#1a2224ed;border-color:#354142;box-shadow:0 -8px 22px #0005}
+.tab{color:#b6c0bb}
+.tab[aria-selected=true]{background:#35443f;color:#f6faf6}
+.atelier-context{border:0}
+.atelier-context>summary{color:var(--text)}
+.atelier-context>#weather,.atelier-context>#agenda{display:block!important}
+.atelier-context>#weather{margin-bottom:12px}
+.atelier-context>#agenda{margin-bottom:0}
+#view-today .atelier-context{padding:15px;display:grid;gap:12px}
+#view-today .atelier-context>summary{display:none!important}
+#view-today .atelier-context>#weather,#view-today .atelier-context>#agenda{padding:14px;background:#263032;border-radius:14px;margin:0}
+#view-today .atelier-context>#weather:before{content:"METEO";display:block;font-size:11px;letter-spacing:.13em;color:#b9c9bb;font-weight:750;margin-bottom:9px}
+#view-today .atelier-context>#agenda:before{content:"IMPEGNI";display:block;font-size:11px;letter-spacing:.13em;color:#b9c9bb;font-weight:750;margin-bottom:9px}
