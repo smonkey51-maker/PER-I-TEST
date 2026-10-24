@@ -93,6 +93,39 @@
     insights.innerHTML='<div><strong>'+never+'</strong><span>capi non indossati negli ultimi 90 giorni</span></div><div><strong>'+(costs.length?(costs.reduce((a,b)=>a+b,0)/costs.length).toLocaleString('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:2}):'—')+'</strong><span>costo per utilizzo'+(costs.length?' dei capi con prezzo registrato':' · aggiungi i prezzi per calcolarlo')+'</span></div>';
   }
 
+  // One-time, reversible migration for existing non-transparent photos.
+  const cutoutActions=document.createElement('div');cutoutActions.className='v3-photo-actions';
+  cutoutActions.innerHTML='<button id="v3CutoutExisting" type="button">Scontorna foto esistenti</button><button id="v3RestorePhotos" type="button">Ripristina originali</button><p id="v3CutoutStatus" role="status"></p>';
+  insights.after(cutoutActions);
+  $('#v3CutoutExisting').onclick=async()=>{
+    const button=$('#v3CutoutExisting'),status=$('#v3CutoutStatus');button.disabled=true;
+    try{
+      const photos=await all('photos');let count=0;
+      for(let i=0;i<photos.length;i++){
+        const entry=photos[i];if(!entry.blob||entry.originalBlob)continue;
+        status.textContent='Scontorno '+(i+1)+' di '+photos.length+'…';
+        try{
+          const converted=await cutout(entry.blob);
+          if(!converted)continue;
+          await put({...entry,blob:converted,originalBlob:entry.blob},'photos');
+          forgetPhoto(entry.id);count++;
+        }catch{/* Leave original unchanged. */}
+      }
+      status.textContent=count?count+' foto scontornate. Gli originali sono conservati su questo dispositivo.':'Nessuna foto con sfondo uniforme da scontornare.';
+      await renderAll();if(count)await window.atelierDriveSync?.();
+    }catch(e){status.textContent='Scontorno non riuscito: '+e.message;}
+    finally{button.disabled=false;}
+  };
+  $('#v3RestorePhotos').onclick=async()=>{
+    const status=$('#v3CutoutStatus');let count=0;
+    for(const entry of await all('photos')){
+      if(!entry.originalBlob)continue;
+      await put({id:entry.id,blob:entry.originalBlob},'photos');forgetPhoto(entry.id);count++;
+    }
+    status.textContent=count?count+' fotografie originali ripristinate.':'Non ci sono fotografie da ripristinare.';
+    if(count){await renderAll();await window.atelierDriveSync?.();}
+  };
+
   // Real outfit swapping: choose an available garment in the same category, preserve the rest.
   const swap=document.createElement('section');swap.id='v3Swap';swap.className='v3-swap';
   swap.innerHTML='<div class="v3-block-head"><h3>Cambia un pezzo</h3><span>Scorri</span></div><div id="v3SwapRows"></div>';
