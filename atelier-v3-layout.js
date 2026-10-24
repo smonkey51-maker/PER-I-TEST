@@ -27,12 +27,12 @@
    }
    const outfit=home.querySelector('#todayContent>.idea-card:first-child');
    if(outfit){
-     const heading=outfit.querySelector('h2');if(heading)heading.textContent='Il look di oggi';
+     const heading=outfit.querySelector('h2');if(heading)heading.textContent='Componi Look';
      const swap=outfit.querySelector('#atelierSwap');if(swap)swap.textContent='Cambia un capo';
    }
    const add=document.querySelector('.tab[data-tab="add"]');if(add)add.setAttribute('aria-label','Aggiungi');
    const wardrobe=document.querySelector('.tab[data-tab="wardrobe"]');if(wardrobe)wardrobe.setAttribute('aria-label','Guardaroba');
-   const title=document.querySelector('#view-wardrobe .view-head h1');if(title&&title.firstChild?.nodeType===3)title.firstChild.textContent='Guardaroba ';
+   const title=document.querySelector('#view-wardrobe .view-head h1');if(title&&title.firstChild?.nodeType===3)title.firstChild.textContent='Il Caveau ';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(layout,0),{once:true});else setTimeout(layout,0);
 })();

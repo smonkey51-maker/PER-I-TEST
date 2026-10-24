@@ -69,7 +69,7 @@
   const wardrobe=$('#view-wardrobe');
   const controls=document.createElement('div');
   controls.className='v3-refine';
-  controls.innerHTML='<div class="v3-segments" role="group" aria-label="Disponibilità"><button data-availability="ready" aria-pressed="true">Pronti</button><button data-availability="wash" aria-pressed="false">In lavatrice</button><button data-availability="fav" aria-pressed="false">Preferiti</button><button data-availability="all" aria-pressed="false">Tutti</button></div><button id="v3SortColor" aria-pressed="false">Per colore</button>';
+  controls.innerHTML='<div class="v3-segments" role="group" aria-label="Disponibilità"><button data-availability="ready" aria-pressed="true">Pronti</button><button data-availability="wash" aria-pressed="false">In lavatrice</button><button data-availability="fav" aria-pressed="false">Pezzi Iconici</button><button data-availability="all" aria-pressed="false">Tutti</button></div><button id="v3SortColor" aria-pressed="false">Per colore</button>';
   $('#chips')?.after(controls);
   const insights=document.createElement('div');
   insights.id='v3Insights';insights.className='v3-insights';
@@ -263,7 +263,7 @@
   add.querySelector('.view-head')?.after(addHero);
   async function refreshEditorial(){
     const city=place?.name||'';
-    liveWeather.innerHTML=weather?wxIcon(weather)+'<span>'+(weather.now??weather.tmax)+'°</span>':'';
+    liveWeather.innerHTML=weather?wxIcon(weather,'',true)+'<span>'+(weather.now??weather.tmax)+'°</span>':'';
     liveWeather.title=weather?(wxText(weather)+(city?' · '+city:'')):'';
     const garments=await all();
     const images=garments.filter(g=>photoSrc(g.id)).slice(0,3);

@@ -1,6 +1,7 @@
 {
   "functions": {
     "api/celebrity.js": { "maxDuration": 60 },
-    "api/illustrate.js": { "maxDuration": 60 }
+    "api/illustrate.js": { "maxDuration": 60 },
+    "api/cutout.js": { "maxDuration": 60 }
   }
 }

@@ -1,17 +1,26 @@
-/* ATELIER — tema premium scuro in stile iOS (nero, grigi, accento azzurro).
-   Caricato per ultimo: sostituisce i colori caldi del tema v3 senza toccarne le funzioni. */
+/* ATELIER — Quiet Luxury Dark Mode, regola 60-30-10.
+   60% nero opaco (#121212) dietro i capi, 30% grigio titanio (#1C1E24) per schede e barre,
+   10% accento: lime elettrico per le azioni principali, viola indaco solo per ciò che fa l'AI.
+   Caricato per ultimo: sostituisce i colori del tema v3 senza toccarne le funzioni. */
 :root {
   color-scheme: dark;
-  --bg: #0c0c0e;
-  --surface: #1c1c1e;
-  --surface-2: #2a2a2d;
-  --surface-3: #3a3a3d;
-  --text: #f5f5f7;
-  --muted: #98989f;
-  --accent: #4da3ff;
-  --accent-ink: #04121f;
+  --bg: #121212;
+  --surface: #1c1e24;
+  --surface-2: #272a32;
+  --surface-3: #343842;
+  --text: #f4f5f7;
+  --muted: #9a9fab;
+  --accent: #ddf244;
+  --accent-ink: #151a02;
+  --ai: #6366f1;
+  --ai-soft: rgba(99, 102, 241, .16);
   --danger: #ff8a80;
-  --sun: #ffc83d;
+  --sun: #fdba74;
+  --icon: #eaeff8;
+  --rain: #60a5fa;
+  --ice: #93c5fd;
+  --smoke: #8f95a5;
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
   --rule: rgba(255, 255, 255, .07);
   --line: rgba(255, 255, 255, .07);
   --serif: "Bodoni Moda", "Didot", Georgia, serif;
@@ -25,7 +34,7 @@ a { color: var(--accent); }
 
 /* Intestazione: marchio, meteo dal vivo, lingua */
 .top { position: sticky !important; top: 0; z-index: 20; }
-.top::before { content: ''; position: absolute; inset: 0; z-index: -1; background: rgba(12, 12, 14, .82); -webkit-backdrop-filter: saturate(150%) blur(16px); backdrop-filter: saturate(150%) blur(16px); }
+.top::before { content: ''; position: absolute; inset: 0; z-index: -1; background: rgba(18, 18, 18, .8); -webkit-backdrop-filter: saturate(150%) blur(16px); backdrop-filter: saturate(150%) blur(16px); }
 .top-inner { align-items: center !important; min-height: 56px; padding: 12px 22px 8px !important; padding-right: 64px !important; }
 .brand { font: 400 22px var(--serif) !important; letter-spacing: .04em !important; }
 .v3-header-weather { display: flex; align-items: center; gap: 6px; margin-left: auto; max-width: none !important; font-size: 15px !important; font-weight: 500; color: var(--text) !important; }
@@ -118,23 +127,27 @@ input::placeholder { color: var(--muted); }
 .wx-side > span:first-child { color: var(--text); font-size: 14px; }
 .wx-card + .small { margin-top: 8px; }
 
-/* Icone meteo animate */
+/* Icone a linea singola (1.5px), senza fondi pieni */
 .wx-ico { display: inline-flex; flex: none; width: 46px; height: 46px; }
-.wx-ico svg { width: 100%; height: 100%; overflow: visible; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.wx-ico .sun { fill: var(--sun); stroke: none; }
-.wx-ico .rays { stroke: var(--sun); transform-origin: 12px 12px; animation: wx-spin 24s linear infinite; }
+.wx-ico svg { width: 100%; height: 100%; overflow: visible; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.wx-ico .core { stroke: var(--icon); transition: fill .6s var(--ease), stroke .6s var(--ease); }
+.wx-ico .rays { stroke: var(--icon); transform-origin: 12px 12px; animation: wx-spin 40s linear infinite; }
 .wx-ico .rays.small { transform-origin: 8.5px 8px; }
-.wx-ico .cloud { fill: #d9dce3; stroke: none; }
-.wx-cloud .cloud, .wx-partly .cloud { animation: wx-drift 6s ease-in-out infinite alternate; }
-.wx-rain .cloud, .wx-snow .cloud, .wx-storm .cloud { fill: #aab0bb; }
-.wx-ico .drops { stroke: var(--accent); animation: wx-fall 1.1s linear infinite; }
-.wx-ico .flakes { fill: #fff; animation: wx-fall 2.4s linear infinite; }
-.wx-ico .fog { stroke: #b5bac4; animation: wx-drift 5s ease-in-out infinite alternate; }
-.wx-ico .bolt { stroke: var(--sun); stroke-width: 2; animation: wx-flash 3s steps(1) infinite; }
+.wx-ico.is-active .core { fill: var(--sun); stroke: var(--sun); }
+.wx-ico.is-active .rays { stroke: var(--sun); }
+.wx-ico .cloud { stroke: var(--rain); opacity: .9; }
+.wx-ico .drops { stroke: var(--rain); opacity: .9; animation: wx-fall 1.2s linear infinite; }
+.wx-ico .crystal { stroke: var(--ice); transform-origin: 12px 12px; animation: wx-spin 30s linear infinite; }
+.wx-ico .wind { stroke: var(--smoke); animation: wx-drift 4s ease-in-out infinite alternate; }
+.wx-ico .bolt { stroke: var(--sun); animation: wx-flash 3s steps(1) infinite; }
 @keyframes wx-spin { to { transform: rotate(360deg); } }
-@keyframes wx-drift { from { transform: translateX(-1px); } to { transform: translateX(1.5px); } }
-@keyframes wx-fall { from { transform: translateY(-2px); opacity: 1; } to { transform: translateY(3px); opacity: 0; } }
+@keyframes wx-drift { from { transform: translateX(-1.2px); } to { transform: translateX(1.6px); } }
+@keyframes wx-fall { from { transform: translateY(-1.5px); opacity: .95; } to { transform: translateY(2.5px); opacity: 0; } }
 @keyframes wx-flash { 0%, 60%, 70%, 100% { opacity: 1; } 62%, 68% { opacity: .15; } }
+
+/* Il consulente di stile (AI): stella a quattro punte in viola indaco */
+.ai-mark { display: inline-flex; width: 16px; height: 16px; flex: none; vertical-align: -2px; color: var(--ai); }
+.ai-mark svg { width: 100%; height: 100%; fill: var(--ai-soft); stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; }
 
 /* Domani e strumenti come schede */
 #tomorrow, #view-today .atelier-utilities { margin: 12px 0 0 !important; padding: 16px !important; border: 0 !important; border-radius: 18px; background: var(--surface) !important; }
@@ -143,15 +156,16 @@ input::placeholder { color: var(--muted); }
 .atelier-tool-actions .btn { padding: 10px 6px !important; font-size: 13px; }
 
 /* Barra delle schede: cinque voci uguali, attiva in azzurro */
-.tabs { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; height: calc(66px + env(safe-area-inset-bottom)) !important; padding: 4px 6px env(safe-area-inset-bottom) !important; background: rgba(22, 22, 24, .9) !important; border-top: 1px solid var(--rule) !important; -webkit-backdrop-filter: saturate(150%) blur(18px); backdrop-filter: saturate(150%) blur(18px) !important; }
+/* Vetro: grigio titanio al 75% con sfocatura 20px, i capi scorrono sotto */
+.tabs { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; height: calc(66px + env(safe-area-inset-bottom)) !important; padding: 4px 6px env(safe-area-inset-bottom) !important; background: rgba(28, 30, 36, .75) !important; border-top: 1px solid var(--rule) !important; -webkit-backdrop-filter: saturate(160%) blur(20px); backdrop-filter: saturate(160%) blur(20px) !important; }
 .tab { grid-column: auto !important; grid-row: auto !important; min-height: 54px !important; color: #8e8e93 !important; font: 500 10px var(--sans) !important; }
 .tab[aria-selected=true] { color: var(--accent) !important; }
 .tab .nav-icon { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; transition: background-color .2s var(--ease); }
 .tab svg { width: 22px !important; height: 22px !important; stroke: currentColor !important; }
-.tab[aria-selected=true] .nav-icon { background: rgba(77, 163, 255, .16); }
+.tab[aria-selected=true] .nav-icon { background: rgba(221, 242, 68, .12); }
 .tab[aria-selected=true] svg { stroke: var(--accent) !important; }
 .tab[data-tab=add] .nav-icon { width: 28px !important; height: 28px !important; background: none !important; }
-.tab[data-tab=add][aria-selected=true] .nav-icon { background: rgba(77, 163, 255, .16) !important; }
+.tab[data-tab=add][aria-selected=true] .nav-icon { background: rgba(221, 242, 68, .12) !important; }
 .tab[data-tab=add] svg { stroke: currentColor !important; stroke-width: 1.7 !important; }
 .tab[data-tab=add] .nav-text { display: block !important; }
 .tab:active { transform: scale(.94); }
@@ -216,7 +230,7 @@ input::placeholder { color: var(--muted); }
 #view-looks .look .board img { width: 100%; height: 100% !important; max-height: none !important; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(0, 0, 0, .45)) !important; }
 #view-looks .look .board .ph { display: flex; align-items: center; justify-content: center; height: 100%; padding: 6px; border-radius: 8px; background: rgba(255, 255, 255, .08); color: #e4e4e8; font: italic 400 13px/1.2 var(--serif); text-align: center; }
 .board-text { grid-column: 1 / -1; align-self: center; margin: 0; padding: 8px; text-align: center; color: #e4e4e8 !important; font: italic 400 15px/1.25 var(--serif) !important; }
-.look-more { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: rgba(12, 12, 14, .55); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); color: var(--text); cursor: pointer; }
+.look-more { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: rgba(18, 18, 18, .55); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); color: var(--text); cursor: pointer; }
 .look-more svg { width: 18px; height: 18px; fill: currentColor; }
 .look-menu { position: absolute; top: 48px; right: 14px; z-index: 3; min-width: 140px; padding: 4px; border-radius: 12px; background: var(--surface-2); box-shadow: 0 0 0 1px rgba(255, 255, 255, .1), 0 12px 32px rgba(0, 0, 0, .5); }
 .look-menu button { display: block; width: 100%; min-height: 40px; padding: 8px 12px; border: 0; border-radius: 8px; background: transparent; color: var(--text); font: 15px var(--sans); text-align: left; cursor: pointer; }
@@ -293,3 +307,115 @@ dialog input, dialog select { min-height: 44px; padding: 10px 12px; }
 
 /* Disegni automatici dei capi senza foto: stessa resa delle foto scontornate */
 img.illus { object-fit: contain; background: transparent !important; }
+
+/* ---------- Studio: accenti, profilo, diario, suggerimenti, stagioni, molla ---------- */
+
+/* Pulsante del profilo nell'intestazione, accanto al meteo e alla lingua */
+.profile-btn { order: 3; display: grid; place-items: center; width: 34px; height: 34px; margin-left: 10px; padding: 0; border: 0; border-radius: 50%; background: var(--surface); color: var(--text); cursor: pointer; transition: transform .45s var(--spring), background-color .2s; }
+.profile-btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+.profile-btn.active { background: rgba(221, 242, 68, .14); color: var(--accent); }
+.v3-header-weather { order: 2; }
+.top-inner { padding-right: 70px !important; }
+
+/* Ispirazione: data e saluto, titolo, sottotitolo d'atelier */
+#view-today .greet .date span:empty { display: none; }
+#view-today .greet .sub { margin: 0 0 6px; color: var(--muted); font-size: 14px; }
+html body #view-today .greet .lede { font-size: 13px !important; color: var(--muted); opacity: .85; }
+
+/* Componi Look: l'outfit con il pulsante lime attaccato sotto, come nel mockup */
+#view-today #todayContent > .idea-card:first-child > h2 { display: flex !important; align-items: center; gap: 6px; }
+.compose-sub { margin: -4px 0 10px; font-size: 12px; color: var(--muted); }
+#view-today #todayContent > .idea-card:first-child > .actions { margin-top: 0 !important; }
+#view-today #wearIdea { grid-column: 1 / -1; margin-top: 14px; min-height: 52px; font-size: 16px; }
+#view-today #wearIdea.done { background: var(--surface-2) !important; color: var(--text) !important; }
+#anotherIdea { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+
+/* Suggerimenti del consulente */
+.suggest { border-top: 1px solid var(--rule) !important; }
+.suggest-title { display: flex !important; align-items: center; gap: 6px; font: 600 15px var(--sans) !important; margin: 0 0 6px !important; }
+.suggest ul { margin: 0; padding: 0; list-style: none; }
+.suggest li { position: relative; padding: 4px 0 4px 14px; font-size: 14px; color: var(--text); }
+.suggest li::before { content: ''; position: absolute; left: 0; top: 12px; width: 5px; height: 5px; border-radius: 50%; background: var(--ai); }
+
+/* Stella dell'AI sulle foto create dal consulente */
+.v3-stage { position: relative; }
+.ai-badge { position: absolute; top: 6px; right: 6px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: rgba(18, 18, 18, .7); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.ai-badge .ai-mark { width: 13px; height: 13px; }
+
+/* Crea nuovo look: pulsante lime fluttuante sopra la barra */
+#view-looks:not(.hidden) #newLook { position: fixed; right: 18px; bottom: calc(82px + env(safe-area-inset-bottom)); z-index: 30; display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 12px 20px !important; box-shadow: 0 10px 30px rgba(0, 0, 0, .5) !important; }
+#newLook svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+#view-looks { padding-bottom: 70px; }
+
+/* Profilo Sartoriale */
+.studio-card { margin: 0 0 12px; padding: 16px; border-radius: 18px; background: var(--surface); }
+.studio-card h2 { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; font: 600 15px var(--sans) !important; letter-spacing: 0 !important; }
+.studio-card .small { margin: 0; font-size: 13px; }
+.studio-actions { display: flex; gap: 8px; margin-top: 12px; }
+.studio-actions .btn { flex: 1; }
+.studio-value { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 16px; font-weight: 500; }
+.studio-wx { width: 28px; height: 28px; }
+.studio-row { display: flex; gap: 8px; }
+.studio-row input { flex: 1; min-width: 0; background: var(--surface-2) !important; min-height: 44px; padding: 10px 12px; }
+.studio-card .link-btn { padding: 0; min-height: 36px; border: 0; background: none; color: var(--accent); font-size: 14px; }
+.studio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+.studio-grid label { display: grid; gap: 4px; margin: 0; font-size: 12px; color: var(--muted); }
+.studio-grid input, .studio-grid select { min-height: 44px; padding: 8px 12px; background: var(--surface-2) !important; }
+.studio-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; margin-bottom: 8px; border-radius: 14px; background: var(--bg); }
+.studio-seg button { min-height: 40px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); font: 500 14px var(--sans); cursor: pointer; transition: transform .45s var(--spring), background-color .2s, color .2s; }
+.studio-seg button[aria-pressed=true] { background: var(--surface-3); color: var(--text); }
+.studio-link { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 0; border: 0; border-top: 1px solid var(--rule); background: none; color: var(--text); text-align: left; cursor: pointer; }
+.studio-link:first-of-type { border-top: 0; }
+.studio-link span { flex: 1; display: grid; gap: 2px; }
+.studio-link b { font-weight: 600; font-size: 15px; }
+.studio-link small { color: var(--muted); font-size: 12px; }
+.row-chev { width: 16px; height: 16px; fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.studio-toggle { display: flex; gap: 12px; align-items: flex-start; margin: 0; padding: 10px 0; border-top: 1px solid var(--rule); color: var(--text); font-size: 14px; cursor: pointer; }
+.studio-toggle:first-of-type { border-top: 0; }
+.studio-toggle input { width: 20px; height: 20px; margin: 2px 0 0; flex: none; accent-color: var(--accent); }
+.studio-toggle span { display: grid; gap: 2px; }
+.studio-toggle small { color: var(--muted); font-size: 12px; }
+
+/* Il Diario di Stile */
+.back-btn { display: grid; place-items: center; width: 34px; height: 34px; margin: 0 0 6px -6px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--text); cursor: pointer; flex-basis: 100%; justify-content: start; }
+.back-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.diary-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+.diary-stats > div { padding: 14px; border-radius: 16px; background: var(--surface); }
+.diary-stats strong { display: block; font-size: 26px; font-weight: 600; }
+.diary-stats span { font-size: 12px; color: var(--muted); }
+.diary-stats .diary-top { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.diary-stats .diary-top b { font-weight: 500; text-align: right; }
+.diary-month { margin: 22px 0 8px; font: 600 13px var(--sans) !important; color: var(--muted); letter-spacing: .02em !important; }
+.diary-day { display: grid; grid-template-columns: 46px 1fr; grid-template-rows: auto auto; gap: 6px 12px; padding: 12px 14px; margin-bottom: 8px; border-radius: 16px; background: var(--surface); }
+.diary-date { grid-row: 1 / 3; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+.diary-date strong { font: 400 26px var(--serif); }
+.diary-date small { font-size: 11px; color: var(--muted); text-transform: capitalize; }
+.diary-look { display: flex; gap: 6px; padding: 6px; border-radius: 12px; background: linear-gradient(90deg, #4f525b, #343842); overflow: hidden; }
+.diary-piece { flex: none; width: 44px; height: 54px; padding: 0; border: 0; background: none; cursor: pointer; transition: transform .45s var(--spring); }
+.diary-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .45)); }
+.diary-names { margin: 0; font-size: 12px; color: var(--muted); }
+.diary-empty p { margin: 0; color: var(--muted); }
+
+/* Stagioni a riquadri, come nel mockup */
+.season-source { position: absolute !important; width: 1px !important; height: 1px !important; opacity: 0; pointer-events: none; }
+.season-chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 6px 0 4px; }
+.season-chip { display: grid; justify-items: center; gap: 4px; padding: 10px 4px 8px; border: 1px solid transparent; border-radius: 14px; background: var(--surface-2); color: var(--muted); font: 500 12px var(--sans); cursor: pointer; transition: transform .45s var(--spring), border-color .2s, color .2s, background-color .2s; }
+.season-chip svg { width: 24px; height: 24px; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.s-primavera svg { stroke: #86efac; } .s-estate svg { stroke: var(--sun); } .s-autunno svg { stroke: #f59e0b; } .s-inverno svg { stroke: var(--ice); }
+.season-chip[aria-pressed=true] { border-color: var(--accent); background: rgba(221, 242, 68, .08); color: var(--text); }
+
+/* Micro-interazioni con effetto molla */
+.btn, .chip, .tab, .v3-piece, .look, .ios-day > summary, .v3-swap-strip button, .studio-link, .look-more, .season-chip, .diary-piece { transition-property: transform, background-color, color, border-color, box-shadow, filter; transition-duration: .45s; transition-timing-function: var(--spring); }
+.btn:active:not(:disabled), .chip:active, .v3-piece:active, .look:active, .season-chip:active, .diary-piece:active, .profile-btn:active, .studio-seg button:active { transform: scale(.95); }
+.v3-swap-strip button[aria-pressed=true] { animation: spring-pop .55s var(--spring); }
+.season-chip[aria-pressed=true], .studio-seg button[aria-pressed=true], .v3-refine button[aria-pressed=true] { animation: spring-pop .5s var(--spring); }
+#idea .strip.enter figure { animation: spring-in .7s var(--spring) both !important; animation-delay: calc(var(--i, 0) * 70ms) !important; }
+@keyframes spring-pop { 0% { transform: scale(.9); } 100% { transform: scale(1); } }
+@keyframes spring-in { from { opacity: 0; transform: translateY(14px) scale(.92); } to { opacity: 1; transform: none; } }
+
+/* Nel Profilo l'accesso è già nella scheda Account */
+body:has(#view-profile:not(.hidden)) #accountPanel, body:has(#view-diary:not(.hidden)) #accountPanel { display: none !important; }
+/* Campi delle bozze: etichetta sopra, campo a tutta larghezza (anche i numeri) */
+#review label { display: grid; gap: 4px; }
+#review input, #review select { width: 100%; min-height: 44px; padding: 10px 12px; }
+.ios-day-thumbs { background: linear-gradient(90deg, #4f525b, #343842) !important; }
