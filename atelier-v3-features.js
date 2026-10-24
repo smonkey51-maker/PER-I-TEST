@@ -130,7 +130,7 @@
   // Product link: import accessible direct images; fall back to a real editable draft.
   const add=$('#view-add');
   const modes=document.createElement('div');modes.className='v3-add-modes';
-  modes.innerHTML='<button type="button" id="v3Photos"><b>Scegli le foto</b><span>Fino a 40 fotografie · scontorno degli sfondi uniformi</span><i>→</i></button><button type="button" id="v3Link"><b>Incolla un link</b><span>Importa un’immagine accessibile oppure compila i dati</span><i>→</i></button><button type="button" id="v3Manual"><b>Scrivi a mano</b><span>Per un capo senza fotografia</span><i>→</i></button><form id="v3LinkForm" hidden><label for="v3ProductUrl">Link del prodotto o dell'immagine</label><input type="url" id="v3ProductUrl" required placeholder="https://..."><button class="btn" type="submit">Importa</button><p id="v3LinkStatus" role="status"></p></form>';
+  modes.innerHTML='<button type="button" id="v3Photos"><b>Scegli le foto</b><span>Fino a 40 fotografie · scontorno degli sfondi uniformi</span><i>→</i></button><button type="button" id="v3Link"><b>Incolla un link</b><span>Importa un’immagine accessibile oppure compila i dati</span><i>→</i></button><button type="button" id="v3Manual"><b>Scrivi a mano</b><span>Per un capo senza fotografia</span><i>→</i></button><form id="v3LinkForm" hidden><label for="v3ProductUrl">Link del prodotto o di una fotografia</label><input type="url" id="v3ProductUrl" required placeholder="https://..."><button class="btn" type="submit">Importa</button><p id="v3LinkStatus" role="status"></p></form>';
   add.querySelector('.view-head')?.after(modes);
   $('#v3Photos').onclick=()=>$('#photos').click();
   $('#v3Manual').onclick=()=>$('#noPhoto').click();
