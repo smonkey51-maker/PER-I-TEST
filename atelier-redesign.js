@@ -27,12 +27,12 @@
    }
    const outfit=home.querySelector('#todayContent>.idea-card:first-child');
    if(outfit){
-     const heading=outfit.querySelector('h2');if(heading)heading.textContent='La proposta di oggi';
+     const heading=outfit.querySelector('h2');if(heading)heading.textContent='Il look di oggi';
      const swap=outfit.querySelector('#atelierSwap');if(swap)swap.textContent='Cambia un capo';
    }
    const add=document.querySelector('.tab[data-tab="add"]');if(add)add.textContent='Aggiungi';
    const wardrobe=document.querySelector('.tab[data-tab="wardrobe"]');if(wardrobe)wardrobe.textContent='Armadio';
-   const title=document.querySelector('#view-wardrobe .view-head h1');if(title&&title.firstChild?.nodeType===3)title.firstChild.textContent='Il tuo armadio ';
+   const title=document.querySelector('#view-wardrobe .view-head h1');if(title&&title.firstChild?.nodeType===3)title.firstChild.textContent='La collezione ';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(layout,0),{once:true});else setTimeout(layout,0);
 })();
