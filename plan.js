@@ -3,13 +3,37 @@
 const PLAN_DAYS = 7; // da domani
 let plans = new Map(); // data (AAAA-MM-GG) → piano del giorno
 let plansSig = '';
+let plansRepeat = false; // con i capi attuali non bastano combinazioni diverse per tutti i giorni
+
+// Il «nucleo» di un outfit (sopra, pantaloni, scarpe): due giorni con lo stesso nucleo hanno lo stesso outfit
+const CORE_CATS = ['Maglieria', 'Camicie e T-shirt', 'Pantaloni e jeans', 'Scarpe'];
+const coreOf = (ids, byId) => new Set(ids.filter(id => byId.has(id) && CORE_CATS.includes(catOf(byId.get(id)))));
+const coreOverlap = (a, b) => [...a].filter(id => b.has(id)).length;
+const sameCore = (a, b) => a.size === b.size && coreOverlap(a, b) === a.size;
+
+// Tra più proposte sceglie quella che non ripete un outfit già scelto e che cambia di più rispetto ai giorni vicini
+function distinctOutfit(garments, tags, others, near) {
+  const byId = new Map(garments.map(g => [g.id, g]));
+  let best = null;
+  for (let i = 0; i < 60; i++) {
+    const o = generateOutfit(garments, tags);
+    if (o.missing) return o;
+    const core = coreOf(o.ids, byId);
+    const score = (others.some(c => sameCore(c, core)) ? 1000 : 0) +
+      near.reduce((n, c) => n + coreOverlap(c, core), 0) * 10 +
+      others.reduce((n, c) => n + coreOverlap(c, core), 0);
+    if (!best || score < best.score) best = { o, score };
+    if (score === 0) break;
+  }
+  return best.o;
+}
 
 const dayKey = offset => { const d = new Date(); d.setDate(d.getDate() + offset); return ymd(d); };
 const dayLabel = key => cap(new Date(key + 'T12:00:00').toLocaleDateString(appLocale(), { weekday: 'long', day: 'numeric', month: 'long' }));
 
 // Piano di un giorno: occasioni, fasi (lavoro / dopo il lavoro), meteo previsto e outfit
 // Gli outfit sono composti solo da capi attualmente disponibili: nessuna disponibilità futura presunta.
-function buildPlan(offset, garments, avoid) {
+function buildPlan(offset, garments, avoid, others = [], near = []) {
   const key = dayKey(offset);
   garments = garments.filter(g => !washing(g));
   const events = eventsOnDay(allEvents, key);
@@ -22,7 +46,7 @@ function buildPlan(offset, garments, avoid) {
   avoidIds = avoid;
   let outfit, after = null;
   try {
-    outfit = generateOutfit(garments, tags);
+    outfit = distinctOutfit(garments, tags, others, near);
     if (!outfit.missing && phases) after = deriveOutfit(garments, outfit.ids, phases.afterTags);
   } finally {
     wxNow = savedWx;
@@ -42,11 +66,21 @@ function ensurePlans(garments) {
   plansSig = sig;
   plans = new Map();
   const used = new Set();
+  const byId = new Map(garments.map(g => [g.id, g]));
+  // Anche l'outfit di oggi conta: domani non lo ripete
+  const cores = typeof idea !== 'undefined' && idea?.ids && !idea.missing ? [coreOf(idea.ids, byId)] : [];
   for (let o = 1; o <= PLAN_DAYS; o++) {
-    const p = buildPlan(o, garments, new Set(used));
+    const p = buildPlan(o, garments, new Set(used), cores, cores.slice(-1));
     plans.set(p.key, p);
     idsOfPlan(p).forEach(id => used.add(id));
+    if (!p.outfit.missing) cores.push(coreOf(p.outfit.ids, byId));
   }
+  plansRepeat = checkRepeats(byId);
+}
+
+function checkRepeats(byId) {
+  const cores = [...plans.values()].filter(p => !p.outfit.missing).map(p => coreOf(p.outfit.ids, byId));
+  return cores.some((c, i) => cores.slice(i + 1).some(d => sameCore(c, d)));
 }
 
 function planStrip(ids, byId) {
@@ -180,7 +214,12 @@ async function regeneratePlan(key) {
   if (!p0) return;
   const avoid = new Set();
   for (const [k, p] of plans) if (k !== key) idsOfPlan(p).forEach(id => avoid.add(id));
-  plans.set(key, buildPlan(p0.offset, garments, avoid));
+  const byId = new Map(garments.map(g => [g.id, g]));
+  // «Cambia outfit» propone un outfit diverso da quello attuale e da tutti gli altri giorni
+  const others = [...plans.values()].filter(p => !p.outfit.missing).map(p => coreOf(p.outfit.ids, byId));
+  const near = [plans.get(dayKey(p0.offset - 1)), plans.get(dayKey(p0.offset + 1))].filter(p => p && !p.outfit.missing).map(p => coreOf(p.outfit.ids, byId));
+  plans.set(key, buildPlan(p0.offset, garments, avoid, others, near));
+  plansRepeat = checkRepeats(byId);
   renderPlans(garments);
   revealImages();
 }

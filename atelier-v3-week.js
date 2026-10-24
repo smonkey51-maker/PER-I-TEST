@@ -7,6 +7,7 @@
     let html='';
     if(!place)html+='<p class="small">Imposta la città nella sezione Oggi per includere il meteo.</p>';
     if(allEvents===null)html+='<p class="small">Collega Google Calendar per includere i tuoi impegni.</p>';
+    if(plansRepeat)html+='<p class="small">Con i capi lavati di adesso non ci sono abbastanza combinazioni diverse per tutti i giorni: alcuni outfit si ripetono. Aggiungi capi o segna come lavati quelli in lavatrice.</p>';
     html+='<div class="ios-week">'+source.map(p=>{
       const date=new Date(p.key+'T12:00:00');
       const day=date.toLocaleDateString(appLocale(),{weekday:'short'}).replace('.','');

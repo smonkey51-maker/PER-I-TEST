@@ -1,5 +1,5 @@
 /* ATELIER — service worker: apre l'app anche senza rete, i dati restano sul dispositivo */
-const CACHE = 'atelier-v24';
+const CACHE = 'atelier-v25';
 const SHELL = ['/', '/index.html', '/style.css', '/wardrobe-experience.css', '/wardrobe-experience.js', '/atelier-tools.js', '/atelier-tools.css', '/atelier-redesign.css', '/atelier-redesign.js', '/atelier-clean.css', '/atelier-inspired.css', '/atelier-dark.css', '/atelier-flat.css', '/atelier-premium.css', '/atelier-v3.css', '/atelier-v3-layout.js', '/atelier-v3-features.js', '/atelier-v3-week.js', '/atelier-v3-features.css', '/atelier-account-hidden.css', '/atelier-i18n.css', '/atelier-i18n.js', '/atelier-ios.css', '/atelier-ios.js', '/app.js', '/plan.js', '/drive-sync.js', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png', '/fonts/cormorant-garamond-latin-500-normal.woff2', '/fonts/cormorant-garamond-latin-600-normal.woff2'];
 
 self.addEventListener('install', e => {

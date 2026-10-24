@@ -88,6 +88,7 @@
     'Nome di una persona nota':'Name of a well-known person','Domani':'Tomorrow','Vedi i prossimi giorni':'See the coming days',
     'Foto':'Photo','Illustrativa, creata dalla descrizione':'Illustrative, created from the description','Usa la tua foto':'Use your own photo',
     'Creata l’immagine di 1 capo senza foto':'Created the image of 1 item without a photo',
+    'Con i capi lavati di adesso non ci sono abbastanza combinazioni diverse per tutti i giorni: alcuni outfit si ripetono. Aggiungi capi o segna come lavati quelli in lavatrice.':'With your clean items right now there are not enough different combinations for every day, so some outfits repeat. Add items or mark the ones in the laundry as washed.',
     'Per il lavoro':'For work','Dopo il lavoro':'After work','Indossato oggi':'Worn today'
   };
   const rules=[
