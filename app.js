@@ -861,13 +861,22 @@ function wornText(g) {
   return n + (n === 1 ? ' volta' : ' volte') + ', l\u2019ultima ' + (d === 0 ? 'oggi' : d === 1 ? 'ieri' : d + ' giorni fa');
 }
 
+// Giorni di inattività: dall'ultima volta indossato, o dall'inserimento se non è mai stato indossato
+function idleDays(g) {
+  const d = daysSinceWorn(g);
+  if (d !== null) return d;
+  return g.createdAt ? Math.floor((Date.now() - g.createdAt) / 86400000) : null;
+}
+
 // Preferiti più probabili; i capi appena indossati riposano, quelli dimenticati tornano a farsi vedere
 function affinity(g) {
   let f = g.preferito ? 1.5 : 1;
   const d = daysSinceWorn(g);
-  if (d === null) f *= 1.15;
+  if (d === null) f *= (idleDays(g) ?? 0) >= 30 ? 1.5 : 1.15;
   else if (d < 2) f *= .35;
   else if (d < 5) f *= .7;
+  else if (d >= 60) f *= 2.2;
+  else if (d >= 30) f *= 1.6;
   else if (d >= 21) f *= 1.25;
   return f;
 }
