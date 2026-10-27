@@ -1,17 +1,19 @@
 /* ATELIER — Quiet Luxury Dark Mode, regola 60-30-10.
-   60% nero opaco (#121212) dietro i capi, 30% grigio titanio (#1C1E24) per schede e barre,
-   10% accento: lime elettrico per le azioni principali, viola indaco solo per ciò che fa l'AI.
+   60% antracite (#0F0F0E) dietro i capi, 30% grigi caldi per schede e barre, testo color osso (#F4F1EA),
+   10% accento: ottone antico (#C5A880) per le azioni principali, viola indaco solo per ciò che fa l'AI.
    Caricato per ultimo: sostituisce i colori del tema v3 senza toccarne le funzioni. */
 :root {
   color-scheme: dark;
-  --bg: #121212;
-  --surface: #1c1e24;
-  --surface-2: #272a32;
-  --surface-3: #343842;
-  --text: #f4f5f7;
-  --muted: #9a9fab;
-  --accent: #ddf244;
-  --accent-ink: #151a02;
+  --bg: #0f0f0e;
+  --bg-rgb: 15, 15, 14;
+  --surface: #181816;
+  --surface-2: #22211e;
+  --surface-3: #2e2c28;
+  --text: #f4f1ea;
+  --muted: #a7a296;
+  --accent: #c5a880;
+  --accent-rgb: 197, 168, 128;
+  --accent-ink: #17130d;
   --ai: #6366f1;
   --ai-soft: rgba(99, 102, 241, .16);
   --danger: #ff8a80;
@@ -34,7 +36,7 @@ a { color: var(--accent); }
 
 /* Intestazione: marchio, meteo dal vivo, lingua */
 .top { position: sticky !important; top: 0; z-index: 20; }
-.top::before { content: ''; position: absolute; inset: 0; z-index: -1; background: rgba(18, 18, 18, .8); -webkit-backdrop-filter: saturate(150%) blur(16px); backdrop-filter: saturate(150%) blur(16px); }
+.top::before { content: ''; position: absolute; inset: 0; z-index: -1; background: rgba(var(--bg-rgb), .8); -webkit-backdrop-filter: saturate(150%) blur(16px); backdrop-filter: saturate(150%) blur(16px); }
 .top-inner { align-items: center !important; min-height: 56px; padding: 12px 22px 8px !important; padding-right: 64px !important; }
 .brand { font: 400 22px var(--serif) !important; letter-spacing: .04em !important; }
 .v3-header-weather { display: flex; align-items: center; gap: 6px; margin-left: auto; max-width: none !important; font-size: 15px !important; font-weight: 500; color: var(--text) !important; }
@@ -162,10 +164,10 @@ input::placeholder { color: var(--muted); }
 .tab[aria-selected=true] { color: var(--accent) !important; }
 .tab .nav-icon { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; transition: background-color .2s var(--ease); }
 .tab svg { width: 22px !important; height: 22px !important; stroke: currentColor !important; }
-.tab[aria-selected=true] .nav-icon { background: rgba(221, 242, 68, .12); }
+.tab[aria-selected=true] .nav-icon { background: rgba(var(--accent-rgb), .12); }
 .tab[aria-selected=true] svg { stroke: var(--accent) !important; }
 .tab[data-tab=add] .nav-icon { width: 28px !important; height: 28px !important; background: none !important; }
-.tab[data-tab=add][aria-selected=true] .nav-icon { background: rgba(221, 242, 68, .12) !important; }
+.tab[data-tab=add][aria-selected=true] .nav-icon { background: rgba(var(--accent-rgb), .12) !important; }
 .tab[data-tab=add] svg { stroke: currentColor !important; stroke-width: 1.7 !important; }
 .tab[data-tab=add] .nav-text { display: block !important; }
 .tab:active { transform: scale(.94); }
@@ -230,7 +232,7 @@ input::placeholder { color: var(--muted); }
 #view-looks .look .board img { width: 100%; height: 100% !important; max-height: none !important; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(0, 0, 0, .45)) !important; }
 #view-looks .look .board .ph { display: flex; align-items: center; justify-content: center; height: 100%; padding: 6px; border-radius: 8px; background: rgba(255, 255, 255, .08); color: #e4e4e8; font: italic 400 13px/1.2 var(--serif); text-align: center; }
 .board-text { grid-column: 1 / -1; align-self: center; margin: 0; padding: 8px; text-align: center; color: #e4e4e8 !important; font: italic 400 15px/1.25 var(--serif) !important; }
-.look-more { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: rgba(18, 18, 18, .55); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); color: var(--text); cursor: pointer; }
+.look-more { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: rgba(var(--bg-rgb), .55); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); color: var(--text); cursor: pointer; }
 .look-more svg { width: 18px; height: 18px; fill: currentColor; }
 .look-menu { position: absolute; top: 48px; right: 14px; z-index: 3; min-width: 140px; padding: 4px; border-radius: 12px; background: var(--surface-2); box-shadow: 0 0 0 1px rgba(255, 255, 255, .1), 0 12px 32px rgba(0, 0, 0, .5); }
 .look-menu button { display: block; width: 100%; min-height: 40px; padding: 8px 12px; border: 0; border-radius: 8px; background: transparent; color: var(--text); font: 15px var(--sans); text-align: left; cursor: pointer; }
@@ -313,7 +315,7 @@ img.illus { object-fit: contain; background: transparent !important; }
 /* Pulsante del profilo nell'intestazione, accanto al meteo e alla lingua */
 .profile-btn { order: 3; display: grid; place-items: center; width: 34px; height: 34px; margin-left: 10px; padding: 0; border: 0; border-radius: 50%; background: var(--surface); color: var(--text); cursor: pointer; transition: transform .45s var(--spring), background-color .2s; }
 .profile-btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
-.profile-btn.active { background: rgba(221, 242, 68, .14); color: var(--accent); }
+.profile-btn.active { background: rgba(var(--accent-rgb), .14); color: var(--accent); }
 .v3-header-weather { order: 2; }
 .top-inner { padding-right: 70px !important; }
 
@@ -402,7 +404,7 @@ html body #view-today .greet .lede { font-size: 13px !important; color: var(--mu
 .season-chip { display: grid; justify-items: center; gap: 4px; padding: 10px 4px 8px; border: 1px solid transparent; border-radius: 14px; background: var(--surface-2); color: var(--muted); font: 500 12px var(--sans); cursor: pointer; transition: transform .45s var(--spring), border-color .2s, color .2s, background-color .2s; }
 .season-chip svg { width: 24px; height: 24px; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .s-primavera svg { stroke: #86efac; } .s-estate svg { stroke: var(--sun); } .s-autunno svg { stroke: #f59e0b; } .s-inverno svg { stroke: var(--ice); }
-.season-chip[aria-pressed=true] { border-color: var(--accent); background: rgba(221, 242, 68, .08); color: var(--text); }
+.season-chip[aria-pressed=true] { border-color: var(--accent); background: rgba(var(--accent-rgb), .08); color: var(--text); }
 
 /* Micro-interazioni con effetto molla */
 .btn, .chip, .tab, .v3-piece, .look, .ios-day > summary, .v3-swap-strip button, .studio-link, .look-more, .season-chip, .diary-piece { transition-property: transform, background-color, color, border-color, box-shadow, filter; transition-duration: .45s; transition-timing-function: var(--spring); }
@@ -419,3 +421,9 @@ body:has(#view-profile:not(.hidden)) #accountPanel, body:has(#view-diary:not(.hi
 #review label { display: grid; gap: 4px; }
 #review input, #review select { width: 100%; min-height: 44px; padding: 10px 12px; }
 .ios-day-thumbs { background: linear-gradient(90deg, #4f525b, #343842) !important; }
+
+/* Preferiti nei Look */
+.look-fav { position: absolute; top: 14px; left: 14px; z-index: 2; width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: rgba(var(--bg-rgb), .55); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); color: var(--text); cursor: pointer; }
+.look-fav svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+.look-fav[aria-pressed=true] { color: var(--accent); }
+.look-fav[aria-pressed=true] svg { fill: currentColor; }

@@ -1651,10 +1651,11 @@ function renderLooks(looks, garments) {
     const items = (l.capi || []).map(id => byId.get(id)).filter(Boolean);
     const inWash = items.filter(washing).length;
     const shown = items.slice(0, 4);
-    return '<article class="look" data-search="' + esc((l.nome + ' ' + (l.composizione || '')).toLowerCase()) + '">' +
+    return '<article class="look' + (l.preferito ? ' is-fav' : '') + '" data-fav="' + (l.preferito ? '1' : '') + '" data-search="' + esc((l.nome + ' ' + (l.composizione || '')).toLowerCase()) + '">' +
       '<div class="board n' + shown.length + '">' + (shown.length
         ? shown.map(g => '<figure>' + photoHtml(g.id, 'board-img fade', g.tipo || 'Capo') + '</figure>').join('')
         : '<p class="board-text">' + esc(l.composizione || '') + '</p>') + '</div>' +
+      '<button class="look-fav" data-look-fav="' + l.id + '" aria-pressed="' + !!l.preferito + '" aria-label="' + (l.preferito ? 'Togli dai preferiti' : 'Aggiungi ai preferiti') + '">' + HEART + '</button>' +
       '<button class="look-more" data-look-menu aria-label="Opzioni" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button>' +
       '<div class="look-menu hidden"><button data-look-edit="' + l.id + '">Modifica</button><button class="danger" data-look-delete="' + l.id + '">Rimuovi</button></div>' +
       '<h3>' + esc(l.nome) + '</h3>' +
@@ -1665,10 +1666,16 @@ function renderLooks(looks, garments) {
 }
 
 // Ricerca tra i look per nome e composizione
+let lookFavOnly = false;
 function filterLooks() {
   const q = norm($('#lookSearch').value.trim());
-  for (const el of document.querySelectorAll('#looks .look')) el.classList.toggle('hidden', !!q && !norm(el.dataset.search).includes(q));
+  for (const el of document.querySelectorAll('#looks .look')) el.classList.toggle('hidden', (!!q && !norm(el.dataset.search).includes(q)) || (lookFavOnly && !el.dataset.fav));
 }
+$('#lookFavFilter').onclick = () => {
+  lookFavOnly = !lookFavOnly;
+  $('#lookFavFilter').setAttribute('aria-pressed', String(lookFavOnly));
+  filterLooks();
+};
 $('#lookSearch').addEventListener('input', filterLooks);
 
 const closeLookMenus = except => document.querySelectorAll('#looks .look-menu').forEach(m => {
@@ -1679,6 +1686,15 @@ const closeLookMenus = except => document.querySelectorAll('#looks .look-menu').
 document.addEventListener('click', e => { if (!e.target.closest('#looks .look-more, #looks .look-menu')) closeLookMenus(); });
 
 $('#looks').addEventListener('click', async e => {
+  const fav = e.target.closest('[data-look-fav]');
+  if (fav) {
+    const look = (await all('looks')).find(l => l.id === fav.dataset.lookFav);
+    if (!look) return;
+    await update('looks', look.id, { preferito: look.preferito ? undefined : true });
+    await renderAll();
+    await window.atelierDriveSync?.();
+    return;
+  }
   const more = e.target.closest('[data-look-menu]');
   if (more) {
     const menu = more.nextElementSibling;
