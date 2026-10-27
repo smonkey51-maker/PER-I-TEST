@@ -448,7 +448,7 @@ function cardHtml(d) {
   return '<button class="card' + (washing(d) ? ' washing' : '') + '" data-open="' + d.id + '">' +
     '<div class="card-img-wrap">' + photoHtml(d.id, 'card-img fade', d.tipo || 'Capo') + (d.preferito ? '<span class="fav" aria-label="Preferito">' + HEART + '</span>' : '') + '</div>' +
     '<div class="card-body"><strong>' + esc(d.tipo || 'Capo') + '</strong><span>' +
-    (washing(d) ? 'In lavatrice' : (esc(known(d.colore)) || '&nbsp;')) + '</span></div></button>';
+    (washing(d) ? esc(careLabel(d)) : (esc(known(d.colore)) || '&nbsp;')) + '</span></div></button>';
 }
 
 function renderWardrobe(items) {
@@ -509,7 +509,8 @@ async function openDetail(id) {
     const fails = readJson('atelier_illustrate_fail', {});
     if (fails[id]) { delete fails[id]; writeJson('atelier_illustrate_fail', fails); scheduleIllustrations(); }
   }
-  if (washing(item)) rows.unshift(['Stato', 'In lavatrice']);
+  rows.push(['Cura', CARE_NAMES[careKind(item)] + ' · ' + wearsSinceCare(item) + '/' + careLimit(item) + ' utilizzi']);
+  if (washing(item)) rows.unshift(['Stato', careLabel(item)]);
   $('#detailFields').innerHTML = rows.filter(r => r[1]).map(r => '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>').join('');
   $('#detailWash').textContent = washing(item) ? 'Segna come lavato' : 'Metti in lavatrice';
   setFav(!!item.preferito);
@@ -517,6 +518,8 @@ async function openDetail(id) {
     '<label>Categoria<select name="categoria">' + CATS.map(c => '<option' + (c === catOf(item) ? ' selected' : '') + '>' + c + '</option>').join('') + '</select></label>' +
     FIELDS.map(f => '<label>' + LABELS[f] + '<input name="' + f + '" value="' + esc(item[f]) + '" autocomplete="off"></label>').join('') +
     '<label>Stile<select name="stile"><option value="">Automatico (' + STYLES[garmentStyle({ ...item, stile: '' })] + ')</option>' + Object.entries(STYLES).map(([k, v]) => '<option value="' + k + '"' + (item.stile === k ? ' selected' : '') + '>' + v + '</option>').join('') + '</select></label>' +
+    '<label>Cura<select name="cura"><option value="">Automatica (' + CARE_NAMES[careKind({ ...item, cura: '' })] + ')</option>' + Object.entries(CARE_NAMES).map(([k, v]) => '<option value="' + k + '"' + (item.cura === k ? ' selected' : '') + '>' + v + '</option>').join('') + '</select></label>' +
+    '<label>Utilizzi prima della cura<input name="soglia" type="number" min="1" max="99" inputmode="numeric" value="' + esc(item.soglia || '') + '" placeholder="' + careLimit({ ...item, soglia: '' }) + '"></label>' +
     '<div class="actions"><button type="submit" class="btn">Salva modifiche</button><button type="button" class="btn secondary" id="editCancel">Annulla</button></div>';
   setEditing(false);
   $('#detail').showModal();
@@ -601,8 +604,36 @@ $('#detailDelete').onclick = async () => {
   await window.atelierDriveSync?.();
 };
 
+/* ---------- Cura dei capi: lavaggio e manutenzione ---------- */
+
+const CARE_START = '2026-10-27'; // per i capi già presenti gli utilizzi si contano da qui
+const CARE_KINDS = { lavatrice: 'In lavatrice', delicato: 'Lavaggio delicato richiesto', mano: 'Lavaggio a mano richiesto', lavasecco: 'Lavasecco richiesto', pelle: 'Da trattare' };
+const CARE_NAMES = { lavatrice: 'Lavatrice', delicato: 'Delicato', mano: 'A mano', lavasecco: 'Lavasecco', pelle: 'Trattamento della pelle' };
+// Utilizzi dopo i quali il capo ha bisogno di cura, per categoria (modificabile capo per capo)
+const CARE_LIMITS = { 'Camicie e T-shirt': 2, 'Maglieria': 4, 'Pantaloni e jeans': 5, 'Giacche e capispalla': 10, 'Scarpe': 15, 'Accessori': 12, 'Altro': 5 };
+
+function careKind(g) {
+  if (CARE_KINDS[g.cura]) return g.cura;
+  const t = [g.tipo, g.materiale].join(' ').toLowerCase();
+  if (catOf(g) === 'Scarpe') return /pelle|camoscio|suede|nubuck/.test(t) || !/tela|sneaker|ginnastica/.test(t) ? 'pelle' : 'lavatrice';
+  if (/seta|cashmere|merino|lana|pizzo|velluto/.test(t)) return 'delicato';
+  return 'lavatrice';
+}
+
+function careLimit(g) {
+  const n = parseInt(g.soglia, 10);
+  return n > 0 ? n : CARE_LIMITS[catOf(g)] || 5;
+}
+
+function wearsSinceCare(g) {
+  return (g.indossato || []).filter(d => (g.curatoIl ? d > g.curatoIl : d >= CARE_START)).length;
+}
+
+// Stato mostrato quando il capo è fuori dai suggerimenti
+const careLabel = g => (washing(g) ? CARE_KINDS[careKind(g)] : '');
+
 async function setWash(ids, on) {
-  for (const id of ids) await update('garments', id, { stato: on ? 'lavatrice' : undefined });
+  for (const id of ids) await update('garments', id, on ? { stato: 'lavatrice' } : { stato: undefined, autoCura: undefined, curatoIl: todayStr() });
   await renderAll();
   toast(on ? (ids.length === 1 ? 'In lavatrice' : ids.length + ' capi in lavatrice') : (ids.length === 1 ? 'Segnato come lavato' : ids.length + ' capi lavati'));
   await window.atelierDriveSync?.();
@@ -1343,13 +1374,23 @@ $('#wearIdea').onclick = async () => {
   if (!idea?.ids) return;
   const today = todayStr();
   const garments = await all();
+  const tired = [];
   for (const id of new Set([...idea.ids, ...(second?.ids || [])])) {
     const g = garments.find(x => x.id === id);
-    if (g && !wornToday(g)) await update('garments', id, { indossato: [...(g.indossato || []), today].slice(-60) });
+    if (!g || wornToday(g)) continue;
+    const next = { ...g, indossato: [...(g.indossato || []), today].slice(-60) };
+    const patch = { indossato: next.indossato };
+    // raggiunta la soglia, il capo esce dai suggerimenti finché non lo segni come lavato
+    if (!washing(g) && wearsSinceCare(next) >= careLimit(next)) {
+      patch.stato = 'lavatrice';
+      patch.autoCura = true;
+      tired.push((g.tipo || 'capo').toLowerCase());
+    }
+    await update('garments', id, patch);
   }
   navigator.vibrate?.(12);
   const name = localStorage.getItem('atelier_name');
-  toast(name ? 'Buona giornata, ' + name + '.' : 'Buona giornata.');
+  toast((name ? 'Buona giornata, ' + name + '.' : 'Buona giornata.') + (tired.length ? ' Da curare: ' + tired.join(', ') + '.' : ''));
   await renderAll();
   await window.atelierDriveSync?.();
 };
