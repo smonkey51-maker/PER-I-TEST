@@ -81,6 +81,9 @@ Il titolo dell'impegno viene confrontato con queste parole (iniziano con il test
 
 **Schermo intero (senza barra del browser):** richiede `assetlinks.json` raggiungibile su `https://atelier-personal-wardrobe.vercel.app/.well-known/assetlinks.json` (c'è nel repository, servito da `vercel.json`). La chiave di firma `atelier-personal.keystore` è volutamente fissa e non segreta, perché l'APK è solo per uso personale; la sua impronta SHA-256 è in `assetlinks.json`. Per costruirlo in locale: `cd android-app && gradle assembleRelease` (servono JDK 17+ e Android SDK 34).
 
+## Tema chiaro e scuro
+Nel Profilo, «Aspetto» offre Automatico (segue il tema del telefono, è il predefinito), Scuro e Chiaro; la scelta resta sul dispositivo. Il tema chiaro (`atelier-theme.css`, `atelier-theme.js`) usa fondo osso, testo carbone e ottone più scuro per il testo; i riquadri che mostrano i capi restano scuri, come vetrine. Un piccolo script in `<head>` imposta `data-theme` subito, senza lampo. I colori fissi dei vecchi livelli CSS sono corretti con regole `:root[data-theme="light"]`; nuovi colori vanno scritti con i token (`--bg`, `--surface`, `--text`, `--muted`, `--accent`).
+
 ## Installazione come app
 Da Chrome apri `https://atelier-personal-wardrobe.vercel.app`: compare il pulsante **Installa app** (oppure menu ⋮ → «Installa app» / «Aggiungi a schermata Home»). L'app si apre a schermo intero e, grazie al service worker, anche senza connessione: i capi restano sul dispositivo e si sincronizzano al ritorno online.
 

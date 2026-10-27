@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="color-scheme" content="dark">
+  <meta name="color-scheme" content="dark light">
+  <script>try{var c=localStorage.getItem("atelier_theme")||"auto";document.documentElement.dataset.theme=c==="light"||(c==="auto"&&matchMedia("(prefers-color-scheme: light)").matches)?"light":"dark"}catch(e){}</script>
   <meta name="theme-color" content="#0f0f0e">
   <title>ATELIER · Personal Wardrobe</title>
   <link rel="manifest" href="/manifest.json">
@@ -29,6 +30,7 @@
   <link rel="stylesheet" href="/atelier-i18n.css">
   <link rel="stylesheet" href="/atelier-ios.css">
   <link rel="stylesheet" href="/atelier-feel.css">
+  <link rel="stylesheet" href="/atelier-theme.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..600;1,6..96,400..500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -288,5 +290,6 @@
   <script src="/atelier-ios.js" defer></script>
   <script src="/atelier-studio.js" defer></script>
   <script src="/atelier-feel.js" defer></script>
+  <script src="/atelier-theme.js" defer></script>
 </body>
 </html>
