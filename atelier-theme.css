@@ -1,0 +1,48 @@
+/* ATELIER — tema chiaro (osso e carbone, ottone più scuro per il testo).
+   Il tema scuro resta quello di atelier-ios.css; qui si ridefiniscono i token e si correggono i colori fissi. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f1ea;
+  --bg-rgb: 244, 241, 234;
+  --surface: #fbf9f4;
+  --surface-2: #ece7dc;
+  --surface-3: #ded7c8;
+  --text: #1c1b18;
+  --muted: #6c675b;
+  --accent: #8b6b38;
+  --accent-rgb: 139, 107, 56;
+  --accent-ink: #fffdf8;
+  --danger: #b3261e;
+  --sun: #b45309;
+  --icon: #2a2924;
+  --smoke: #7a7568;
+  --rule: rgba(28, 27, 24, .1);
+  --line: rgba(28, 27, 24, .1);
+}
+
+/* Barra in basso */
+:root[data-theme="light"] .tabs { background: rgba(251, 249, 244, .88) !important; border-top-color: var(--rule) !important; box-shadow: 0 -1px 0 var(--rule) !important; }
+:root[data-theme="light"] .tab { color: #8a8478 !important; }
+:root[data-theme="light"] .tab[aria-selected=true] { color: var(--accent) !important; }
+
+/* Testi che nei vecchi livelli avevano colori chiari fissi */
+:root[data-theme="light"] #view-today #weather,
+:root[data-theme="light"] #view-today #agenda,
+:root[data-theme="light"] .brand,
+:root[data-theme="light"] .v3-piece,
+:root[data-theme="light"] .v3-add-modes > button b,
+:root[data-theme="light"] .v3-weekday .v3-date,
+:root[data-theme="light"] .v3-refine button[aria-pressed=true],
+:root[data-theme="light"] dialog#detail,
+:root[data-theme="light"] #detailFields dd { color: var(--text) !important; }
+:root[data-theme="light"] .v3-refine,
+:root[data-theme="light"] #v3SortColor,
+:root[data-theme="light"] .v3-insights span,
+:root[data-theme="light"] .v3-option,
+:root[data-theme="light"] .v3-add-modes > button span,
+:root[data-theme="light"] #view-today .greet .date,
+:root[data-theme="light"] #view-wardrobe .card-body span,
+:root[data-theme="light"] #detailFields dt,
+:root[data-theme="light"] .chip { color: var(--muted) !important; }
+:root[data-theme="light"] .chip { border-color: var(--rule) !important; }
+:root[data-theme="light"] .chip[aria-pressed=true] { color: var(--accent-ink) !important; }
