@@ -20,12 +20,14 @@
       const thumb=g=>(photoSrc(g.id)||illusSrc(g.id))?'<img src="'+(photoSrc(g.id)||illusSrc(g.id))+'" alt=""'+(washing(g)?' style="opacity:.45"':'')+'>':'<i aria-hidden="true"></i>';
       const thumbs=items.slice(0,4).map(thumb).join('');
       const names=list=>list.map(g=>(g.tipo||'Capo').toLowerCase()).join(', ');
+      const rv=p.revived&&byId.get(p.revived.id);
+      const revivedBlock=rv?'<span class="ios-after">'+escV((appLang()==='en'?'Dusting off: ':'Rispolvero: ')+(rv.tipo||'Capo').toLowerCase()+(appLang()==='en'?', idle for ':', fermo da ')+p.revived.days+(appLang()==='en'?' days':' giorni'))+'</span>':'';
       const afterBlock=afterItems.length?'<span class="ios-after"><strong>'+(appLang()==='en'?'After work':'Dopo il lavoro')+'</strong> '+escV(names(afterItems))+'</span>':'';
       const description=[p.wx?wxText(p.wx):null,firstEventLine(p)].filter(Boolean).join(' · ');
       return '<details class="ios-day" data-day="'+escV(p.key)+'"'+(openDays.has(p.key)?' open':'')+'><summary>'+
         '<span class="ios-day-name"><strong>'+escV(day.charAt(0).toUpperCase()+day.slice(1))+'</strong><small>'+escV(short)+'</small></span>'+
         '<span class="ios-day-thumbs">'+thumbs+'</span>'+(p.wx?wxIcon(p.wx,'ios-day-wx'):'')+'<span class="ios-chev" aria-hidden="true"></span></summary>'+
-        '<div class="ios-day-body"><strong>'+escV(title)+'</strong><span>'+escV(description)+'</span>'+afterBlock+(dirtyNames.length?'<span class="warn">'+(appLang()==='en'?'In the wash: ':'In lavatrice: ')+escV(dirtyNames.join(', '))+'</span>':'')+
+        '<div class="ios-day-body"><strong>'+escV(title)+'</strong><span>'+escV(description)+'</span>'+afterBlock+revivedBlock+(dirtyNames.length?'<span class="warn">'+(appLang()==='en'?'In the wash: ':'In lavatrice: ')+escV(dirtyNames.join(', '))+'</span>':'')+
         '<button class="btn secondary" data-regen="'+escV(p.key)+'">Cambia outfit</button></div></details>';
     }).join('')+'</div>';
     $('#weekList').innerHTML=html;

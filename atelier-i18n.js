@@ -128,6 +128,7 @@
     [/^Indossato (\d+) volte$/,'Worn $1 times'],[/^Indossato 1 volta$/,'Worn once'],
     [/^(\d+) capi in lavatrice, esclusi dai suggerimenti$/,'$1 items in laundry, excluded from suggestions'],
     [/^(\d+) capi in lavatrice$/,'$1 items in laundry'],
+    [/^Fermo da (\d+) giorni$/,'Idle for $1 days'],[/^Rispolvero: (.+), fermo da (\d+) giorni\.?$/,'Dusting off: $1, idle for $2 days'],
     [/^Lavatrice · (\d+)\/(\d+) utilizzi$/,'Washing machine · $1/$2 wears'],[/^Delicato · (\d+)\/(\d+) utilizzi$/,'Delicate · $1/$2 wears'],[/^A mano · (\d+)\/(\d+) utilizzi$/,'By hand · $1/$2 wears'],[/^Lavasecco · (\d+)\/(\d+) utilizzi$/,'Dry cleaning · $1/$2 wears'],[/^Trattamento della pelle · (\d+)\/(\d+) utilizzi$/,'Leather treatment · $1/$2 wears'],
     [/^Automatica \((.+)\)$/,'Automatic ($1)'],
     [/^(\d+) foto scontornate\. Gli originali sono conservati su questo dispositivo\.$/,'$1 photos processed. Originals are kept on this device.'],

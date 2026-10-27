@@ -75,7 +75,45 @@ function ensurePlans(garments) {
     idsOfPlan(p).forEach(id => used.add(id));
     if (!p.outfit.missing) cores.push(coreOf(p.outfit.ids, byId));
   }
+  reviveForgotten(garments);
   plansRepeat = checkRepeats(byId);
+}
+
+// Capi fermi da tempo: ogni settimana almeno uno (fino a due) rientra in un outfit dove ci sta bene
+const IDLE_DAYS = 45;
+const SLOT_CATS = { ...SLOTS, outer: ['Giacche e capispalla'] };
+
+function reviveForgotten(garments) {
+  const inPlans = new Set([...plans.values()].flatMap(idsOfPlan));
+  const idle = garments.filter(g => !washing(g) && (idleDays(g) ?? 0) >= IDLE_DAYS && !inPlans.has(g.id))
+    .sort((a, b) => idleDays(b) - idleDays(a));
+  const byId = new Map(garments.map(g => [g.id, g]));
+  let done = 0;
+  for (const g of idle) {
+    if (done >= 2) break;
+    const slot = Object.keys(SLOT_CATS).find(s => SLOT_CATS[s].includes(catOf(g)));
+    if (!slot) continue;
+    const savedWx = wxNow;
+    let target = null, at = -1;
+    try {
+      for (const p of plans.values()) {
+        if (p.outfit.missing || p.revived) continue;
+        const i = p.outfit.ids.findIndex(id => SLOT_CATS[slot].includes(catOf(byId.get(id))));
+        if (i < 0) continue;
+        wxNow = p.wx ? wxProfile(p.wx) : null;
+        if (seasonFit(g) > 0 && styleFit(g, p.tags) >= 1) { target = p; at = i; break; }
+      }
+    } finally { wxNow = savedWx; }
+    if (!target) continue;
+    target.outfit.ids[at] = g.id;
+    target.revived = { id: g.id, days: idleDays(g) };
+    if (target.phases) {
+      const prev = wxNow;
+      wxNow = target.wx ? wxProfile(target.wx) : null;
+      try { target.after = deriveOutfit(garments, target.outfit.ids, target.phases.afterTags); } finally { wxNow = prev; }
+    }
+    done++;
+  }
 }
 
 function checkRepeats(byId) {
@@ -104,6 +142,7 @@ function planOutfitsHtml(p, byId, when) {
   if (p.phases) html += '<p class="phase">Per il lavoro' + (p.phases.workEnd ? ', fino alle ' + hhmm(p.phases.workEnd) : '') + '</p>';
   html += planStrip(p.outfit.ids, byId);
   if (p.outfit.warn) html += '<p class="warn">' + esc(p.outfit.warn) + '</p>';
+  if (p.revived && byId.get(p.revived.id)) html += '<p class="small">Rispolvero: ' + esc((byId.get(p.revived.id).tipo || 'capo').toLowerCase()) + ', fermo da ' + p.revived.days + ' giorni.</p>';
   if (p.after) {
     const nx = p.phases.next;
     html += '<div class="phase-block"><h4>Dopo il lavoro</h4><p class="phase">' + esc(nx.title) + (nx.manual ? '' : ', ' + esc(eventTime(nx))) + '</p>' +
