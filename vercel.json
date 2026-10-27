@@ -1,7 +1,11 @@
 {
   "functions": {
-    "api/celebrity.js": { "maxDuration": 60 },
-    "api/illustrate.js": { "maxDuration": 60 },
-    "api/cutout.js": { "maxDuration": 60 }
-  }
+    "api/celebrity.js": { "maxDuration": 60 }
+  },
+  "rewrites": [
+    { "source": "/.well-known/assetlinks.json", "destination": "/assetlinks.json" }
+  ],
+  "headers": [
+    { "source": "/assetlinks.json", "headers": [{ "key": "Content-Type", "value": "application/json" }] }
+  ]
 }

@@ -74,6 +74,13 @@ Il titolo dell'impegno viene confrontato con queste parole (iniziano con il test
 ## Analisi AI e sicurezza
 `/api/analyze`, `/api/inspire` e `/api/celebrity` rispondono solo se la richiesta porta il token dell'account Google collegato all'app (verificato con Google, deve appartenere a questo Client ID). Per limitarla a specifici indirizzi, su Vercel aggiungi `ALLOWED_EMAILS` con gli indirizzi separati da virgola. Il credito OpenAI è prepagato: tienilo senza ricarica automatica.
 
+## App Android (APK)
+`android-app/` contiene un piccolo progetto Android che apre il sito ATELIER a schermo intero (Trusted Web Activity: usa Chrome, quindi accesso con Google, vibrazione e funzionamento offline sono quelli del sito). Non serve Android Studio: lo costruisce GitHub (`.github/workflows/android-apk.yml`) e pubblica `ATELIER.apk` nelle **Release** del repository (tag `apk-latest`).
+
+**Installazione sul telefono:** apri la pagina Release del repository dal telefono (con l'account GitHub), scarica `ATELIER.apk` e aprilo; Android chiederà di consentire l'installazione da questa fonte. L'app si aggiorna da sola con il sito; l'APK va riscaricato solo se cambia `android-app/`.
+
+**Schermo intero (senza barra del browser):** richiede `assetlinks.json` raggiungibile su `https://atelier-personal-wardrobe.vercel.app/.well-known/assetlinks.json` (c'è nel repository, servito da `vercel.json`). La chiave di firma `atelier-personal.keystore` è volutamente fissa e non segreta, perché l'APK è solo per uso personale; la sua impronta SHA-256 è in `assetlinks.json`. Per costruirlo in locale: `cd android-app && gradle assembleRelease` (servono JDK 17+ e Android SDK 34).
+
 ## Installazione come app
 Da Chrome apri `https://atelier-personal-wardrobe.vercel.app`: compare il pulsante **Installa app** (oppure menu ⋮ → «Installa app» / «Aggiungi a schermata Home»). L'app si apre a schermo intero e, grazie al service worker, anche senza connessione: i capi restano sul dispositivo e si sincronizzano al ritorno online.
 
