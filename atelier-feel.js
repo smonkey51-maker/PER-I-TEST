@@ -14,7 +14,7 @@
 
   // Ogni gesto ha il suo feedback; i selettori sono in ordine di priorità
   const RULES = [
-    ['#wearIdea, [data-wash], #detailWash, #washAll, #detailFav, #save', 'confirm'],
+    ['#wearIdea, [data-look-fav], [data-wash], #detailWash, #washAll, #detailFav, #save', 'confirm'],
     ['#detailDelete, [data-manual-del], .discard', 'warn'],
     ['[data-open], .v3-piece, .card', 'open'],
     ['summary, .ios-day', 'soft'],
