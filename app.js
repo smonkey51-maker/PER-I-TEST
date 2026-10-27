@@ -546,7 +546,7 @@ $('#detailFav').onclick = async () => {
   const b = $('#detailFav');
   b.classList.remove('bump');
   void b.offsetWidth;
-  if (on) { b.classList.add('bump'); navigator.vibrate?.(10); }
+  if (on) b.classList.add('bump');
   await renderAll();
   await window.atelierDriveSync?.();
 };
@@ -1397,7 +1397,6 @@ $('#wearIdea').onclick = async () => {
     }
     await update('garments', id, patch);
   }
-  navigator.vibrate?.(12);
   const name = localStorage.getItem('atelier_name');
   toast((name ? 'Buona giornata, ' + name + '.' : 'Buona giornata.') + (tired.length ? ' Da curare: ' + tired.join(', ') + '.' : ''));
   await renderAll();
