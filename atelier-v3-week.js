@@ -12,16 +12,20 @@
       const date=new Date(p.key+'T12:00:00');
       const day=date.toLocaleDateString(appLocale(),{weekday:'short'}).replace('.','');
       const short=date.toLocaleDateString(appLocale(),{day:'numeric',month:'short'}).replace('.','');
-      const ids=p.outfit.missing?[]:p.outfit.ids.filter(id=>byId.has(id)&&!washing(byId.get(id)));
-      const items=ids.map(id=>byId.get(id)).filter(Boolean);
+      const toItems=list=>list.map(id=>byId.get(id)).filter(Boolean);
+      const items=p.outfit.missing?[]:toItems(p.outfit.ids);
+      const afterItems=!p.outfit.missing&&p.after&&!p.after.same?toItems(p.after.ids):[];
+      const dirtyNames=[...new Set([...items,...afterItems])].filter(washing).map(g=>(g.tipo||'Capo').toLowerCase());
       const title=p.outfit.missing?'Nessun outfit completo disponibile':items.map(g=>g.tipo||'Capo').slice(0,2).join(appLang()==='en'?' and ':' e ');
-      const thumbs=items.slice(0,4).map(g=>(photoSrc(g.id)||illusSrc(g.id))?'<img src="'+(photoSrc(g.id)||illusSrc(g.id))+'" alt="">':'<i aria-hidden="true"></i>').join('');
-      const dirty=items.filter(washing);
+      const thumb=g=>(photoSrc(g.id)||illusSrc(g.id))?'<img src="'+(photoSrc(g.id)||illusSrc(g.id))+'" alt=""'+(washing(g)?' style="opacity:.45"':'')+'>':'<i aria-hidden="true"></i>';
+      const thumbs=items.slice(0,4).map(thumb).join('');
+      const names=list=>list.map(g=>(g.tipo||'Capo').toLowerCase()).join(', ');
+      const afterBlock=afterItems.length?'<span class="ios-after"><strong>'+(appLang()==='en'?'After work':'Dopo il lavoro')+'</strong> '+escV(names(afterItems))+'</span>':'';
       const description=[p.wx?wxText(p.wx):null,firstEventLine(p)].filter(Boolean).join(' · ');
       return '<details class="ios-day" data-day="'+escV(p.key)+'"'+(openDays.has(p.key)?' open':'')+'><summary>'+
         '<span class="ios-day-name"><strong>'+escV(day.charAt(0).toUpperCase()+day.slice(1))+'</strong><small>'+escV(short)+'</small></span>'+
         '<span class="ios-day-thumbs">'+thumbs+'</span>'+(p.wx?wxIcon(p.wx,'ios-day-wx'):'')+'<span class="ios-chev" aria-hidden="true"></span></summary>'+
-        '<div class="ios-day-body"><strong>'+escV(title)+'</strong><span>'+escV(description)+'</span>'+(dirty.length?'<span class="warn">'+dirty.length+' capi in lavatrice</span>':'')+
+        '<div class="ios-day-body"><strong>'+escV(title)+'</strong><span>'+escV(description)+'</span>'+afterBlock+(dirtyNames.length?'<span class="warn">'+(appLang()==='en'?'In the wash: ':'In lavatrice: ')+escV(dirtyNames.join(', '))+'</span>':'')+
         '<button class="btn secondary" data-regen="'+escV(p.key)+'">Cambia outfit</button></div></details>';
     }).join('')+'</div>';
     $('#weekList').innerHTML=html;
