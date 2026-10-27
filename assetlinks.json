@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "app.atelier.wardrobe",
+    "sha256_cert_fingerprints": ["6F:62:76:6E:84:C4:C8:72:5C:3F:81:ED:AA:50:A5:15:33:99:87:0E:DD:7D:60:85:63:5E:63:4C:E7:53:E9:19"]
+  }
+}]
