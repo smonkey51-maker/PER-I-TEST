@@ -1,0 +1,51 @@
+/* ATELIER — palette Brown · Cream · Baby Blue (lusso discreto, contrasti AA).
+   Chiaro: crema di fondo, testo e azioni in marrone profondo, azzurro baby per gli stati attivi e i fondali dei capi.
+   Scuro: marrone profondo di fondo, testo crema, azzurro baby come accento.
+   Caricato per ultimo: ridefinisce i token e i pochi colori fissi dei livelli precedenti. */
+:root {
+  color-scheme: dark;
+  --bg: #2a1c14; --bg-rgb: 42, 28, 20;
+  --surface: #35251b; --surface-2: #3f2d21; --surface-3: #503c2d;
+  --text: #f6efdf; --muted: #cdbca6;
+  --accent: #a8d0e8; --accent-rgb: 168, 208, 232; --accent-ink: #2a1c14;
+  --ai: #8dc1e3; --ai-soft: rgba(141, 193, 227, .18);
+  --danger: #ff9c8f; --sun: #f2b36b; --icon: #f6efdf; --rain: #8dc1e3; --ice: #a8d0e8; --smoke: #b5a48f;
+  --rule: rgba(246, 239, 223, .1); --line: rgba(246, 239, 223, .1);
+  --plate: linear-gradient(160deg, #4a3628, #34241a);
+  --pill: rgba(168, 208, 232, .18);
+  --tabbar: rgba(42, 28, 20, .86);
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6efdf; --bg-rgb: 246, 239, 223;
+  --surface: #fffaf0; --surface-2: #eee4ce; --surface-3: #e1d4b8;
+  --text: #3a281c; --muted: #6b5646;
+  --accent: #5c3b28; --accent-rgb: 92, 59, 40; --accent-ink: #fff8ea;
+  --ai: #3e7ca6; --ai-soft: rgba(168, 208, 232, .45);
+  --danger: #a32a22; --sun: #b05a12; --icon: #3a281c; --rain: #3e7ca6; --ice: #5c9cc4; --smoke: #7a6858;
+  --rule: rgba(58, 40, 28, .12); --line: rgba(58, 40, 28, .12);
+  --plate: linear-gradient(160deg, #e3f0f8, #cfe4f2);
+  --pill: rgba(168, 208, 232, .55);
+  --tabbar: rgba(255, 250, 240, .9);
+}
+
+/* Fondali dei capi: azzurro baby (chiaro) o marrone caldo (scuro) al posto del grigio */
+#view-today #idea .strip, .v3-piece .v3-stage, #view-looks .look .board, #detail .dialog-img, .ios-day-thumbs, .diary-look { background: var(--plate) !important; }
+#view-looks .look .board .ph, #view-today #idea .strip .ph { background: rgba(255, 255, 255, .25) !important; color: var(--text) !important; }
+.v3-piece .ph { color: var(--text) !important; }
+.board-text { color: var(--text) !important; }
+
+/* Barra in basso: etichette leggibili, scheda attiva su pillola azzurra */
+.tabs { background: var(--tabbar) !important; }
+.tab { color: var(--muted) !important; }
+.tab[aria-selected=true] { color: var(--text) !important; }
+.tab[aria-selected=true] .nav-icon, .tab[data-tab=add][aria-selected=true] .nav-icon { background: var(--pill) !important; }
+.tab[aria-selected=true] svg { stroke: var(--text) !important; }
+
+/* Azione principale: marrone su crema (chiaro), azzurro su marrone (scuro) */
+.btn:not(.secondary):not(.danger) { background: var(--accent) !important; color: var(--accent-ink) !important; }
+.chip[aria-pressed=true] { background: var(--accent) !important; color: var(--accent-ink) !important; border-color: transparent !important; }
+.atelier-language span.on { background: var(--accent) !important; color: var(--accent-ink) !important; }
+.v3-add-modes > button:first-child b { color: var(--text) !important; }
+a { color: var(--accent); }
+:root[data-theme="light"] a { color: #4a6f8a; }
