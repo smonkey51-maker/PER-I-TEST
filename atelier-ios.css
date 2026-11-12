@@ -428,3 +428,14 @@ body:has(#view-profile:not(.hidden)) #accountPanel, body:has(#view-diary:not(.hi
 .look-fav svg path { fill: none; stroke: currentColor; stroke-width: 2; }
 .look-fav[aria-pressed=true] { color: var(--accent); }
 .look-fav[aria-pressed=true] svg path { fill: currentColor; }
+
+/* Aggiungi capo: tre ingressi; elaborazione e azioni compaiono dopo la scelta delle foto (solo su touch) */
+@media (hover: none) {
+  #view-add:not(.has-photos) #dropzone,
+  #view-add:not(.has-photos) .actions:has(#analyze),
+  #view-add:not(.has-photos) .actions:has(#noPhoto) { display: none; }
+}
+
+/* Ispirazione: fondale vicino al colore della pagina */
+#view-today #idea .strip { background: var(--surface) !important; }
+#view-today #idea .strip figure { filter: drop-shadow(0 8px 10px rgba(0, 0, 0, .18)) !important; }
