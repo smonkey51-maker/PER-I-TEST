@@ -222,7 +222,7 @@
       }
       document.documentElement.lang=lang;
       const toggle=document.querySelector('#atelierLanguage');
-      if(toggle){toggle.textContent=lang==='it'?'EN':'IT';toggle.setAttribute('aria-label',lang==='it'?'Switch to English':'Passa all’italiano');toggle.setAttribute('title',lang==='it'?'English':'Italiano');}
+      if(toggle){toggle.innerHTML='<span'+(lang==='it'?' class="on"':'')+'>IT</span><span'+(lang==='en'?' class="on"':'')+'>EN</span>';toggle.setAttribute('aria-label',lang==='it'?'Switch to English':'Passa all’italiano');toggle.setAttribute('title',lang==='it'?'English':'Italiano');}
     }finally{busy=false;}
   }
   function schedule(){
