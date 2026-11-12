@@ -10,7 +10,7 @@
     const c = choice();
     const light = c === 'light' || (c === 'auto' && !!mq?.matches);
     document.documentElement.dataset.theme = light ? 'light' : 'dark';
-    document.querySelector('meta[name=theme-color]')?.setAttribute('content', light ? '#f4f1ea' : '#0f0f0e');
+    document.querySelector('meta[name=theme-color]')?.setAttribute('content', light ? '#f6efdf' : '#2a1c14');
     document.querySelectorAll('[data-theme-choice]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeChoice === c)));
   }
   window.atelierApplyTheme = apply;
