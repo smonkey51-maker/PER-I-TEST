@@ -39,8 +39,8 @@
     if(corners.length<4)return null;
     const bg=[0,1,2].map(k=>corners.reduce((a,v)=>a+v[k],0)/4);
     const distance=(a,b)=>Math.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2);
-    if(Math.max(...corners.map(p=>distance(p,bg)))>28)return null;
-    const seen=new Uint8Array(w*h),queue=new Int32Array(w*h);let head=0,tail=0;
+    if(Math.max(...corners.map(p=>distance(p,bg)))>48)return null;
+    const seen=new Uint8Array(w*h),queue=new Int32Array(w*h),lastFrom=new Int32Array(w*h).fill(-1);let head=0,tail=0;
     const enqueue=i=>{if(i<0||i>=w*h||seen[i])return;seen[i]=1;queue[tail++]=i;};
     for(let x=ox;x<ox+iw;x++){enqueue(oy*w+x);enqueue((oy+ih-1)*w+x);}
     for(let y=oy;y<oy+ih;y++){enqueue(y*w+ox);enqueue(y*w+ox+iw-1);}
@@ -49,14 +49,18 @@
       const p=queue[head++],x=p%w,y=Math.floor(p/w),j=p*4;
       if(x<ox||x>=ox+iw||y<oy||y>=oy+ih)continue;
       const d=distance([data[j],data[j+1],data[j+2]],bg);
-      if(d>37)continue;
+      if(d>62)continue;
+      // Segue i gradienti dolci dello sfondo: si ferma dove il colore cambia di colpo (il bordo del capo)
+      const from=lastFrom[p];
+      if(from>=0){const k=from*4;if(distance([data[j],data[j+1],data[j+2]],[data[k],data[k+1],data[k+2]])>9)continue;}
       data[j+3]=0;removed++;
-      if(x>ox)enqueue(p-1);if(x<ox+iw-1)enqueue(p+1);
-      if(y>oy)enqueue(p-w);if(y<oy+ih-1)enqueue(p+w);
+      const push=q=>{if(!seen[q]){lastFrom[q]=p;enqueue(q);}};
+      if(x>ox)push(p-1);if(x<ox+iw-1)push(p+1);
+      if(y>oy)push(p-w);if(y<oy+ih-1)push(p+w);
     }
     const fraction=removed/(iw*ih);
     // Reject overly aggressive masks and pictures with negligible background.
-    if(fraction<.07||fraction>.76)return null;
+    if(fraction<.07||fraction>.8)return null;
     ctx.putImageData(frame,0,0);
     return canvasBlob(c);
   }
@@ -116,6 +120,26 @@
     }catch(e){status.textContent='Scontorno non riuscito: '+e.message;}
     finally{button.disabled=false;}
   };
+  // Automatico: una volta per foto, in silenzio; «Ripristina originali» annulla
+  (async()=>{
+    let tried;try{tried=new Set(JSON.parse(localStorage.getItem('atelier_cut_tried')||'[]'));}catch{tried=new Set();}
+    await new Promise(r=>setTimeout(r,2500));
+    let changed=0;
+    try{
+      for(const entry of await all('photos')){
+        if(!entry.blob||entry.originalBlob||tried.has(entry.id))continue;
+        tried.add(entry.id);
+        try{
+          const converted=await cutout(entry.blob);
+          if(!converted)continue;
+          await put({...entry,blob:converted,originalBlob:entry.blob,at:Date.now()},'photos');
+          forgetPhoto(entry.id);changed++;
+        }catch{/* resta l'originale */}
+      }
+    }catch{/* facoltativo */}
+    try{localStorage.setItem('atelier_cut_tried',JSON.stringify([...tried].slice(-500)));}catch{}
+    if(changed){await renderAll();window.atelierDriveSync?.();}
+  })();
   $('#v3RestorePhotos').onclick=async()=>{
     const status=$('#v3CutoutStatus');let count=0;
     for(const entry of await all('photos')){

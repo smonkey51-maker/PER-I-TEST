@@ -452,3 +452,8 @@ body.onepage #view-today.hidden, body.onepage #view-week.hidden, body.onepage #v
 .atelier-language span { padding: 5px 8px; border-radius: 999px; color: var(--muted); }
 .atelier-language span.on { background: var(--accent); color: var(--bg, #fff); }
 .top-inner { padding-right: 104px !important; }
+
+/* Ispirazione: «Indosso» a tutta larghezza, «Un'altra idea» e «Cambia un capo» affiancati; capi della striscia di uguale altezza */
+#view-today #todayContent > .idea-card:first-child > .actions #wearIdea { grid-column: 1 / -1; }
+#view-today #todayContent > .idea-card:first-child > .actions #anotherIdea, #atelierSwap { grid-column: auto; width: 100%; }
+#view-today #idea .strip-img { aspect-ratio: 3 / 4; }
