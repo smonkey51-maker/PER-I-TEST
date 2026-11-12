@@ -33,7 +33,11 @@
 
   // Da collegato la barra dell'account resta nascosta; compare solo quando serve accedere
   const setConnected = on => {
-    el('accountPanel').hidden = on;
+    // Il riquadro Google compare una sola volta; poi resta la voce nel Profilo
+    let seen = false;
+    try { seen = localStorage.getItem('atelier_google_banner') === '1'; if (!on && !seen) localStorage.setItem('atelier_google_banner', '1'); } catch {}
+    el('accountPanel').hidden = on || (seen && !el('accountPanel').dataset.shown);
+    if (!on && !seen) el('accountPanel').dataset.shown = '1';
     el('syncDrive').classList.toggle('hidden', !on);
     el('disconnectDrive').classList.toggle('hidden', !on);
     el('connectDrive').classList.toggle('hidden', on);

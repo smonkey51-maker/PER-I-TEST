@@ -212,15 +212,15 @@ function wardrobeGaps(garments) {
   const out = [];
   const few = (n, min, what, hint) => { if (n < min) out.push('Hai ' + n + ' ' + what + ': ' + hint); };
   few(tops.length, 5, tops.length === 1 ? 'capo sopra (maglieria, camicie, t-shirt)' : 'capi sopra (maglieria, camicie, t-shirt)', 'per cinque giorni senza ripetizioni ne servono almeno 5.');
-  few(bottoms.length, 3, bottoms.length === 1 ? 'paio di pantaloni o jeans' : 'pantaloni o jeans', 'ne servono almeno 3 per alternarli.');
-  few(shoes.length, 3, shoes.length === 1 ? 'paio di scarpe' : 'paia di scarpe', 'ne servono almeno 3 tra lavoro e tempo libero.');
-  few(outers.length, 2, outers.length === 1 ? 'capospalla' : 'capispalla', 'ne servono almeno 2 (uno leggero e uno più caldo).');
+  few(bottoms.length, 3, bottoms.length === 1 ? 'paio di pantaloni o jeans' : 'pantaloni o jeans', 'con più alternative avresti più combinazioni.');
+  few(shoes.length, 3, shoes.length === 1 ? 'paio di scarpe' : 'paia di scarpe', 'con più scelte copriresti meglio lavoro e tempo libero.');
+  few(outers.length, 2, outers.length === 1 ? 'capospalla' : 'capispalla', 'uno leggero e uno più caldo ti darebbero più combinazioni.');
   if (shoes.length && !shoes.some(g => SHOES_FORMAL.test(txt(g)))) out.push('Non hai scarpe da lavoro sobrie (mocassini, stringate, derby): per i giorni in ufficio sono la base.');
   if (shoes.length && !shoes.some(g => SHOES_CASUAL.test(txt(g)))) out.push('Non hai sneakers: servono per il dopo lavoro e il tempo libero.');
   const sober = [...tops, ...bottoms].filter(g => garmentStyle(g) === 'sobrio').length;
-  if (tops.length + bottoms.length >= 4 && sober < 3) out.push('Per il lavoro (sartoriale sobrio e autorevole) hai solo ' + sober + ' capi tra sopra e pantaloni: te ne servono almeno 3.');
+  if (tops.length + bottoms.length >= 4 && sober < 3) out.push('Per il lavoro (sartoriale sobrio e autorevole) hai solo ' + sober + ' capi tra sopra e pantaloni: qualcuno in più renderebbe più facili i look da lavoro.');
   const retro = garments.filter(g => garmentStyle(g) === 'retro').length;
-  if (garments.length >= 6 && retro < 2) out.push('Per il tempo libero (rétro, più espressivo) hai solo ' + retro + ' capi con carattere: te ne servono almeno 2.');
+  if (garments.length >= 6 && retro < 2) out.push('Per il tempo libero (rétro, più espressivo) hai solo ' + retro + ' capi con carattere: qualcuno in più darebbe più varietà al tempo libero.');
   return out;
 }
 
@@ -229,7 +229,7 @@ function renderGaps(garments) {
   box.classList.toggle('hidden', garments.length < 3);
   if (garments.length < 3) return;
   const gaps = wardrobeGaps(garments);
-  box.innerHTML = '<h2>Cosa ti manca</h2>' + (gaps.length
+  box.innerHTML = '<h2>Come ampliare le combinazioni</h2>' + (gaps.length
     ? '<ul class="gaps">' + gaps.map(g => '<li>' + esc(g) + '</li>').join('') + '</ul>'
     : '<p class="small">Il guardaroba è ben bilanciato per il tuo stile.</p>');
 }
