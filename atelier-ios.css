@@ -440,13 +440,6 @@ body:has(#view-profile:not(.hidden)) #accountPanel, body:has(#view-diary:not(.hi
 #view-today #idea .strip { background: var(--surface) !important; }
 #view-today #idea .strip figure { filter: drop-shadow(0 8px 10px rgba(0, 0, 0, .18)) !important; }
 
-/* Pagina unica su telefono */
-body.onepage main > section[role=tabpanel] { scroll-margin-top: calc(var(--top-h, 64px) + 8px); padding-bottom: 28px; margin-bottom: 28px; border-bottom: 1px solid var(--rule); }
-body.onepage #view-add { border-bottom: 0; margin-bottom: 0; }
-body.onepage main > section[role=tabpanel] > .view-head,
-body.onepage main > section[role=tabpanel] > .greet { padding-top: 4px; }
-body.onepage #view-today.hidden, body.onepage #view-week.hidden, body.onepage #view-wardrobe.hidden, body.onepage #view-looks.hidden, body.onepage #view-add.hidden { display: block !important; }
-
 /* Selettore lingua: mostra IT | EN con la lingua attuale in evidenza */
 .atelier-language { display: inline-flex; gap: 2px; padding: 3px !important; }
 .atelier-language span { padding: 5px 8px; border-radius: 999px; color: var(--muted); }

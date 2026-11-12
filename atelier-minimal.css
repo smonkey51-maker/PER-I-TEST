@@ -1,0 +1,20 @@
+/* Minimal: meno testo di contorno, niente decorazioni, più aria. Caricato per ultimo. */
+.greet .sub, .compose-sub, #caveauSub,
+.view-head > .small, #view-looks > .small, #view-looks .palette,
+#view-add .view-head .small { display: none !important; }
+
+/* Titoli e spaziature più sobri */
+.greet h1, .view-head h1 { font-weight: 400 !important; letter-spacing: -.01em; }
+.view-head { margin-bottom: 14px !important; }
+main { padding-top: 20px !important; }
+
+/* Niente contorni né ombre: solo superfici tenui */
+.idea-card, #tomorrow, #gaps, .look, .v3-swap, .v3-inspiration, .studio-card { border: 0 !important; box-shadow: none !important; }
+.btn.secondary { background: transparent !important; box-shadow: inset 0 0 0 1px var(--rule) !important; }
+.chip { background: transparent !important; }
+
+/* Barra in basso: solo le icone, l'etichetta resta per la scheda attiva */
+.tab .nav-text { display: none !important; }
+.tab[aria-selected=true] .nav-text { display: block !important; }
+.tabs { height: calc(58px + env(safe-area-inset-bottom)) !important; }
+.tab[data-tab=add]:not([aria-selected=true]) .nav-text { display: none !important; }
