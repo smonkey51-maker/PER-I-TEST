@@ -18,3 +18,26 @@ main { padding-top: 20px !important; }
 .tab[aria-selected=true] .nav-text { display: block !important; }
 .tabs { height: calc(58px + env(safe-area-inset-bottom)) !important; }
 .tab[data-tab=add]:not([aria-selected=true]) .nav-text { display: none !important; }
+
+/* ---- Ancora più minimal ---- */
+/* Account: solo nel Profilo */
+#accountPanel { display: none !important; }
+
+/* Ispirazione: il look e basta. Meteo, impegni e strumenti restano nel Profilo e nel menu, non in pagina */
+.atelier-context, .atelier-utilities, .v3-laundry-note, .v3-inspiration { display: none !important; }
+#view-today .greet .date { font-size: 12px; letter-spacing: .02em; }
+#view-today .lede { display: none !important; }
+#v3Swap { display: none !important; }
+
+/* Guardaroba: la griglia e i filtri; statistiche e strumenti di ritaglio fuori */
+#v3Insights, .v3-photo-actions, #gaps, #atelierStats { display: none !important; }
+
+/* Aggiungi: tre ingressi, senza opzioni accessorie finché non servono */
+.v3-option, #view-add .v3-add-modes > button span { display: none !important; }
+.v3-add-modes > button { padding-block: 18px !important; }
+#view-add:not(.has-photos) #noPhoto { display: none !important; }
+
+/* Look: elenco pulito */
+#view-looks .search { margin-bottom: 10px !important; }
+.v3-add-modes > button { align-items: center !important; }
+.v3-add-modes > button b { grid-row: 1 / 3; align-self: center; }
