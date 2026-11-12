@@ -11,7 +11,7 @@
   --ai: #8dc1e3; --ai-soft: rgba(141, 193, 227, .18);
   --danger: #ff9c8f; --sun: #f2b36b; --icon: #f6efdf; --rain: #8dc1e3; --ice: #a8d0e8; --smoke: #b5a48f;
   --rule: rgba(246, 239, 223, .1); --line: rgba(246, 239, 223, .1);
-  --plate: linear-gradient(160deg, #4a3628, #34241a);
+  --plate: linear-gradient(160deg, #3d322b, #2f2620);
   --pill: rgba(168, 208, 232, .18);
   --tabbar: rgba(42, 28, 20, .86);
 }
@@ -24,7 +24,7 @@
   --ai: #3e7ca6; --ai-soft: rgba(168, 208, 232, .45);
   --danger: #a32a22; --sun: #b05a12; --icon: #3a281c; --rain: #3e7ca6; --ice: #5c9cc4; --smoke: #7a6858;
   --rule: rgba(58, 40, 28, .12); --line: rgba(58, 40, 28, .12);
-  --plate: linear-gradient(160deg, #e3f0f8, #cfe4f2);
+  --plate: linear-gradient(160deg, #eee9df, #e3dccd);
   --pill: rgba(168, 208, 232, .55);
   --tabbar: rgba(255, 250, 240, .9);
 }
