@@ -41,3 +41,36 @@ main { padding-top: 20px !important; }
 #view-looks .search { margin-bottom: 10px !important; }
 .v3-add-modes > button { align-items: center !important; }
 .v3-add-modes > button b { grid-row: 1 / 3; align-self: center; }
+
+/* ---- Pulsanti Ispirazione: «Indosso» intero, gli altri due affiancati ---- */
+#view-today #todayContent > .idea-card:first-child > .actions #wearIdea { grid-column: 1 / -1 !important; }
+#view-today #todayContent > .idea-card:first-child > .actions #anotherIdea,
+#view-today #todayContent > .idea-card:first-child > .actions #atelierSwap { grid-column: auto !important; width: 100% !important; margin: 0 !important; }
+
+/* ---- Guardaroba per tipologia: una riga scorrevole per gruppo ---- */
+.min-group { margin: 0 0 22px; }
+.min-group h3 { margin: 0 0 10px; font: 500 13px var(--sans); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.min-group h3 span { opacity: .6; margin-left: 4px; }
+.min-row { display: flex !important; gap: 10px !important; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 4px; scrollbar-width: none; margin-right: -20px; padding-right: 20px; }
+.min-row::-webkit-scrollbar { display: none; }
+.min-row .v3-piece { flex: 0 0 96px; scroll-snap-align: start; }
+.min-row .v3-piece small { display: none; }
+.min-row .v3-piece.is-washing small { display: block; }
+
+/* ---- Look compatti e apribili ---- */
+#view-looks .look { display: grid !important; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; column-gap: 10px; padding: 8px 10px !important; margin-bottom: 8px; cursor: pointer; }
+#view-looks .look .look-mini { grid-column: 1; display: flex; }
+#view-looks .look .look-mini-img { width: 38px; height: 38px; object-fit: contain; border-radius: 8px; background: var(--surface-2); margin-right: -8px; }
+#view-looks .look .look-mini .ph { display: none; }
+#view-looks .look h3 { grid-column: 2; margin: 0 !important; padding-left: 8px; font-size: 14px !important; }
+#view-looks .look .look-fav, #view-looks .look .look-more { position: static !important; grid-row: 1; width: 34px; height: 34px; transform: none !important; background: transparent !important; }
+#view-looks .look .look-fav { grid-column: 3; }
+#view-looks .look .look-more { grid-column: 4; }
+#view-looks .look .warn { grid-column: 2 / -1; margin: 0 !important; padding-left: 8px; }
+#view-looks .look .look-menu { grid-column: 1 / -1; position: static !important; margin-top: 6px; }
+#view-looks .look .board { display: none !important; }
+#view-looks .look.is-open .board { display: grid !important; grid-column: 1 / -1; grid-row: 2; margin-top: 10px; aspect-ratio: auto !important; height: 210px; overflow: hidden; }
+#view-looks .look.is-open .look-mini { display: none; }
+#view-looks .look.is-open h3 { grid-column: 1 / 3; padding-left: 4px; }
+#looks { display: block !important; }
+#view-looks .look { width: 100%; box-sizing: border-box; }

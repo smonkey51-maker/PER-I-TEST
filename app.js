@@ -1652,6 +1652,7 @@ function renderLooks(looks, garments) {
     const inWash = items.filter(washing).length;
     const shown = items.slice(0, 4);
     return '<article class="look' + (l.preferito ? ' is-fav' : '') + '" data-fav="' + (l.preferito ? '1' : '') + '" data-search="' + esc((l.nome + ' ' + (l.composizione || '')).toLowerCase()) + '">' +
+      '<div class="look-mini">' + shown.slice(0, 3).map(g => photoHtml(g.id, 'look-mini-img', g.tipo || 'Capo')).join('') + '</div>' +
       '<div class="board n' + shown.length + '">' + (shown.length
         ? shown.map(g => '<figure>' + photoHtml(g.id, 'board-img fade', g.tipo || 'Capo') + '</figure>').join('')
         : '<p class="board-text">' + esc(l.composizione || '') + '</p>') + '</div>' +
