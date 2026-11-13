@@ -4,13 +4,13 @@
    Caricato per ultimo: ridefinisce i token e i pochi colori fissi dei livelli precedenti. */
 :root {
   color-scheme: dark;
-  --bg: #2a1c14; --bg-rgb: 42, 28, 20;
-  --surface: #35251b; --surface-2: #3f2d21; --surface-3: #503c2d;
-  --text: #f6efdf; --muted: #cdbca6;
-  --accent: #a8d0e8; --accent-rgb: 168, 208, 232; --accent-ink: #2a1c14;
+  --bg: #2a1b15; --bg-rgb: 42, 27, 21;
+  --surface: #3d2b22; --surface-2: #47342a; --surface-3: #59453b;
+  --text: #f3e9dd; --muted: #b8a697;
+  --accent: #a7cee6; --accent-rgb: 168, 208, 232; --accent-ink: #2a1b15;
   --ai: #8dc1e3; --ai-soft: rgba(141, 193, 227, .18);
   --danger: #ff9c8f; --sun: #f2b36b; --icon: #f6efdf; --rain: #8dc1e3; --ice: #a8d0e8; --smoke: #b5a48f;
-  --rule: rgba(246, 239, 223, .1); --line: rgba(246, 239, 223, .1);
+  --rule: #59453b; --line: #59453b;
   --plate: linear-gradient(160deg, #3d322b, #2f2620);
   --pill: rgba(168, 208, 232, .18);
   --tabbar: rgba(42, 28, 20, .86);

@@ -2,6 +2,7 @@
 .greet .sub, .compose-sub, #caveauSub,
 .view-head > .small, #view-looks > .small, #view-looks .palette,
 #view-add .view-head .small { display: none !important; }
+#view-add .view-head .small { display: block !important; color: var(--muted); }
 
 /* Titoli e spaziature più sobri */
 .greet h1, .view-head h1 { font-weight: 400 !important; letter-spacing: -.01em; }
@@ -51,26 +52,52 @@ main { padding-top: 20px !important; }
 .min-group { margin: 0 0 22px; }
 .min-group h3 { margin: 0 0 10px; font: 500 13px var(--sans); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
 .min-group h3 span { opacity: .6; margin-left: 4px; }
-.min-row { display: flex !important; gap: 10px !important; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 4px; scrollbar-width: none; margin-right: -20px; padding-right: 20px; }
-.min-row::-webkit-scrollbar { display: none; }
-.min-row .v3-piece { flex: 0 0 96px; scroll-snap-align: start; }
+/* Guardaroba: gruppi richiudibili, griglia a due colonne con immagini ampie */
+.min-group h3 { cursor: pointer; display: flex; align-items: center; gap: 4px; min-height: 44px; margin: 0 !important; }
+.min-group h3::after { content: ''; margin-left: auto; width: 8px; height: 8px; border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor; transform: rotate(45deg); transition: transform .2s; }
+.min-group.is-collapsed h3::after { transform: rotate(-45deg); }
+.min-group.is-collapsed .min-row { display: none !important; }
+.min-group[hidden] { display: none !important; }
+.min-row { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px !important; }
+.min-row .v3-piece { min-width: 0; }
+.min-row .v3-piece .v3-stage { aspect-ratio: 4 / 5 !important; }
+.min-row .v3-piece strong { font-size: 14px !important; -webkit-line-clamp: 2; }
+#wardSearch { width: 100%; box-sizing: border-box; min-height: 44px; padding: 0 14px; border: 0; border-radius: 14px; background: var(--surface-2); color: var(--text); font: 15px var(--sans); margin-bottom: 12px; }
 .min-row .v3-piece small { display: none; }
 .min-row .v3-piece.is-washing small { display: block; }
 
-/* ---- Look compatti e apribili ---- */
-#view-looks .look { display: grid !important; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; column-gap: 10px; padding: 8px 10px !important; margin-bottom: 8px; cursor: pointer; }
-#view-looks .look .look-mini { grid-column: 1; display: flex; }
-#view-looks .look .look-mini-img { width: 38px; height: 38px; object-fit: contain; border-radius: 8px; background: var(--surface-2); margin-right: -8px; }
-#view-looks .look .look-mini .ph { display: none; }
-#view-looks .look h3 { grid-column: 2; margin: 0 !important; padding-left: 8px; font-size: 14px !important; }
-#view-looks .look .look-fav, #view-looks .look .look-more { position: static !important; grid-row: 1; width: 34px; height: 34px; transform: none !important; background: transparent !important; }
-#view-looks .look .look-fav { grid-column: 3; }
-#view-looks .look .look-more { grid-column: 4; }
-#view-looks .look .warn { grid-column: 2 / -1; margin: 0 !important; padding-left: 8px; }
-#view-looks .look .look-menu { grid-column: 1 / -1; position: static !important; margin-top: 6px; }
-#view-looks .look .board { display: none !important; }
-#view-looks .look.is-open .board { display: grid !important; grid-column: 1 / -1; grid-row: 2; margin-top: 10px; aspect-ratio: auto !important; height: 210px; overflow: hidden; }
-#view-looks .look.is-open .look-mini { display: none; }
-#view-looks .look.is-open h3 { grid-column: 1 / 3; padding-left: 4px; }
-#looks { display: block !important; }
-#view-looks .look { width: 100%; box-sizing: border-box; }
+
+/* ---- Look: galleria a due colonne, tocco per aprire ---- */
+#looks { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+#view-looks .look { position: relative; display: block !important; margin: 0 !important; padding: 8px !important; cursor: pointer; min-width: 0; }
+#view-looks .look .look-mini { display: none !important; }
+#view-looks .look .board { display: grid !important; aspect-ratio: 1 / 1 !important; height: auto !important; margin: 0 0 8px !important; }
+#view-looks .look h3 { margin: 0 4px 2px !important; font-size: 14px !important; white-space: normal !important; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#view-looks .look .look-fav, #view-looks .look .look-more { position: absolute !important; top: 4px; width: 44px; height: 44px; background: transparent !important; transform: none !important; display: grid; place-items: center; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .35)); }
+#view-looks .look .look-fav { right: 4px; }
+#view-looks .look .look-more { left: 4px; }
+#view-looks .look .look-menu { position: absolute !important; top: 48px; left: 8px; z-index: 5; }
+#view-looks .look.is-open { grid-column: 1 / -1; }
+#view-looks .look.is-open .board { aspect-ratio: 4 / 3 !important; }
+#view-looks .look .warn { margin: 0 4px !important; }
+/* «Crea nuovo look» è un'azione della pagina, non un pulsante flottante */
+#view-looks:not(.hidden) #newLook { position: static !important; box-shadow: none !important; transform: none !important; margin: 8px 0 12px; min-height: 44px; }
+.chip, .btn { min-height: 44px; }
+
+/* ---- Aggiungi: un'azione primaria, due secondarie ---- */
+.v3-add-modes { background: transparent !important; overflow: visible !important; border: 0 !important; margin-bottom: 8px !important; }
+.v3-add-modes > button:first-child { background: var(--accent) !important; border-radius: 16px !important; border: 0 !important; margin-bottom: 8px; min-height: 56px; }
+.v3-add-modes > button:first-child b, .v3-add-modes > button:first-child i { color: var(--accent-ink) !important; }
+.v3-add-modes > button:not(:first-child) { background: var(--surface) !important; border-radius: 14px !important; border: 0 !important; margin-bottom: 8px; min-height: 52px; }
+
+/* ---- Intestazione: lingua nel Profilo ---- */
+.atelier-language { display: none !important; }
+.top-inner { padding-right: 22px !important; }
+#view-looks .look .look-fav { left: auto !important; right: 4px !important; bottom: auto !important; }
+#view-looks .look .look-more { right: auto !important; left: 4px !important; bottom: auto !important; opacity: 1 !important; visibility: visible !important; display: grid !important; }
+#view-looks .look .look-more svg { width: 18px; height: 18px; fill: currentColor; stroke: none; }
+#view-looks .look .look-fav, #view-looks .look .look-more { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important; }
+#view-looks .look .look-fav::before, #view-looks .look .look-fav::after { display: none !important; }
+#view-add .v3-add-modes > button:first-child b, #view-add .v3-add-modes > button:first-child i, :root[data-theme="light"] #view-add .v3-add-modes > button:first-child b { color: var(--accent-ink) !important; }
+#view-add .view-head h1 { margin-bottom: 6px !important; }
+#view-add .view-head { margin-bottom: 18px !important; }

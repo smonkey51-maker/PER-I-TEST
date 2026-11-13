@@ -170,7 +170,7 @@ function renderTomorrow(byId) {
   box.innerHTML = '<h2>Domani</h2><p class="phase">' + esc(firstEventLine(p)) + '</p>' +
     (p.wx ? '<p class="small">Meteo: ' + esc(wxText(p.wx)) + '</p>' : '') +
     planOutfitsHtml(p, byId, 'entro stasera') +
-    '<div class="actions"><button class="btn secondary" data-regen="' + p.key + '">Un\'altra idea</button>' +
+    '<div class="actions"><button class="btn secondary" data-regen="' + p.key + '">Altro look</button>' +
     '<button class="btn secondary" data-go="week">Vedi i prossimi giorni</button></div>';
 }
 
@@ -184,7 +184,7 @@ function dayCardHtml(p, byId) {
   return '<article class="idea-card day-card"><h3>' + esc(dayLabel(p.key)) + '</h3>' +
     (p.wx ? '<p class="small">Meteo: ' + esc(wxText(p.wx)) + '</p>' : '') + list +
     planOutfitsHtml(p, byId, 'prima di ' + new Date(p.key + 'T12:00:00').toLocaleDateString('it-IT', { weekday: 'long' })) +
-    '<div class="actions"><button class="btn secondary" data-regen="' + p.key + '">Un\'altra idea</button></div></article>';
+    '<div class="actions"><button class="btn secondary" data-regen="' + p.key + '">Altro look</button></div></article>';
 }
 
 function renderWeek(byId) {

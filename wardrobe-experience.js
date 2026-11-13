@@ -15,7 +15,7 @@
     const headline = document.createElement('p'); headline.className='atelier-home-kicker';headline.textContent='IL TUO STILE, OGGI';greeting.prepend(headline);
     const todayContent = document.querySelector('#todayContent');
     const ideaCard = todayContent?.querySelector('.idea-card');
-    if(ideaCard){ideaCard.classList.add('atelier-outfit-card');const actions=ideaCard.querySelector('.actions');if(actions){const change=document.createElement('button');change.className='btn secondary';change.type='button';change.textContent='Cambia un capo';change.id='atelierSwap';actions.append(change);change.addEventListener('click',openSwap)}}
+    if(ideaCard){ideaCard.classList.add('atelier-outfit-card');const actions=ideaCard.querySelector('.actions');if(actions){const change=document.createElement('button');change.className='btn secondary';change.type='button';change.textContent='Modifica';change.id='atelierSwap';actions.append(change);change.addEventListener('click',openSwap)}}
     let lastSignature = '';
     const sync = () => {
       if (typeof all !== 'function') return;

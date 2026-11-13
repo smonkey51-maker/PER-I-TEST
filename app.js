@@ -1150,7 +1150,7 @@ function renderToday(garments, looks) {
       return '<figure style="--i:' + i + '">' + photoHtml(id, 'strip-img fade', g.tipo || 'Capo') + (photoSrc(id) ? '<figcaption>' + esc(g.tipo || 'Capo') + '</figcaption>' : '') + '</figure>';
     }).join('') + '</div>';
     const names = ids => ids.map(id => (byId.get(id).tipo || 'capo').toLowerCase()).join(', ');
-    let html = '<h3>' + esc(idea.title) + '</h3>';
+    let html = '<h3>' + esc(String(idea.title || '').split(/\s+/).filter((w, i, a) => a.findIndex(x => x.toLowerCase() === w.toLowerCase()) === i).join(' ')) + '</h3>';
     if (phases) html += '<p class="phase">Per il lavoro' + (phases.workEnd ? ', fino alle ' + hhmm(phases.workEnd) : '') + '</p>';
     html += note + extra + memory + strip(idea.ids);
     if (second) {
