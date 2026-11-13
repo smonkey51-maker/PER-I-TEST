@@ -5,7 +5,7 @@
   const translations={
     'Oggi':'Today','Settimana':'Week','Guardaroba':'Wardrobe','Aggiungi':'Add','Sezioni':'Sections',
     'Meteo e impegni':'Weather & plans','Il look di oggi':"Today's look",
-    'Indosso questo':"Wear this",'Un\'altra idea':'Another idea','Cambia un capo':'Swap an item',
+    'Indosso questo':"Wear this",'Altro look':'Another look','Il tuo look di oggi':"Today's look",'Aggiungi un capo':'Add an item','Importa da link':'Import from link','Aggiungi manualmente':'Add manually','Foto, link o inserimento manuale. Prima di salvare puoi rivedere tutti i dati.':'Photos, a link or manual entry. You can review all details before saving.','Lingua':'Language','Cerca nei capi…':'Search items…','Un\'altra idea':'Another idea','Cambia un capo':'Swap an item',
     'Cambia un pezzo':'Swap an item','Scorri':'Swipe','Sopra':'Tops','Sotto':'Bottoms','Scarpe':'Shoes',
     'Capispalla':'Outerwear','Camicie':'Shirts','Accessori':'Accessories','Altro':'Other',
     'Maglieria':'Knitwear','Camicie e T-shirt':'Shirts & T-shirts','Pantaloni e jeans':'Trousers & jeans',

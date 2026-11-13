@@ -28,7 +28,7 @@
    const outfit=home.querySelector('#todayContent>.idea-card:first-child');
    if(outfit){
      const heading=outfit.querySelector('h2');if(heading)heading.textContent='Il look di oggi';
-     const swap=outfit.querySelector('#atelierSwap');if(swap)swap.textContent='Cambia un capo';
+     const swap=outfit.querySelector('#atelierSwap');if(swap)swap.textContent='Modifica';
    }
    const add=document.querySelector('.tab[data-tab="add"]');if(add)add.textContent='Aggiungi';
    const wardrobe=document.querySelector('.tab[data-tab="wardrobe"]');if(wardrobe)wardrobe.textContent='Armadio';
