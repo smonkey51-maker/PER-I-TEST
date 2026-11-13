@@ -25,7 +25,7 @@ body { font-family: var(--sans); }
 /* ---------- Ispirazione ---------- */
 #view-today .greet .sub { display: none !important; }
 .v2-wxrow { display: flex; align-items: center; gap: 8px; margin: 6px 0 14px; color: var(--muted); font: 500 14px var(--sans); }
-.v2-wx-ico { display: inline-grid; place-items: center; width: 22px; height: 22px; color: var(--accent); }
+.v2-wx-ico { display: inline-grid; place-items: center; width: 22px; height: 22px; color: var(--accent-strong); }
 .v2-wx-ico svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 #view-today #idea { position: relative; }
 #view-today #idea .strip { aspect-ratio: 16 / 11 !important; border-radius: var(--r-card) !important; padding: 12px !important; }
@@ -57,7 +57,7 @@ body { font-family: var(--sans); }
 .v2-day { flex: none; display: grid; place-items: center; gap: 2px; width: 48px; min-height: 64px; border: 1px solid var(--rule); border-radius: 999px; background: transparent; color: var(--text); font-family: var(--sans); cursor: pointer; }
 .v2-day small { color: var(--muted); font: 500 12px var(--sans); }
 .v2-day b { font: 600 17px var(--sans); }
-.v2-day.is-today { border-color: var(--accent); }
+.v2-day.is-today { border-color: var(--accent-strong); }
 .v2-day.is-sel { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .v2-day.is-sel small { color: var(--accent-ink); }
 .v2-daycard { padding: 14px; background: var(--surface); }
@@ -118,7 +118,7 @@ dialog#detail h2 { font: 500 26px var(--serif); }
 .v2-donut { position: relative; flex: none; width: 132px; height: 132px; }
 .v2-donut svg { width: 100%; height: 100%; }
 .v2-ring { fill: none; stroke: var(--surface-3); stroke-width: 10; }
-.v2-ring-on { fill: none; stroke: var(--accent); stroke-width: 10; stroke-linecap: round; }
+.v2-ring-on { fill: none; stroke: var(--accent-strong); stroke-width: 10; stroke-linecap: round; }
 .v2-donut-t { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
 .v2-donut-t b { font: 600 28px var(--serif); }
 .v2-donut-t small { color: var(--muted); font: 400 11px var(--sans); max-width: 80px; }
@@ -137,7 +137,7 @@ dialog#detail h2 { font: 500 26px var(--serif); }
 .v2-wide { width: 100%; margin-top: 16px; min-height: 52px; }
 .v2-bars { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
 .v2-bars li { display: grid; grid-template-columns: 96px 1fr 28px; align-items: center; gap: 10px; font: 400 14px var(--sans); text-transform: capitalize; }
-.v2-bars i { display: block; height: 10px; width: var(--w); min-width: 6px; border-radius: 999px; background: var(--accent); }
+.v2-bars i { display: block; height: 10px; width: var(--w); min-width: 6px; border-radius: 999px; background: var(--accent-strong); }
 .v2-bars b { text-align: right; font: 600 14px var(--sans); }
 .v2-insights { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
 .v2-insights button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 6px 0; border: 0; border-bottom: 1px solid var(--rule); background: transparent; color: var(--text); text-align: left; cursor: pointer; font-family: var(--sans); }
@@ -164,3 +164,33 @@ dialog#detail h2 { font: 500 26px var(--serif); }
 .v2-back svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 dialog#detail .dialog-img { height: 34vh; width: 100%; object-fit: contain !important; background: var(--plate) !important; margin-top: -52px; }
 #view-today .greet #todayLine { display: none !important; }
+
+/* ---------- The Quiet Wardrobe ---------- */
+.tabs { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+.v2-viewseg { margin: 0 0 14px; }
+#view-analysis .v2-viewseg, #view-looks .v2-viewseg, #view-wardrobe .v2-viewseg { margin-top: 0; }
+.v2-stylist { margin-top: 16px; padding: 14px 16px; border-radius: var(--r-card); background: var(--surface); }
+.v2-stylist h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font: 600 13px var(--sans); letter-spacing: .02em; color: var(--text); }
+.v2-stylist h3 svg { width: 18px; height: 18px; fill: none; stroke: var(--accent-strong); stroke-width: 1.7; stroke-linejoin: round; }
+.v2-why { margin: 0 0 10px; color: var(--muted); font: 400 14px/1.45 var(--sans); }
+.v2-swap { display: block; width: 100%; padding: 0; border: 0; background: transparent; cursor: pointer; border-radius: 10px; }
+.v2-swap:active { transform: scale(.97); }
+.v2-state { margin: 8px 0 0; color: var(--muted); font: 500 13px var(--sans); }
+.v2-state.is-conf { color: var(--text); }
+.v2-hint { margin: 2px 0 0; color: var(--muted); font: 400 12px var(--sans); }
+.v2-lookactions { display: none; gap: 8px; margin: 10px 4px 4px; }
+#view-looks .look.is-open .v2-lookactions { display: flex; }
+.v2-lookactions .btn { flex: 1; }
+.v2-period { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 12px; color: var(--muted); font: 400 13px var(--sans); }
+.v2-period select { min-height: 44px; padding: 0 12px; border: 0; border-radius: 12px; background: var(--surface-2); color: var(--text); font: 500 14px var(--sans); }
+[data-availability][aria-pressed=true]::before { content: "✓ "; }
+.v2-seg button[aria-selected=true] { box-shadow: none; }
+/* la tab bar non copre mai il contenuto */
+main { padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important; }
+/* animazioni brevi */
+.btn, .chip, .tab, .v2-day, .v2-row { transition-duration: .18s; }
+:root[data-theme="light"] .tab[aria-selected=true], .tab[aria-selected=true] .nav-text { color: var(--text) !important; }
+:root[data-theme="light"] .tab[aria-selected=true] svg { stroke: var(--text) !important; }
+.v3-refine { flex-wrap: wrap; gap: 4px 12px; }
+.v3-segments { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.v3-segments button, #v3SortColor { flex: none; min-height: 40px; white-space: nowrap; }

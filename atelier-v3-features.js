@@ -73,7 +73,7 @@
   const wardrobe=$('#view-wardrobe');
   const controls=document.createElement('div');
   controls.className='v3-refine';
-  controls.innerHTML='<div class="v3-segments" role="group" aria-label="Disponibilità"><button data-availability="ready" aria-pressed="true">Pronti</button><button data-availability="wash" aria-pressed="false">In lavatrice</button><button data-availability="fav" aria-pressed="false">Pezzi Iconici</button><button data-availability="all" aria-pressed="false">Tutti</button></div><button id="v3SortColor" aria-pressed="false">Per colore</button>';
+  controls.innerHTML='<div class="v3-segments" role="group" aria-label="Disponibilità"><button data-availability="ready" aria-pressed="true">Disponibili</button><button data-availability="wash" aria-pressed="false">In lavatrice</button><button data-availability="fav" aria-pressed="false">Pezzi Iconici</button><button data-availability="all" aria-pressed="false">Tutti</button></div><button id="v3SortColor" aria-pressed="false">Per colore</button>';
   $('#chips')?.after(controls);
   const insights=document.createElement('div');
   insights.id='v3Insights';insights.className='v3-insights';

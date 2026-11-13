@@ -904,10 +904,22 @@ function styleFit(g, tags) {
   return st === 'retro' ? 1.8 : st === 'sobrio' ? .8 : 1;
 }
 
+// Con la pioggia: le scarpe che soffrono l'acqua pesano molto meno, i capispalla impermeabili di più
+const DELICATE_SHOE = /camoscio|suede|nabuk|nubuk|scamosciat|tela\b|canvas|velluto|raso\b|lino\b/i;
+const WATERPROOF = /impermeabil|waterproof|gore-?tex|antipioggia|k-?way|trench|cerat|goretex/i;
+const gText = g => [g.tipo, g.materiale, g.texture, g.compatibilita, g.occasioni].filter(Boolean).join(' ');
+const delicateShoe = g => catOf(g) === 'Scarpe' && DELICATE_SHOE.test(gText(g));
+function rainFit(g) {
+  if (!wxNow?.rainy) return 1;
+  if (delicateShoe(g)) return .12;
+  if (catOf(g) === 'Giacche e capispalla' && WATERPROOF.test(gText(g))) return 2.5;
+  return 1;
+}
+
 function weight(g, tags) {
   const s = seasonFit(g);
   // in lavatrice o già scelto per un altro giorno: meno probabile (conta solo nella pianificazione)
-  return s ? (s === 2 ? 3 : 1) * occasionFit(g, tags) * styleFit(g, tags) * affinity(g) * (washing(g) ? .3 : 1) * (avoidIds.has(g.id) ? .35 : 1) : 0;
+  return s ? (s === 2 ? 3 : 1) * occasionFit(g, tags) * styleFit(g, tags) * affinity(g) * rainFit(g) * (washing(g) ? .3 : 1) * (avoidIds.has(g.id) ? .35 : 1) : 0;
 }
 
 // Sceglie a caso, ma con più probabilità i capi adatti alla stagione e agli impegni di oggi
@@ -940,7 +952,8 @@ function generateOutfit(clean, tags) {
   const outers = inCats('Giacche e capispalla');
   const outer = wxNow ? (wxNow.needOuter ? pickOne(outers, tags, true) : null) : pickOne(outers, tags, true);
   if (outer) picked.push(outer);
-  const warn = wxNow?.needOuter && !outer ? (wxNow.rainy ? 'Piove: non hai capispalla lavati adatti.' : 'Fa fresco: non hai capispalla lavati adatti.') : '';
+  let warn = wxNow?.needOuter && !outer ? (wxNow.rainy ? 'Piove: non hai capispalla lavati adatti.' : 'Fa fresco: non hai capispalla lavati adatti.') : '';
+  if (wxNow?.rainy && delicateShoe(shoes)) warn = (warn ? warn + ' ' : '') + 'Con la pioggia queste scarpe soffrono: non ho trovato un’alternativa disponibile.';
   const extra = Math.random() < .4 ? pickOne(inCats('Accessori'), tags) : null;
   if (extra) picked.push(extra);
   return { title: 'Outfit suggerito', ids: picked.map(g => g.id), warn };
