@@ -85,22 +85,13 @@
     } catch { toast(tr('Salvataggio non riuscito', 'Could not save')); }
   });
 
-  /* In programma (domani) e Da rivedere: solo se hanno contenuto */
+  /* Da rivedere: solo se ha contenuto */
   async function ensureTomorrow() {
     const card = q('#todayContent > .idea-card:first-child');
     if (!card) return;
-    let up = q('#v2Upcoming'), rev = q('#v2Review');
-    if (!up) { up = document.createElement('section'); up.id = 'v2Upcoming'; up.className = 'v2-sec'; card.after(up); }
-    if (!rev) { rev = document.createElement('section'); rev.id = 'v2Review'; rev.className = 'v2-sec'; up.after(rev); }
-    const p = typeof plans !== 'undefined' ? plans.get(dayKey(1)) : null;
-    const has = p && (p.wx || (allEvents !== null && p.events.length) || isConfirmed(p));
-    if (!has) up.innerHTML = '';
-    else {
-      const ids = p.outfit.missing ? [] : p.outfit.ids;
-      const parts = [p.wx ? p.wx.tmin + '–' + p.wx.tmax + '°C' : '', allEvents === null ? '' : firstEventLine(p), isConfirmed(p) ? tr('Confermato', 'Confirmed') : ''].filter(Boolean);
-      up.innerHTML = '<h3>' + esc(tr('In programma', 'Coming up')) + '</h3><button type="button" class="v2-tomorrow" data-go-week><span class="v2-tm-thumbs">' + ids.slice(0, 3).map(id => thumb(id)).join('') + '</span>' +
-        '<span class="v2-tm-text"><strong>' + esc(tr('Domani', 'Tomorrow')) + '</strong><small>' + esc(parts.join(' · ')) + '</small></span><i class="v2-chev" aria-hidden="true"></i></button>';
-    }
+    q('#v2Upcoming')?.remove();
+    let rev = q('#v2Review');
+    if (!rev) { rev = document.createElement('section'); rev.id = 'v2Review'; rev.className = 'v2-sec'; card.after(rev); }
     try {
       const gs = await all();
       const old = gs.filter(g => !washing(g)).map(g => ({ g, d: daysSinceWorn(g) })).filter(x => x.d != null && x.d >= 30).sort((a, b) => b.d - a.d).slice(0, 6);
@@ -294,8 +285,36 @@
       el.dataset.kind = i ? (i.formal ? 'formal' : 'casual') : '';
       el.dataset.ready = i?.ready ? '1' : '';
     });
+    groupLooks();
     applyLookFilters();
   }
+  const lookCollapsed = new Set();
+  let grouping = false;
+  function groupLooks() {
+    const box = q('#looks');
+    if (!box || grouping || !box.querySelector(':scope > .look')) return;
+    grouping = true;
+    const arts = qa('#looks > .look');
+    const order = [['casual', 'Casual'], ['formal', tr('Formale', 'Formal')], ['', tr('Altro', 'Other')]];
+    order.forEach(([k, label]) => {
+      const part = arts.filter(a => (a.dataset.kind || '') === k);
+      if (!part.length) return;
+      const sec = document.createElement('section');
+      sec.className = 'min-group look-group'; sec.dataset.lg = k;
+      sec.innerHTML = '<h3>' + esc(label) + ' <span>' + part.length + '</span></h3><div class="look-grid"></div>';
+      part.forEach(a => q('.look-grid', sec).append(a));
+      sec.classList.toggle('is-collapsed', lookCollapsed.has(k));
+      box.append(sec);
+    });
+    grouping = false;
+  }
+  document.addEventListener('click', e => {
+    const h = e.target.closest('#looks .look-group > h3');
+    if (!h) return;
+    const sec = h.closest('.look-group'), k = sec.dataset.lg;
+    lookCollapsed.has(k) ? lookCollapsed.delete(k) : lookCollapsed.add(k);
+    sec.classList.toggle('is-collapsed', lookCollapsed.has(k));
+  });
   function applyLookFilters() {
     qa('#looks .look').forEach(el => {
       let hide = el.classList.contains('hidden-by-base');
@@ -303,6 +322,11 @@
       if (lookState.formal && el.dataset.kind !== 'formal') hide = true;
       if (lookState.ready && !el.dataset.ready) hide = true;
       el.classList.toggle('v2-hide', hide);
+    });
+    qa('#looks .look-group').forEach(g => {
+      const n = qa('.look', g).filter(l => !l.classList.contains('v2-hide') && !l.classList.contains('hidden')).length;
+      g.hidden = n === 0;
+      const c = q('h3 span', g); if (c) c.textContent = n;
     });
   }
   const lookChips = q('#view-looks .chips');
