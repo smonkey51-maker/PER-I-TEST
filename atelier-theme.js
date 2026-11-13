@@ -4,13 +4,13 @@
   'use strict';
   const KEY = 'atelier_theme';
   const mq = window.matchMedia?.('(prefers-color-scheme: light)');
-  const choice = () => { try { return localStorage.getItem(KEY) || 'auto'; } catch { return 'auto'; } };
+  const choice = () => { try { return localStorage.getItem(KEY) || 'light'; } catch { return 'auto'; } };
 
   function apply() {
     const c = choice();
     const light = c === 'light' || (c === 'auto' && !!mq?.matches);
     document.documentElement.dataset.theme = light ? 'light' : 'dark';
-    document.querySelector('meta[name=theme-color]')?.setAttribute('content', light ? '#f6efdf' : '#2a1c14');
+    document.querySelector('meta[name=theme-color]')?.setAttribute('content', light ? '#f5f1ea' : '#211a17');
     document.querySelectorAll('[data-theme-choice]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeChoice === c)));
   }
   window.atelierApplyTheme = apply;

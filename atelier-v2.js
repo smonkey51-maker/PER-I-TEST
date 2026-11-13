@@ -13,22 +13,6 @@
   const isKnown = v => (typeof known === 'function' ? known(v) : v);
   const thumb = (id, cls) => photoHtml(id, cls || 'v2-thumb', '');
 
-  /* ---------- Header: menu ---------- */
-  const menu = q('#v2Menu'), menuBtn = q('#menuBtn');
-  function closeMenu() { menu.classList.add('hidden'); menuBtn?.setAttribute('aria-expanded', 'false'); }
-  menuBtn?.addEventListener('click', e => {
-    e.stopPropagation();
-    const open = menu.classList.toggle('hidden') === false;
-    menuBtn.setAttribute('aria-expanded', String(open));
-  });
-  document.addEventListener('click', e => { if (!e.target.closest('#v2Menu, #menuBtn')) closeMenu(); });
-  menu?.addEventListener('click', e => {
-    const b = e.target.closest('[data-menu]');
-    if (!b) return;
-    closeMenu();
-    showTab(b.dataset.menu);
-  });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
   q('#wardAdd')?.addEventListener('click', () => showTab('add'));
 
   /* ---------- Ispirazione ---------- */
@@ -84,6 +68,7 @@
     if (!strip) return;
     window.__v2LastIdeaIds = currentIdeaIds();
     decorateIdea();
+    try { ensureStylist(); } catch { /* facoltativo */ }
   }).observe(q('#idea') || document.body, { childList: true });
 
   function currentIdeaIds() {
@@ -125,6 +110,11 @@
 
   /* ---------- Settimana: selettore dei giorni ---------- */
   let selDay = null;
+  const CONF_KEY = 'atelier_plan_confirmed';
+  const readConf = () => { try { return JSON.parse(localStorage.getItem(CONF_KEY) || '{}'); } catch { return {}; } };
+  const writeConf = o => { try { localStorage.setItem(CONF_KEY, JSON.stringify(o)); } catch { /* storage non disponibile */ } };
+  const sameIds = (a, b) => a && b && [...a].sort().join(',') === [...b].sort().join(',');
+  const isConfirmed = p => !p.outfit.missing && sameIds(readConf()[p.key], p.outfit.ids);
   const dayInfo = key => {
     const d = new Date(key + 'T12:00:00'), loc = appLocale();
     return {
@@ -168,20 +158,45 @@
     const names = ids.map(id => byId.get(id)?.tipo).filter(Boolean);
     html += '<article class="v2-daycard"><div class="v2-daycard-top"><span class="v2-daylabel">' + esc((selDay === list[0].key ? tr('Oggi', 'Today') + ' · ' : '') + cap(si.long) + ' ' + si.short) + '</span>' +
       '<span class="v2-daywx">' + (sel.wx ? wxIcon(sel.wx, 'v2-wx-ico') : '') + esc(wxShort(sel)) + '</span></div>' +
-      '<div class="v2-hero">' + (ids.length ? ids.slice(0, 4).map(id => '<figure>' + thumb(id, 'v2-hero-img') + '</figure>').join('') : '<p class="v2-empty">' + esc(tr('Nessun look disponibile per questo giorno.', 'No look available for this day.')) + '</p>') + '</div>' +
+      '<div class="v2-hero">' + (ids.length ? ids.slice(0, 4).map((id, i) => '<figure><button type="button" class="v2-swap" data-swap="' + esc(sel.key) + '" data-i="' + i + '" aria-label="' + esc(tr('Sostituisci ', 'Swap ') + (byId.get(id)?.tipo || '')) + '">' + thumb(id, 'v2-hero-img') + '</button></figure>').join('') : '<p class="v2-empty">' + esc(tr('Nessun look disponibile per questo giorno.', 'No look available for this day.')) + '</p>') + '</div>' +
       '<p class="v2-names">' + esc(names.slice(0, 4).join(' · ')) + '</p>' +
       '<p class="v2-sub">' + esc(eventText(sel)) + ' · ' + esc(dayStatus(sel, byId)) + '</p>' +
+      '<p class="v2-state ' + (isConfirmed(sel) ? 'is-conf' : '') + '">' + esc(isConfirmed(sel) ? tr('✓ Outfit confermato', '✓ Outfit confirmed') : tr('Suggerimento: non ancora confermato', 'Suggestion: not confirmed yet')) + '</p>' +
+      (ids.length ? '<p class="v2-hint">' + esc(tr('Tocca un capo per sostituirlo.', 'Tap an item to swap it.')) + '</p>' : '') +
       '<div class="v2-actions"><button type="button" class="btn secondary" data-regen="' + esc(sel.key) + '">' + esc(tr('Rigenera', 'Regenerate')) + '</button>' +
+      (ids.length ? '<button type="button" class="btn' + (isConfirmed(sel) ? ' secondary' : '') + '" data-conf="' + esc(sel.key) + '">' + esc(isConfirmed(sel) ? tr('Annulla conferma', 'Undo confirm') : tr('Conferma outfit', 'Confirm outfit')) + '</button>' : '') +
       '</div></article>';
     // altri giorni: righe compatte
     html += '<div class="v2-rows">' + list.filter(p => p.key !== selDay).map(p => {
       const d = dayInfo(p.key);
       return '<button type="button" class="v2-row" data-day="' + esc(p.key) + '"><span class="v2-row-thumbs">' + rowThumbs(p, byId, 3) + '</span>' +
-        '<span class="v2-row-text"><strong>' + esc(p.key === list[1]?.key ? tr('Domani', 'Tomorrow') : cap(d.long)) + '</strong><small>' + esc(wxShort(p) + ' · ' + eventText(p)) + '</small></span><i class="v2-chev" aria-hidden="true"></i></button>';
+        '<span class="v2-row-text"><strong>' + esc(p.key === list[1]?.key ? tr('Domani', 'Tomorrow') : cap(d.long)) + '</strong><small>' + esc((isConfirmed(p) ? tr('Confermato', 'Confirmed') : tr('Suggerito', 'Suggested')) + ' · ' + wxShort(p) + ' · ' + eventText(p)) + '</small></span><i class="v2-chev" aria-hidden="true"></i></button>';
     }).join('') + '</div>';
     box.innerHTML = html;
   };
+  async function swapItem(key, i) {
+    const gs = await all(), byId = new Map(gs.map(g => [g.id, g]));
+    const p = plans.get(key);
+    const cur = p && byId.get(p.outfit.ids[i]);
+    if (!cur) return;
+    const used = new Set(p.outfit.ids), rainy = (p.wx?.rain || 0) >= 50;
+    const alts = gs.filter(g => !washing(g) && !used.has(g.id) && catOf(g) === catOf(cur) && !(rainy && typeof delicateShoe === 'function' && delicateShoe(g)));
+    if (!alts.length) { toast(tr('Nessun altro capo disponibile per sostituirlo', 'No other available item to swap in')); return; }
+    const next = alts[Math.floor(Math.random() * alts.length)];
+    p.outfit.ids = p.outfit.ids.map((id, k) => (k === i ? next.id : id));
+    renderWeek(new Map(gs.map(g => [g.id, g])));
+    toast(tr('Sostituito: ', 'Swapped: ') + (next.tipo || ''));
+  }
   document.addEventListener('click', e => {
+    const sw = e.target.closest('[data-swap]');
+    if (sw) { swapItem(sw.dataset.swap, +sw.dataset.i); return; }
+    const cf = e.target.closest('[data-conf]');
+    if (cf) {
+      const p = plans.get(cf.dataset.conf), conf = readConf();
+      if (p) { isConfirmed(p) ? delete conf[p.key] : (conf[p.key] = [...p.outfit.ids]); writeConf(conf); all().then(gs => renderWeek(new Map(gs.map(g => [g.id, g]))));
+        toast(isConfirmed(p) ? tr('Outfit confermato', 'Outfit confirmed') : tr('Conferma annullata', 'Confirmation undone')); }
+      return;
+    }
     const d = e.target.closest('#weekList [data-day]');
     if (d) { selDay = d.dataset.day; renderAll?.(); return; }
   });
@@ -274,6 +289,12 @@
         b.textContent = tr('Incompleto', 'Incomplete') + ' · ' + tr('manca: ', 'missing: ') + i.missing.join(', ');
         el.append(b);
       }
+      if (id && !q('.v2-lookactions', el)) {
+        const a = document.createElement('div');
+        a.className = 'v2-lookactions';
+        a.innerHTML = '<button type="button" class="btn" data-lk-wear="' + esc(id) + '">' + esc(tr('Indossa', 'Wear')) + '</button><button type="button" class="btn secondary" data-lk-dup="' + esc(id) + '">' + esc(tr('Duplica', 'Duplicate')) + '</button>';
+        el.append(a);
+      }
       el.dataset.kind = i ? (i.formal ? 'formal' : 'casual') : '';
       el.dataset.ready = i?.ready ? '1' : '';
     });
@@ -357,6 +378,7 @@
 
   /* ---------- Analisi ---------- */
   let anTab = 'use';
+  let anDays = 30;
   const DAY = 86400000;
   const within = (d, days) => (Date.now() - new Date(d + 'T12:00:00').getTime()) <= days * DAY;
   const wearCount = (g, days) => (g.indossato || []).filter(d => !days || within(d, days)).length;
@@ -368,9 +390,10 @@
     if (!gs.length) { body.innerHTML = '<div class="v2-emptystate"><h2>' + esc(tr('Ancora nessun dato', 'No data yet')) + '</h2><p>' + esc(tr('Aggiungi qualche capo e registra cosa indossi: qui compariranno utilizzo, colori e stagioni.', 'Add some items and log what you wear: usage, colours and seasons will show here.')) + '</p><button class="btn" data-menu-add>' + esc(tr('Aggiungi un capo', 'Add an item')) + '</button></div>'; return; }
     const total = gs.length;
     const anyWear = gs.some(g => (g.indossato || []).length);
-    let html = '';
+    const from = new Date(Date.now() - anDays * DAY).toLocaleDateString(appLocale(), { day: 'numeric', month: 'short' }), to = new Date().toLocaleDateString(appLocale(), { day: 'numeric', month: 'short' });
+    let html = '<div class="v2-period"><span>' + esc(tr('Periodo analizzato: ', 'Period analysed: ') + from + ' – ' + to) + '</span><select id="anDays" aria-label="' + esc(tr('Periodo', 'Period')) + '"><option value="30"' + (anDays === 30 ? ' selected' : '') + '>' + esc(tr('30 giorni', '30 days')) + '</option><option value="90"' + (anDays === 90 ? ' selected' : '') + '>' + esc(tr('90 giorni', '90 days')) + '</option></select></div>';
     if (anTab === 'use') {
-      const used = gs.filter(g => wearCount(g, 30) > 0).length;
+      const used = gs.filter(g => wearCount(g, anDays) > 0).length;
       const idle = total - used;
       const pct = Math.round(used / total * 100);
       const C = 2 * Math.PI * 46;
@@ -378,9 +401,9 @@
         (anyWear ? '<circle cx="55" cy="55" r="46" class="v2-ring-on" stroke-dasharray="' + (C * pct / 100).toFixed(1) + ' ' + C.toFixed(1) + '" transform="rotate(-90 55 55)"/>' : '') + '</svg>' +
         '<div class="v2-donut-t">' + (anyWear ? '<b>' + pct + '%</b><small>' + esc(tr('Utilizzo capi', 'Item usage')) + '</small>' : '<b>—</b><small>' + esc(tr('Dati insufficienti', 'Insufficient data')) + '</small>') + '</div></div>' +
         '<ul class="v2-stats"><li><b>' + total + '</b><span>' + esc(tr('Capi totali', 'Total items')) + '</span></li>' +
-        '<li><b>' + (anyWear ? used : '—') + '</b><span>' + esc(tr('Usati negli ultimi 30 giorni', 'Worn in the last 30 days')) + '</span></li>' +
+        '<li><b>' + (anyWear ? used : '—') + '</b><span>' + esc(tr('Usati negli ultimi ' + anDays + ' giorni', 'Worn in the last ' + anDays + ' days')) + '</span></li>' +
         '<li><b>' + (anyWear ? idle : '—') + '</b><span>' + esc(tr('Poco utilizzati', 'Rarely used')) + '</span></li></ul></div>';
-      html += '<p class="v2-foot">' + esc(anyWear ? tr('Calcolato sugli utilizzi che hai registrato con «Indosso questo».', 'Calculated from the uses you logged with “Wear this”.') : tr('Registra cosa indossi con «Indosso questo»: servono dati per calcolare l’utilizzo.', 'Log what you wear with “Wear this”: data is needed to compute usage.')) + '</p>';
+      html += '<p class="v2-foot">' + esc(anyWear ? tr(used + ' capi su ' + total + ' indossati negli ultimi ' + anDays + ' giorni, dagli utilizzi registrati con «Indosso questo».', used + ' of ' + total + ' items worn in the last ' + anDays + ' days, from uses logged with “Wear this”.') : tr('Registra cosa indossi con «Indosso questo»: servono dati per calcolare l’utilizzo.', 'Log what you wear with “Wear this”: data is needed to compute usage.')) + '</p>';
       const top = gs.filter(g => (g.indossato || []).length).sort((a, b) => (b.indossato.length) - (a.indossato.length)).slice(0, 3);
       html += '<section class="v2-block"><h2>' + esc(tr('I più indossati', 'Most worn')) + '</h2>' + (top.length
         ? '<div class="v2-top">' + top.map(g => '<button type="button" data-open="' + esc(g.id) + '"><span class="v2-top-img">' + thumb(g.id, 'v2-hero-img') + '</span><small>' + esc(g.tipo || '') + ' · ' + g.indossato.length + '×</small></button>').join('') + '</div>'
@@ -401,7 +424,7 @@
       const items = [];
       gs.filter(g => !washing(g)).forEach(g => {
         const d = daysSinceWorn(g);
-        if (d != null && d >= 30) items.push({ g, why: tr('Non lo indossi da ' + d + ' giorni.', 'Not worn for ' + d + ' days.') });
+        if (d != null && d >= anDays) items.push({ g, why: tr('Non lo indossi da ' + d + ' giorni.', 'Not worn for ' + d + ' days.') });
       });
       const never = anyWear ? gs.filter(g => !(g.indossato || []).length && !washing(g)) : [];
       never.slice(0, 5).forEach(g => items.push({ g, why: tr('Nessun utilizzo registrato.', 'No recorded use.') }));
@@ -423,6 +446,7 @@
     qa('#analysisTabs [data-an]').forEach(x => x.setAttribute('aria-selected', String(x === b)));
     renderAnalysis();
   });
+  document.addEventListener('change', e => { if (e.target.id === 'anDays') { anDays = +e.target.value; renderAnalysis(); } });
   document.addEventListener('click', e => {
     const go = e.target.closest('[data-an-go]');
     if (go) { anTab = go.dataset.anGo; qa('#analysisTabs [data-an]').forEach(x => x.setAttribute('aria-selected', String(x.dataset.an === anTab))); renderAnalysis(); }
@@ -433,9 +457,104 @@
   showTab = function (name) {
     baseShow(name);
     if (name === 'analysis') renderAnalysis();
+    setTimeout(syncTabs, 90);
     if (name === 'wardrobe') { reindex().then(() => window.__v2Refresh?.()); }
   };
   document.addEventListener('atelier:languagechange', () => { renderAnalysis(); ensureWeatherRow(); });
+
+  /* ---------- Guardaroba · Look · Insight: una sola destinazione con tre viste ---------- */
+  const SEG = [['wardrobe', 'Capi', 'Items'], ['looks', 'Look', 'Looks'], ['analysis', 'Insight', 'Insights']];
+  SEG.forEach(([view]) => {
+    const el = q('#view-' + view);
+    if (!el || q('.v2-viewseg', el)) return;
+    const d = document.createElement('div');
+    d.className = 'v2-seg v2-viewseg'; d.setAttribute('role', 'tablist');
+    d.innerHTML = SEG.map(([k, it, e]) => '<button type="button" role="tab" data-seg="' + k + '" aria-selected="' + (k === view) + '">' + esc(tr(it, e)) + '</button>').join('');
+    q('.view-head', el).after(d);
+  });
+  document.addEventListener('click', e => { const b = e.target.closest('[data-seg]'); if (b) showTab(b.dataset.seg); });
+  function syncTabs() {
+    const open = ['today', 'week', 'wardrobe', 'looks', 'analysis', 'profile', 'diary', 'add'].find(v => !q('#view-' + v)?.classList.contains('hidden') && getComputedStyle(q('#view-' + v)).display !== 'none');
+    const group = { looks: 'wardrobe', analysis: 'wardrobe', add: 'wardrobe', diary: 'profile' }[open] || open;
+    qa('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === group)));
+  }
+  setTimeout(syncTabs, 200);
+
+  /* ---------- Stylist contestuale (Ispirazione) ---------- */
+  async function reasonFor() {
+    const ids = currentIdeaIds();
+    if (!ids.length) return '';
+    const gs = await all(), byId = new Map(gs.map(g => [g.id, g]));
+    const items = ids.map(id => byId.get(id)).filter(Boolean);
+    const parts = [];
+    const w = typeof weather !== 'undefined' ? weather : null;
+    parts.push(w ? tr('Adatto a ', 'Suited to ') + w.tmin + '–' + w.tmax + ' °C' : tr('Meteo non disponibile: scelto in base a stagione e disponibilità', 'Weather unavailable: chosen by season and availability'));
+    if (w && w.rain >= 50) {
+      const outer = items.find(g => catOf(g) === 'Giacche e capispalla');
+      const shoe = items.find(g => catOf(g) === 'Scarpe');
+      if (outer) parts.push(tr('capospalla incluso', 'outerwear included'));
+      else if (!gs.some(g => catOf(g) === 'Giacche e capispalla' && !washing(g))) parts.push(tr('consiglio: aggiungi un capospalla impermeabile (non è nel tuo guardaroba)', 'tip: add a waterproof jacket (not in your wardrobe)'));
+      if (shoe) parts.push(typeof delicateShoe === 'function' && delicateShoe(shoe) ? tr('attenzione: scarpe delicate con la pioggia', 'note: delicate shoes in the rain') : tr('scarpe adatte alla pioggia', 'shoes suitable for rain'));
+    }
+    parts.push(tr('solo capi disponibili', 'available items only'));
+    return parts.join('; ') + '.';
+  }
+  async function ensureStylist() {
+    const card = q('#todayContent > .idea-card:first-child');
+    const actions = card && q('.actions', card);
+    if (!actions || !currentIdeaIds().length) { q('#v2Stylist')?.remove(); return; }
+    let box = q('#v2Stylist');
+    if (!box) {
+      box = document.createElement('section'); box.id = 'v2Stylist'; box.className = 'v2-stylist';
+      box.innerHTML = '<h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg><span>Stylist</span></h3><p class="v2-why"></p>' +
+        '<div class="v2-chips"><button type="button" class="chip" data-st="formal">' + esc(tr('Più formale', 'More formal')) + '</button><button type="button" class="chip" data-st="casual">' + esc(tr('Più casual', 'More casual')) + '</button><button type="button" class="chip" data-st="shoes">' + esc(tr('Cambia scarpe', 'Change shoes')) + '</button></div>';
+      actions.after(box);
+    }
+    q('.v2-why', box).textContent = await reasonFor();
+  }
+  async function restyle(kind) {
+    if (typeof idea === 'undefined' || !idea || idea.missing) return;
+    const gs = await all(), byId = new Map(gs.map(g => [g.id, g]));
+    const rainy = typeof wxNow !== 'undefined' && wxNow?.rainy;
+    const ok = g => !washing(g) && !(rainy && typeof delicateShoe === 'function' && delicateShoe(g));
+    const ids = [...idea.ids];
+    let changed = 0;
+    const swapCat = (re, pred) => {
+      ids.forEach((id, i) => {
+        const cur = byId.get(id);
+        if (!cur || !re.test(catOf(cur)) || pred.keep?.(cur)) return;
+        const alts = gs.filter(g => ok(g) && !ids.includes(g.id) && catOf(g) === catOf(cur) && pred.want(g));
+        if (alts.length) { ids[i] = alts[Math.floor(Math.random() * alts.length)].id; changed++; }
+      });
+    };
+    if (kind === 'shoes') swapCat(/Scarpe/, { want: () => true });
+    if (kind === 'formal') swapCat(/Maglieria|Camicie|Pantaloni|Scarpe/, { keep: g => garmentStyle(g) === 'sobrio', want: g => garmentStyle(g) === 'sobrio' });
+    if (kind === 'casual') swapCat(/Maglieria|Camicie|Pantaloni|Scarpe/, { keep: g => garmentStyle(g) !== 'sobrio', want: g => garmentStyle(g) !== 'sobrio' });
+    if (!changed) { toast(kind === 'shoes' ? tr('Non hai altre scarpe disponibili', 'No other shoes available') : tr('Non hai altri capi disponibili in quello stile', 'No other available items in that style')); return; }
+    idea.ids = ids; second = null;
+    await renderAll();
+    toast(tr('Look aggiornato', 'Look updated'));
+  }
+  document.addEventListener('click', e => { const b = e.target.closest('[data-st]'); if (b) restyle(b.dataset.st); });
+
+  /* ---------- Look: indossa e duplica ---------- */
+  document.addEventListener('click', async e => {
+    const w = e.target.closest('[data-lk-wear]'), d = e.target.closest('[data-lk-dup]');
+    if (!w && !d) return;
+    const id = (w || d).dataset.lkWear || (w || d).dataset.lkDup;
+    const looks = await all('looks'), look = looks.find(l => l.id === id);
+    if (!look) return;
+    if (d) { await put({ ...look, id: 'look-' + Date.now(), nome: look.nome + tr(' (copia)', ' (copy)'), preferito: false, createdAt: Date.now() }, 'looks'); toast(tr('Look duplicato', 'Look duplicated')); renderAll?.(); return; }
+    const gs = await all(), byId = new Map(gs.map(g => [g.id, g]));
+    const items = (look.capi || []).map(x => byId.get(x)).filter(Boolean);
+    const dirty = items.filter(washing);
+    if (!items.length) { toast(tr('Questo look non ha capi nel guardaroba', 'This look has no wardrobe items')); return; }
+    if (dirty.length) { toast(tr('In lavatrice: ', 'In the wash: ') + dirty.map(g => g.tipo).join(', ')); return; }
+    const today = todayStr();
+    for (const g of items) if (!(g.indossato || []).includes(today)) await put({ ...g, indossato: [...(g.indossato || []), today].slice(-60) });
+    toast(tr('Look indossato oggi', 'Look worn today'));
+    renderAll?.();
+  });
 
   reindex();
   setTimeout(() => { try { ensureWeatherRow(); ensureTomorrow(); classifyLooks(); } catch { /* facoltativo */ } }, 1500);

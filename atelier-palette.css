@@ -1,32 +1,32 @@
-/* ATELIER — palette Brown · Cream · Baby Blue (lusso discreto, contrasti AA).
+/* ATELIER — The Quiet Wardrobe: avorio, carbone, espresso, azzurro polvere. Prima Brown · Cream · Baby Blue (lusso discreto, contrasti AA).
    Chiaro: crema di fondo, testo e azioni in marrone profondo, azzurro baby per gli stati attivi e i fondali dei capi.
    Scuro: marrone profondo di fondo, testo crema, azzurro baby come accento.
    Caricato per ultimo: ridefinisce i token e i pochi colori fissi dei livelli precedenti. */
 :root {
   color-scheme: dark;
-  --bg: #2a1b15; --bg-rgb: 42, 27, 21;
-  --surface: #3d2b22; --surface-2: #47342a; --surface-3: #59453b;
-  --text: #f3e9dd; --muted: #b8a697;
-  --accent: #a7cee6; --accent-rgb: 168, 208, 232; --accent-ink: #2a1b15;
+  --bg: #211a17; --bg-rgb: 33, 26, 23;
+  --surface: #332923; --surface-2: #3d322b; --surface-3: #4a3d35;
+  --text: #f5f1ea; --muted: #b8a697;
+  --accent: #a7cee6; --accent-rgb: 167, 206, 230; --accent-ink: #211a17; --accent-strong: #a7cee6;
   --ai: #8dc1e3; --ai-soft: rgba(141, 193, 227, .18);
-  --danger: #ff9c8f; --sun: #f2b36b; --icon: #f6efdf; --rain: #8dc1e3; --ice: #a8d0e8; --smoke: #b5a48f;
-  --rule: #59453b; --line: #59453b;
-  --plate: linear-gradient(160deg, #3d322b, #2f2620);
-  --pill: rgba(168, 208, 232, .18);
-  --tabbar: rgba(42, 28, 20, .86);
+  --danger: #ff9c8f; --sun: #f2b36b; --icon: #f5f1ea; --rain: #8dc1e3; --ice: #a7cee6; --smoke: #b5a48f;
+  --rule: #4a3d35; --line: #4a3d35;
+  --plate: linear-gradient(160deg, #3a2f29, #2d241f);
+  --pill: rgba(167, 206, 230, .18);
+  --tabbar: rgba(33, 26, 23, .92);
 }
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #f6efdf; --bg-rgb: 246, 239, 223;
-  --surface: #fffaf0; --surface-2: #eee4ce; --surface-3: #e1d4b8;
-  --text: #3a281c; --muted: #6b5646;
-  --accent: #5c3b28; --accent-rgb: 92, 59, 40; --accent-ink: #fff8ea;
-  --ai: #3e7ca6; --ai-soft: rgba(168, 208, 232, .45);
-  --danger: #a32a22; --sun: #b05a12; --icon: #3a281c; --rain: #3e7ca6; --ice: #5c9cc4; --smoke: #7a6858;
-  --rule: rgba(58, 40, 28, .12); --line: rgba(58, 40, 28, .12);
-  --plate: linear-gradient(160deg, #eee9df, #e3dccd);
-  --pill: rgba(168, 208, 232, .55);
-  --tabbar: rgba(255, 250, 240, .9);
+  --bg: #f5f1ea; --bg-rgb: 245, 241, 234;
+  --surface: #eae4db; --surface-2: #dfd8cc; --surface-3: #d2cabd;
+  --text: #24211f; --muted: #655f57;
+  --accent: #a7cee6; --accent-rgb: 167, 206, 230; --accent-ink: #24211f; --accent-strong: #3f7399;
+  --ai: #3f7399; --ai-soft: rgba(167, 206, 230, .45);
+  --danger: #a32a22; --sun: #8a5a12; --icon: #24211f; --rain: #3f7399; --ice: #3f7399; --smoke: #7a7268;
+  --rule: rgba(36, 33, 31, .14); --line: rgba(36, 33, 31, .14);
+  --plate: linear-gradient(160deg, #e2dbd0, #d6cfc2);
+  --pill: rgba(167, 206, 230, .7);
+  --tabbar: rgba(245, 241, 234, .94);
 }
 
 /* Fondali dei capi: azzurro baby (chiaro) o marrone caldo (scuro) al posto del grigio */
@@ -48,4 +48,4 @@
 .atelier-language span.on { background: var(--accent) !important; color: var(--accent-ink) !important; }
 .v3-add-modes > button:first-child b { color: var(--text) !important; }
 a { color: var(--accent); }
-:root[data-theme="light"] a { color: #4a6f8a; }
+:root[data-theme="light"] a { color: #3f7399; }
