@@ -32,41 +32,80 @@
     const ox=Math.floor((w-iw)/2),oy=Math.floor((h-ih)/2);
     ctx.drawImage(image,ox,oy,iw,ih);
     const frame=ctx.getImageData(0,0,w,h),data=frame.data;
-    // Sample original image corners. Do not remove complex backgrounds or similar-coloured clothes.
-    const sample=(x,y)=>{const i=(y*w+x)*4;return [data[i],data[i+1],data[i+2]];};
-    const corners=[[ox+3,oy+3],[ox+iw-4,oy+3],[ox+3,oy+ih-4],[ox+iw-4,oy+ih-4]]
-      .filter(([x,y])=>x>=0&&y>=0&&x<w&&y<h).map(([x,y])=>sample(x,y));
-    if(corners.length<4)return null;
-    const bg=[0,1,2].map(k=>corners.reduce((a,v)=>a+v[k],0)/4);
-    const distance=(a,b)=>Math.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2);
-    if(Math.max(...corners.map(p=>distance(p,bg)))>48)return null;
-    // Fondale stimato punto per punto (interpolazione tra i quattro angoli): segue le sfumature senza confondersi con il capo
-    const [c00,c10,c01,c11]=corners;
-    const bgAt=(x,y)=>{const u=(x-ox)/Math.max(iw-1,1),v=(y-oy)/Math.max(ih-1,1);return [0,1,2].map(k=>(c00[k]*(1-u)+c10[k]*u)*(1-v)+(c01[k]*(1-u)+c11[k]*u)*v);};
-    const seen=new Uint8Array(w*h),queue=new Int32Array(w*h),lastFrom=new Int32Array(w*h).fill(-1);let head=0,tail=0;
-    const enqueue=i=>{if(i<0||i>=w*h||seen[i])return;seen[i]=1;queue[tail++]=i;};
-    for(let x=ox;x<ox+iw;x++){enqueue(oy*w+x);enqueue((oy+ih-1)*w+x);}
-    for(let y=oy;y<oy+ih;y++){enqueue(y*w+ox);enqueue(y*w+ox+iw-1);}
-    let removed=0;
-    while(head<tail){
-      const p=queue[head++],x=p%w,y=Math.floor(p/w),j=p*4;
-      if(x<ox||x>=ox+iw||y<oy||y>=oy+ih)continue;
-      const d=distance([data[j],data[j+1],data[j+2]],bgAt(x,y));
-      if(d>24)continue;
-      // Segue i gradienti dolci dello sfondo: si ferma dove il colore cambia di colpo (il bordo del capo)
-      const from=lastFrom[p];
-      if(from>=0){const k=from*4;if(distance([data[j],data[j+1],data[j+2]],[data[k],data[k+1],data[k+2]])>6)continue;}
-      data[j+3]=0;removed++;
-      const push=q=>{if(!seen[q]){lastFrom[q]=p;enqueue(q);}};
-      if(x>ox)push(p-1);if(x<ox+iw-1)push(p+1);
-      if(y>oy)push(p-w);if(y<oy+ih-1)push(p+w);
+    const inside=(x,y)=>x>=ox&&x<ox+iw&&y>=oy&&y<oy+ih;
+
+    // 1) Modello del fondale: superficie quadratica per canale, adattata ai pixel del bordo (segue sfumature e vignettature)
+    const nx=x=>(x-ox)/Math.max(iw-1,1)*2-1,ny=y=>(y-oy)/Math.max(ih-1,1)*2-1;
+    const feat=(x,y)=>{const u=nx(x),v=ny(y);return [1,u,v,u*u,u*v,v*v];};
+    const ring=[];
+    const R=6;
+    for(let y=oy;y<oy+ih;y+=2)for(let x=ox;x<ox+iw;x+=2){if(x-ox<R||ox+iw-1-x<R||y-oy<R||oy+ih-1-y<R)ring.push([x,y]);}
+    if(ring.length<60)return null;
+    const solve=(A,b)=>{const n=b.length;for(let i=0;i<n;i++){let m=i;for(let r=i+1;r<n;r++)if(Math.abs(A[r][i])>Math.abs(A[m][i]))m=r;[A[i],A[m]]=[A[m],A[i]];[b[i],b[m]]=[b[m],b[i]];if(Math.abs(A[i][i])<1e-9)return null;for(let r=i+1;r<n;r++){const f=A[r][i]/A[i][i];for(let k=i;k<n;k++)A[r][k]-=f*A[i][k];b[r]-=f*b[i];}}const x=new Array(n).fill(0);for(let i=n-1;i>=0;i--){let t=b[i];for(let k=i+1;k<n;k++)t-=A[i][k]*x[k];x[i]=t/A[i][i];}return x;};
+    const fit=pts=>{const out=[];for(let ch=0;ch<3;ch++){const A=Array.from({length:6},()=>new Array(6).fill(0)),b=new Array(6).fill(0);for(const [x,y] of pts){const f=feat(x,y),v=data[(y*w+x)*4+ch];for(let r=0;r<6;r++){b[r]+=f[r]*v;for(let k=0;k<6;k++)A[r][k]+=f[r]*f[k];}}const sol=solve(A,b);if(!sol)return null;out.push(sol);}return out;};
+    const model=(co,x,y)=>{const f=feat(x,y);return co.map(a=>a[0]*f[0]+a[1]*f[1]+a[2]*f[2]+a[3]*f[3]+a[4]*f[4]+a[5]*f[5]);};
+    const dist=(x,y,co)=>{const m=model(co,x,y),i=(y*w+x)*4;return Math.sqrt((data[i]-m[0])**2+(data[i+1]-m[1])**2+(data[i+2]-m[2])**2);};
+    let pts=ring,co=fit(pts);
+    if(!co)return null;
+    for(let it=0;it<2;it++){ // scarta i pixel del bordo che non sono sfondo (parte del capo, etichette) e riadatta
+      const ds=pts.map(([x,y])=>dist(x,y,co)),sorted=[...ds].sort((a,b)=>a-b),med=sorted[Math.floor(sorted.length/2)];
+      const keep=pts.filter((_,k)=>ds[k]<=Math.max(10,med*3));
+      if(keep.length<60)return null;
+      pts=keep;co=fit(pts);if(!co)return null;
     }
-    const fraction=removed/(iw*ih);
-    // Reject overly aggressive masks and pictures with negligible background.
-    if(fraction<.07||fraction>.88)return null;
-    // Il capo sta al centro: se il riempimento ci è arrivato, lo sfondo e il tessuto si somigliano troppo e si lascia l'originale
-    const cx=Math.round(ox+iw/2),cy=Math.round(oy+ih/2),bx=Math.round(iw*.12),by=Math.round(ih*.12);
-    for(let yy=cy-by;yy<=cy+by;yy+=3)for(let xx=cx-bx;xx<=cx+bx;xx+=3)if(data[(yy*w+xx)*4+3]===0)return null;
+    const resid=pts.map(([x,y])=>dist(x,y,co)),rms=Math.sqrt(resid.reduce((a,v)=>a+v*v,0)/resid.length);
+    if(rms>20)return null; // il bordo non è uno sfondo uniforme o sfumato: lascia l'originale
+    const T=Math.min(34,Math.max(15,rms*3));
+
+    // 2) Maschera del capo = pixel che si staccano dal fondale; alleggerita dal rumore
+    let mask=new Uint8Array(w*h);
+    for(let y=oy;y<oy+ih;y++)for(let x=ox;x<ox+iw;x++)if(dist(x,y,co)>T)mask[y*w+x]=1;
+    const smooth=m=>{const out=new Uint8Array(w*h);for(let y=oy+2;y<oy+ih-2;y++)for(let x=ox+2;x<ox+iw-2;x++){let n=0;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)n+=m[(y+dy)*w+x+dx];out[y*w+x]=n>=13?1:0;}return out;};
+    mask=smooth(mask);
+
+    // 3) Componenti connesse: si tiene la più grande e quelle ≥10% (es. le due scarpe), si scartano le chiazze isolate
+    const label=new Int32Array(w*h),areas=[0];let nl=0;
+    const stack=new Int32Array(w*h);
+    for(let y=oy;y<oy+ih;y++)for(let x=ox;x<ox+iw;x++){
+      const p=y*w+x;if(!mask[p]||label[p])continue;
+      nl++;let sp=0,area=0;stack[sp++]=p;label[p]=nl;
+      while(sp){const q=stack[--sp];area++;const qx=q%w,qy=(q-qx)/w;
+        if(qx>ox&&mask[q-1]&&!label[q-1]){label[q-1]=nl;stack[sp++]=q-1;}
+        if(qx<ox+iw-1&&mask[q+1]&&!label[q+1]){label[q+1]=nl;stack[sp++]=q+1;}
+        if(qy>oy&&mask[q-w]&&!label[q-w]){label[q-w]=nl;stack[sp++]=q-w;}
+        if(qy<oy+ih-1&&mask[q+w]&&!label[q+w]){label[q+w]=nl;stack[sp++]=q+w;}}
+      areas.push(area);
+    }
+    if(!nl)return null;
+    const biggest=Math.max(...areas.slice(1));
+    if(biggest<iw*ih*.04)return null;
+    const keepLabel=areas.map((a,i)=>i>0&&a>=biggest*.1);
+    const fg=new Uint8Array(w*h);
+    for(let p=0;p<w*h;p++)if(label[p]&&keepLabel[label[p]])fg[p]=1;
+
+    // 4) Buchi interni (tessuto simile allo sfondo) riempiti: tutto ciò che non è raggiungibile dal bordo è capo
+    const reach=new Uint8Array(w*h);let sp=0;
+    const seed=p=>{if(!fg[p]&&!reach[p]){reach[p]=1;stack[sp++]=p;}};
+    for(let x=ox;x<ox+iw;x++){seed(oy*w+x);seed((oy+ih-1)*w+x);}
+    for(let y=oy;y<oy+ih;y++){seed(y*w+ox);seed(y*w+ox+iw-1);}
+    while(sp){const q=stack[--sp];const qx=q%w,qy=(q-qx)/w;
+      if(qx>ox)seed(q-1);if(qx<ox+iw-1)seed(q+1);if(qy>oy)seed(q-w);if(qy<oy+ih-1)seed(q+w);}
+    const solid=new Uint8Array(w*h);let count=0;
+    for(let y=oy;y<oy+ih;y++)for(let x=ox;x<ox+iw;x++){const p=y*w+x;if(!reach[p]){solid[p]=1;count++;}}
+    const fraction=count/(iw*ih);
+    if(fraction<.05||fraction>.88)return null;
+    // se il capo occupa quasi tutto il bordo il modello del fondale non regge: si lascia l'originale
+    let edge=0,edgeN=0;for(const [x,y] of ring){edgeN++;if(solid[y*w+x])edge++;}
+    if(edge/edgeN>.12)return null;
+
+    // 5) Bordo morbido (1px erosione per togliere l'alone + sfumatura), fuori dal capo trasparente
+    const eroded=new Uint8Array(w*h);
+    for(let y=oy+1;y<oy+ih-1;y++)for(let x=ox+1;x<ox+iw-1;x++){const p=y*w+x;if(solid[p]&&solid[p-1]&&solid[p+1]&&solid[p-w]&&solid[p+w])eroded[p]=1;}
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const p=y*w+x;let a=0;
+      if(inside(x,y)){let n=0,t=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const q=(y+dy)*w+x+dx;if(q>=0&&q<w*h){n+=eroded[q];t++;}}a=n/t;}
+      data[p*4+3]=Math.round(255*(a>.99?1:a));
+    }
     ctx.putImageData(frame,0,0);
     return canvasBlob(c);
   }
@@ -134,7 +173,7 @@
     let tried;try{tried=new Set(JSON.parse(localStorage.getItem('atelier_cut_tried')||'[]'));}catch{tried=new Set();}
     await new Promise(r=>setTimeout(r,2500));
     // Versione dell'algoritmo: la precedente poteva cancellare parti di capi dal colore simile allo sfondo
-    const CUT_VER='3';
+    const CUT_VER='4';
     if(localStorage.getItem('atelier_cut_ver')!==CUT_VER){
       try{
         let back=0;
