@@ -43,26 +43,19 @@
       const byId = new Map(gs.map(g => [g.id, g]));
       items = (window.__v2LastIdeaIds || []).map(id => byId.get(id)).filter(Boolean);
     } catch { /* senza metadati */ }
-    const n = items.length || qa('figure', strip).length;
-    let style = '';
-    if (items.length) {
-      const c = {};
-      items.forEach(g => { const s = STYLES[garmentStyle(g)]; c[s] = (c[s] || 0) + 1; });
-      style = Object.entries(c).sort((a, b) => b[1] - a[1])[0][0];
-    }
+    const names = items.map(g => (g.tipo || '').toLowerCase()).filter(Boolean);
+    const sentence = names.length ? cap(names.length > 1 ? names.slice(0, -1).join(', ') + tr(' e ', ' and ') + names[names.length - 1] : names[0]) + '.' : '';
+    const h = q('h3', idea);
+    h.textContent = tr('Il look consigliato', 'Your recommended look');
     const meta = document.createElement('p');
-    meta.className = 'v2-meta';
-    meta.textContent = [style, n + ' ' + tr(n === 1 ? 'capo' : 'capi', n === 1 ? 'item' : 'items'), tr('Dal tuo guardaroba', 'From your wardrobe')].filter(Boolean).join(' · ');
-    q('h3', idea).after(meta);
-    if (items.length && !q('#v2Save')) {
-      const b = document.createElement('button');
-      b.id = 'v2Save'; b.type = 'button'; b.className = 'v2-save';
-      b.setAttribute('aria-label', tr('Salva nei Look', 'Save to Looks'));
-      b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1z"/></svg>';
-      idea.append(b);
-    }
+    meta.className = 'v2-meta'; meta.textContent = sentence;
+    h.after(meta);
+    const why = document.createElement('p');
+    why.id = 'v2Reason'; why.className = 'v2-why';
+    meta.after(why);
+    reasonFor().then(t => { why.textContent = t; }).catch(() => {});
   }
-  // Ricorda gli id dell'outfit mostrato (usati per metadati e salvataggio)
+
   new MutationObserver(() => {
     const strip = q('#idea .strip');
     if (!strip) return;
@@ -92,21 +85,29 @@
     } catch { toast(tr('Salvataggio non riuscito', 'Could not save')); }
   });
 
-  /* Domani: una riga compatta che apre la Settimana */
-  function ensureTomorrow() {
+  /* In programma (domani) e Da rivedere: solo se hanno contenuto */
+  async function ensureTomorrow() {
     const card = q('#todayContent > .idea-card:first-child');
     if (!card) return;
-    let row = q('#v2Tomorrow');
-    if (!row) { row = document.createElement('button'); row.id = 'v2Tomorrow'; row.type = 'button'; row.className = 'v2-tomorrow'; card.after(row); row.addEventListener('click', () => showTab('week')); }
+    let up = q('#v2Upcoming'), rev = q('#v2Review');
+    if (!up) { up = document.createElement('section'); up.id = 'v2Upcoming'; up.className = 'v2-sec'; card.after(up); }
+    if (!rev) { rev = document.createElement('section'); rev.id = 'v2Review'; rev.className = 'v2-sec'; up.after(rev); }
     const p = typeof plans !== 'undefined' ? plans.get(dayKey(1)) : null;
-    if (!p) { row.classList.add('hidden'); return; }
-    row.classList.remove('hidden');
-    const ids = p.outfit.missing ? [] : p.outfit.ids;
-    const parts = [p.wx ? p.wx.tmin + '–' + p.wx.tmax + '°C' : tr('Meteo non disponibile', 'Weather unavailable'),
-      allEvents === null ? tr('Calendario non collegato', 'Calendar not connected') : firstEventLine(p)];
-    row.innerHTML = '<span class="v2-tm-thumbs">' + ids.slice(0, 3).map(id => thumb(id)).join('') + '</span>' +
-      '<span class="v2-tm-text"><strong>' + esc(tr('Domani', 'Tomorrow')) + '</strong><small>' + esc(parts.join(' · ')) + '</small></span><i class="v2-chev" aria-hidden="true"></i>';
+    const has = p && (p.wx || (allEvents !== null && p.events.length) || isConfirmed(p));
+    if (!has) up.innerHTML = '';
+    else {
+      const ids = p.outfit.missing ? [] : p.outfit.ids;
+      const parts = [p.wx ? p.wx.tmin + '–' + p.wx.tmax + '°C' : '', allEvents === null ? '' : firstEventLine(p), isConfirmed(p) ? tr('Confermato', 'Confirmed') : ''].filter(Boolean);
+      up.innerHTML = '<h3>' + esc(tr('In programma', 'Coming up')) + '</h3><button type="button" class="v2-tomorrow" data-go-week><span class="v2-tm-thumbs">' + ids.slice(0, 3).map(id => thumb(id)).join('') + '</span>' +
+        '<span class="v2-tm-text"><strong>' + esc(tr('Domani', 'Tomorrow')) + '</strong><small>' + esc(parts.join(' · ')) + '</small></span><i class="v2-chev" aria-hidden="true"></i></button>';
+    }
+    try {
+      const gs = await all();
+      const old = gs.filter(g => !washing(g)).map(g => ({ g, d: daysSinceWorn(g) })).filter(x => x.d != null && x.d >= 30).sort((a, b) => b.d - a.d).slice(0, 6);
+      rev.innerHTML = old.length ? '<h3>' + esc(tr('Da rivedere', 'Worth a second look')) + '</h3><div class="v2-review">' + old.map(({ g, d }) => '<button type="button" data-open="' + esc(g.id) + '" aria-label="' + esc((g.tipo || '') + ', ' + tr('fermo da ' + d + ' giorni', 'idle for ' + d + ' days')) + '"><span>' + thumb(g.id, 'v2-hero-img') + '</span><small>' + esc(tr(d + ' giorni', d + ' days')) + '</small></button>').join('') + '</div>' : '';
+    } catch { rev.innerHTML = ''; }
   }
+  document.addEventListener('click', e => { if (e.target.closest('[data-go-week]')) showTab('week'); });
 
   /* ---------- Settimana: selettore dei giorni ---------- */
   let selDay = null;
@@ -142,38 +143,32 @@
     const box = q('#weekList');
     if (!list.length) { box.innerHTML = ''; return; }
     if (!selDay || !plans.has(selDay)) selDay = list[0].key;
-    const first = dayInfo(list[0].key), last = dayInfo(list[list.length - 1].key);
-    const range = q('#weekRange'); if (range) range.textContent = first.n + ' – ' + last.n + ' ' + new Date(list[list.length - 1].key + 'T12:00:00').toLocaleDateString(appLocale(), { month: 'long' });
-    const sel = plans.get(selDay), si = dayInfo(selDay);
+    const sel = plans.get(selDay), d0 = new Date(selDay + 'T12:00:00');
+    const range = q('#weekRange'); if (range) range.textContent = cap(d0.toLocaleDateString(appLocale(), { month: 'long', year: 'numeric' }));
+    const ids = sel.outfit.missing ? [] : sel.outfit.ids;
+    const conf = isConfirmed(sel);
     let html = '';
     if (allEvents === null) html += '<p class="v2-note">' + esc(tr('Calendario non collegato: gli impegni non sono inclusi. Collega Google dal Profilo.', 'Calendar not connected: events are not included. Connect Google from Profile.')) + '</p>';
-    if (!place) html += '<p class="v2-note">' + esc(tr('Meteo non disponibile: imposta la città nel Profilo.', 'Weather unavailable: set your city in Profile.')) + '</p>';
-    if (plansRepeat) html += '<p class="v2-note">' + esc(tr('Con i capi disponibili alcuni outfit si ripetono.', 'With the available items some outfits repeat.')) + '</p>';
-    html += '<div class="v2-days" role="tablist" aria-label="' + esc(tr('Giorni', 'Days')) + '">' + list.map((p, i) => {
-      const d = dayInfo(p.key);
-      return '<button type="button" role="tab" class="v2-day' + (p.key === selDay ? ' is-sel' : '') + (i === 0 ? ' is-today' : '') + '" data-day="' + esc(p.key) + '" aria-selected="' + (p.key === selDay) + '"><small>' + esc(cap(d.wd)) + '</small><b>' + d.n + '</b></button>';
+    html += '<div class="v2-cal" role="tablist" aria-label="' + esc(tr('Giorni', 'Days')) + '">' + list.map(p => {
+      const d = new Date(p.key + 'T12:00:00');
+      const dot = (allEvents !== null && p.events.length) || isConfirmed(p);
+      return '<button type="button" role="tab" class="v2-calday' + (p.key === selDay ? ' is-sel' : '') + '" data-day="' + esc(p.key) + '" aria-selected="' + (p.key === selDay) + '"><small>' + esc(d.toLocaleDateString(appLocale(), { weekday: 'narrow' }).toUpperCase()) + '</small><b>' + d.getDate() + '</b><i class="' + (dot ? 'on' : '') + '" aria-hidden="true"></i></button>';
     }).join('') + '</div>';
-    // giorno selezionato: look grande, meteo, impegno e azioni
-    const ids = sel.outfit.missing ? [] : sel.outfit.ids;
-    const names = ids.map(id => byId.get(id)?.tipo).filter(Boolean);
-    html += '<article class="v2-daycard"><div class="v2-daycard-top"><span class="v2-daylabel">' + esc((selDay === list[0].key ? tr('Oggi', 'Today') + ' · ' : '') + cap(si.long) + ' ' + si.short) + '</span>' +
-      '<span class="v2-daywx">' + (sel.wx ? wxIcon(sel.wx, 'v2-wx-ico') : '') + esc(wxShort(sel)) + '</span></div>' +
-      '<div class="v2-hero">' + (ids.length ? ids.slice(0, 4).map((id, i) => '<figure><button type="button" class="v2-swap" data-swap="' + esc(sel.key) + '" data-i="' + i + '" aria-label="' + esc(tr('Sostituisci ', 'Swap ') + (byId.get(id)?.tipo || '')) + '">' + thumb(id, 'v2-hero-img') + '</button></figure>').join('') : '<p class="v2-empty">' + esc(tr('Nessun look disponibile per questo giorno.', 'No look available for this day.')) + '</p>') + '</div>' +
-      '<p class="v2-names">' + esc(names.slice(0, 4).join(' · ')) + '</p>' +
-      '<p class="v2-sub">' + esc(eventText(sel)) + ' · ' + esc(dayStatus(sel, byId)) + '</p>' +
-      '<p class="v2-state ' + (isConfirmed(sel) ? 'is-conf' : '') + '">' + esc(isConfirmed(sel) ? tr('✓ Outfit confermato', '✓ Outfit confirmed') : tr('Suggerimento: non ancora confermato', 'Suggestion: not confirmed yet')) + '</p>' +
-      (ids.length ? '<p class="v2-hint">' + esc(tr('Tocca un capo per sostituirlo.', 'Tap an item to swap it.')) + '</p>' : '') +
-      '<div class="v2-actions"><button type="button" class="btn secondary" data-regen="' + esc(sel.key) + '">' + esc(tr('Rigenera', 'Regenerate')) + '</button>' +
-      (ids.length ? '<button type="button" class="btn' + (isConfirmed(sel) ? ' secondary' : '') + '" data-conf="' + esc(sel.key) + '">' + esc(isConfirmed(sel) ? tr('Annulla conferma', 'Undo confirm') : tr('Conferma outfit', 'Confirm outfit')) + '</button>' : '') +
-      '</div></article>';
-    // altri giorni: righe compatte
-    html += '<div class="v2-rows">' + list.filter(p => p.key !== selDay).map(p => {
-      const d = dayInfo(p.key);
-      return '<button type="button" class="v2-row" data-day="' + esc(p.key) + '"><span class="v2-row-thumbs">' + rowThumbs(p, byId, 3) + '</span>' +
-        '<span class="v2-row-text"><strong>' + esc(p.key === list[1]?.key ? tr('Domani', 'Tomorrow') : cap(d.long)) + '</strong><small>' + esc((isConfirmed(p) ? tr('Confermato', 'Confirmed') : tr('Suggerito', 'Suggested')) + ' · ' + wxShort(p) + ' · ' + eventText(p)) + '</small></span><i class="v2-chev" aria-hidden="true"></i></button>';
-    }).join('') + '</div>';
+    html += '<h2 class="v2-daytitle">' + esc((selDay === list[0].key ? tr('Oggi', 'Today') + ' · ' : '') + cap(d0.toLocaleDateString(appLocale(), { weekday: 'long', day: 'numeric', month: 'long' }))) + '</h2>';
+    html += '<section class="v2-agenda">' +
+      '<p class="v2-aw">' + (sel.wx ? wxIcon(sel.wx, 'v2-wx-ico') + '<span>' + esc(wxText(sel.wx)) + '</span>' : '<span>' + esc(tr('Meteo non disponibile', 'Weather unavailable')) + '</span>') + '</p>' +
+      (allEvents === null ? '' : sel.events.length
+        ? '<ul class="v2-events">' + sel.events.map(ev => '<li><strong>' + esc(ev.title) + '</strong><small>' + esc(ev.allDay ? tr('Tutto il giorno', 'All day') : eventTime(ev)) + '</small></li>').join('') + '</ul>'
+        : '<p class="v2-sub">' + esc(tr('Nessun impegno', 'No events')) + '</p>') +
+      '</section>';
+    html += '<h3 class="v2-h3">' + esc(tr('Look suggerito', 'Suggested look')) + '</h3>';
+    html += '<div class="v2-suggest">' + (ids.length ? ids.slice(0, 4).map((id, i) => '<button type="button" class="v2-swap" data-swap="' + esc(sel.key) + '" data-i="' + i + '" aria-label="' + esc(tr('Sostituisci ', 'Swap ') + (byId.get(id)?.tipo || '')) + '">' + thumb(id, 'v2-hero-img') + '</button>').join('') : '<p class="v2-empty">' + esc(tr('Nessun look disponibile per questo giorno.', 'No look available for this day.')) + '</p>') + '</div>';
+    if (ids.length) html += '<p class="v2-sub">' + esc(ids.map(id => byId.get(id)?.tipo).filter(Boolean).slice(0, 4).join(' · ')) + '</p><p class="v2-state ' + (conf ? 'is-conf' : '') + '">' + esc(conf ? tr('✓ Outfit confermato', '✓ Outfit confirmed') : tr('Suggerimento · tocca un capo per sostituirlo', 'Suggestion · tap an item to swap it')) + '</p>';
+    if (ids.length) html += '<button type="button" class="btn v2-wide' + (conf ? ' secondary' : '') + '" data-conf="' + esc(sel.key) + '">' + esc(conf ? tr('Annulla conferma', 'Undo confirm') : tr("Aggiungi all'agenda", 'Add to agenda')) + '</button>';
+    html += '<button type="button" class="v2-textbtn" data-regen="' + esc(sel.key) + '">' + esc(tr('Cambia look', 'Change look')) + '</button>';
     box.innerHTML = html;
   };
+
   async function swapItem(key, i) {
     const gs = await all(), byId = new Map(gs.map(g => [g.id, g]));
     const p = plans.get(key);
@@ -282,7 +277,8 @@
     qa('#looks .look').forEach(el => {
       const id = el.querySelector('[data-look-fav]')?.dataset.lookFav;
       const i = info.get(id);
-      q('.v2-incomplete', el)?.remove();
+      q('.v2-incomplete', el)?.remove(); q('.v2-count', el)?.remove();
+      if (i) { const c = document.createElement('span'); c.className = 'v2-count'; c.textContent = i.n + ' ' + tr(i.n === 1 ? 'capo' : 'capi', i.n === 1 ? 'item' : 'items'); q('h3', el)?.after(c); }
       if (i && i.missing.length) {
         const b = document.createElement('span');
         b.className = 'v2-incomplete';
@@ -462,20 +458,9 @@
   };
   document.addEventListener('atelier:languagechange', () => { renderAnalysis(); ensureWeatherRow(); });
 
-  /* ---------- Guardaroba · Look · Insight: una sola destinazione con tre viste ---------- */
-  const SEG = [['wardrobe', 'Capi', 'Items'], ['looks', 'Look', 'Looks'], ['analysis', 'Insight', 'Insights']];
-  SEG.forEach(([view]) => {
-    const el = q('#view-' + view);
-    if (!el || q('.v2-viewseg', el)) return;
-    const d = document.createElement('div');
-    d.className = 'v2-seg v2-viewseg'; d.setAttribute('role', 'tablist');
-    d.innerHTML = SEG.map(([k, it, e]) => '<button type="button" role="tab" data-seg="' + k + '" aria-selected="' + (k === view) + '">' + esc(tr(it, e)) + '</button>').join('');
-    q('.view-head', el).after(d);
-  });
-  document.addEventListener('click', e => { const b = e.target.closest('[data-seg]'); if (b) showTab(b.dataset.seg); });
   function syncTabs() {
     const open = ['today', 'week', 'wardrobe', 'looks', 'analysis', 'profile', 'diary', 'add'].find(v => !q('#view-' + v)?.classList.contains('hidden') && getComputedStyle(q('#view-' + v)).display !== 'none');
-    const group = { looks: 'wardrobe', analysis: 'wardrobe', add: 'wardrobe', diary: 'profile' }[open] || open;
+    const group = { add: 'wardrobe', analysis: '', profile: '', diary: '' }[open] ?? open;
     qa('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === group)));
   }
   setTimeout(syncTabs, 200);
@@ -500,17 +485,8 @@
     return parts.join('; ') + '.';
   }
   async function ensureStylist() {
-    const card = q('#todayContent > .idea-card:first-child');
-    const actions = card && q('.actions', card);
-    if (!actions || !currentIdeaIds().length) { q('#v2Stylist')?.remove(); return; }
-    let box = q('#v2Stylist');
-    if (!box) {
-      box = document.createElement('section'); box.id = 'v2Stylist'; box.className = 'v2-stylist';
-      box.innerHTML = '<h3><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg><span>Stylist</span></h3><p class="v2-why"></p>' +
-        '<div class="v2-chips"><button type="button" class="chip" data-st="formal">' + esc(tr('Più formale', 'More formal')) + '</button><button type="button" class="chip" data-st="casual">' + esc(tr('Più casual', 'More casual')) + '</button><button type="button" class="chip" data-st="shoes">' + esc(tr('Cambia scarpe', 'Change shoes')) + '</button></div>';
-      actions.after(box);
-    }
-    q('.v2-why', box).textContent = await reasonFor();
+    const why = q('#v2Reason');
+    if (why) why.textContent = await reasonFor();
   }
   async function restyle(kind) {
     if (typeof idea === 'undefined' || !idea || idea.missing) return;
