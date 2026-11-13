@@ -21,12 +21,13 @@
       g.classList.toggle('is-collapsed', collapsed.has(name));
       let shown = 0;
       g.querySelectorAll('.v3-piece').forEach(p => {
-        const hit = !query || norm(p.textContent).includes(query);
+        const id = p.dataset.open;
+        const hit = (!query || (window.__v2Search ? window.__v2Search(id, query) : norm(p.textContent).includes(query))) && (window.__v2Filter ? window.__v2Filter(id) : true);
         p.hidden = !hit; if (hit) shown++;
       });
-      g.hidden = !!query && !shown;
+      g.hidden = (!!query || !!window.__v2FilterOn?.()) && !shown;
       const n = g.querySelector('h3 span'); if (n) n.textContent = shown;
-      if (query) g.classList.remove('is-collapsed');
+      if (query || window.__v2FilterOn?.()) g.classList.remove('is-collapsed');
     });
   }
   document.addEventListener('click', e => {
@@ -41,12 +42,16 @@
     if (!wardrobe || $('#wardSearch')) return;
     const input = document.createElement('input');
     input.id = 'wardSearch'; input.type = 'search'; input.autocomplete = 'off';
-    input.placeholder = 'Cerca nei capi…'; input.setAttribute('aria-label', 'Cerca nei capi');
-    $('#chips')?.before(input);
+    input.placeholder = 'Cerca un capo, colore, materiale…'; input.setAttribute('aria-label', 'Cerca nei capi');
+    const row = document.createElement('div'); row.className = 'v2-searchrow';
+    const fb = document.createElement('button'); fb.id = 'v2FilterBtn'; fb.type = 'button'; fb.setAttribute('aria-label', 'Filtri');
+    fb.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>';
+    row.append(input, fb); $('#chips')?.before(row);
     input.addEventListener('input', () => { query = norm(input.value.trim()); applyGroups(); });
     new MutationObserver(() => { if (!applying) { applying = true; applyGroups(); applying = false; } }).observe(wardrobe, { childList: true });
   }
   let applying = false;
+  window.__v2Refresh = applyGroups;
 
   /* Lingua: nelle preferenze del Profilo (il selettore nell'header è nascosto) */
   function langCard() {

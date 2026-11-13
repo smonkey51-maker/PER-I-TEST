@@ -10,7 +10,7 @@ const LABELS = {
 };
 const FIELDS = Object.keys(LABELS);
 const MAIN_FIELDS = ['tipo', 'colore', 'stagione'];
-const TABS = ['today', 'week', 'wardrobe', 'looks', 'add', 'profile', 'diary'];
+const TABS = ['today', 'week', 'wardrobe', 'looks', 'analysis', 'add', 'profile', 'diary'];
 const MAX_PHOTOS = 40;
 const PARALLEL = 3;
 const PHOTO_W = 720;
@@ -1136,7 +1136,7 @@ function renderToday(garments, looks) {
   const memory = forgotten ? '<p class="small">Include ' + esc(forgotten.tipo || 'un capo') + ', che non indossi da ' + (daysSinceWorn(forgotten) >= 60 ? 'due mesi' : 'più di un mese') + '.</p>' : '';
 
   const extra = (idea.why ? '<p class="small">' + esc(idea.why) + ' <a href="https://www.google.com/search?tbm=isch&q=' + encodeURIComponent((idea.person || '') + ' outfit') + '" target="_blank" rel="noopener">Vedi foto di riferimento</a></p>' : '') +
-    (wxNow ? '<p class="small">Meteo: ' + esc(wxText(weather)) + (wxNow.rainy ? '. Porta un ombrello' : '') + '.</p>' : '') +
+    (wxNow && wxNow.rainy ? '<p class="small">Pioggia prevista: porta un ombrello.</p>' : '') +
     (idea.warn ? '<p class="warn">' + esc(idea.warn) + '</p>' : '');
 
   if (idea.missing) {
