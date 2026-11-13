@@ -34,6 +34,7 @@
   <link rel="stylesheet" href="/atelier-minimal.css">
   <link rel="stylesheet" href="/atelier-palette.css">
   <link rel="stylesheet" href="/atelier-v2.css">
+  <link rel="stylesheet" href="/atelier-euganeo.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..600;1,400..500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -45,9 +46,9 @@
       <button class="profile-btn" id="profileBtn" type="button" aria-label="Profilo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4s6.3 1.8 7.5 5.4"/></svg></button>
       <nav class="tabs" role="tablist" aria-label="Sezioni">
         <button class="tab" role="tab" data-tab="today" aria-selected="true"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v8.5a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></svg></span><span class="nav-text">Oggi</span></button>
-        <button class="tab" role="tab" data-tab="week" aria-selected="false"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><span class="nav-text">Pianifica</span></button>
-        <button class="tab" role="tab" data-tab="wardrobe" aria-selected="false"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5a2 2 0 1 1 2-2M12 6.5V8L3 15.5a1 1 0 0 0 .6 1.8h16.8a1 1 0 0 0 .6-1.8L12 8"/></svg></span><span class="nav-text">Guardaroba</span></button>
-        <button class="tab" role="tab" data-tab="profile" aria-selected="false"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4s6.3 1.8 7.5 5.4"/></svg></span><span class="nav-text">Profilo</span></button>
+        <button class="tab" role="tab" data-tab="wardrobe" aria-selected="false"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4l-4 3 2 3 2-1v11h8V9l2 1 2-3-4-3c-.5 1.5-2 2.5-4 2.5S8.5 5.5 8 4z"/></svg></span><span class="nav-text">Capi</span></button>
+        <button class="tab" role="tab" data-tab="looks" aria-selected="false"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17.5l9 5 9-5"/></svg></span><span class="nav-text">Looks</span></button>
+        <button class="tab" role="tab" data-tab="week" aria-selected="false"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><span class="nav-text">Agenda</span></button>
       </nav>
     </div>
   </header>
@@ -69,7 +70,7 @@
     <section id="view-today" role="tabpanel">
       <div class="greet">
         <p class="date"><span id="todayDate"></span> · <span id="greeting"></span></p>
-        <h1>Il tuo look di oggi</h1>
+        <h1>Cosa indosso oggi?</h1>
         <p class="sub">Il tuo curatore d’immagine per la giornata di oggi.</p>
         <p id="todayLine" class="lede"></p>
       </div>
@@ -112,8 +113,8 @@
           <h2>Il look di oggi</h2>
           <div id="idea"></div>
           <div class="actions">
-            <button class="btn" id="wearIdea">Indosso questo</button>
-            <button class="btn secondary" id="anotherIdea">Un'altra idea</button>
+            <button class="btn" id="wearIdea">Indossa questo look</button>
+            <button class="btn secondary" id="anotherIdea">Cambia look</button>
           </div>
           <div class="manual">
             <label for="inspoName">Ispirazione di stile</label>
@@ -143,7 +144,8 @@
 
     <section id="view-week" role="tabpanel" class="hidden">
       <div class="view-head">
-        <h1>Pianifica</h1>
+        <h1>Agenda</h1>
+        <button class="v2-add" id="weekAdd" type="button" aria-label="Aggiungi un impegno"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
         <p id="weekRange"></p>
         <p class="small">I tuoi outfit della settimana</p>
       </div>
@@ -202,7 +204,8 @@
     </section>
 
     <section id="view-analysis" role="tabpanel" class="hidden" aria-labelledby="analysisTitle">
-      <div class="view-head"><h1 id="analysisTitle">Insight</h1></div>
+      <div class="view-head"><button class="back-btn" type="button" data-back="profile" aria-label="Indietro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <h1 id="analysisTitle">Statistiche</h1></div>
       <div class="v2-seg" id="analysisTabs" role="tablist" aria-label="Analisi">
         <button type="button" role="tab" data-an="use" aria-selected="true">Utilizzo</button>
         <button type="button" role="tab" data-an="colors" aria-selected="false">Colori</button>
@@ -308,5 +311,6 @@
   <script src="/atelier-theme.js" defer></script>
   <script src="/atelier-minimal.js" defer></script>
   <script src="/atelier-v2.js" defer></script>
+  <script src="/atelier-euganeo.js" defer></script>
 </body>
 </html>

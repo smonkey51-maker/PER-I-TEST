@@ -61,6 +61,10 @@
     card.className = 'studio-card'; card.id = 'langCard';
     card.innerHTML = '<h2>Lingua</h2><div class="studio-seg" role="group" aria-label="Lingua"><button type="button" data-lang="it">Italiano</button><button type="button" data-lang="en">English</button></div>';
     body.append(card);
+    const stat = document.createElement('section');
+    stat.className = 'studio-card'; stat.id = 'statCard';
+    stat.innerHTML = '<h2>Statistiche</h2><button type="button" class="studio-link" data-v2-go="analysis"><span><b>Utilizzo, colori e stagioni</b><small>Calcolati sui capi e sugli utilizzi registrati.</small></span><svg class="row-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>';
+    body.prepend(stat);
     sync();
   }
   function sync() {
@@ -74,6 +78,7 @@
     setTimeout(sync, 0);
   });
   document.addEventListener('atelier:languagechange', sync);
+  document.addEventListener('click', e => { const g = e.target.closest('[data-v2-go]'); if (g) showTab(g.dataset.v2Go); });
 
   function init() {
     initWardrobe();

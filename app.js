@@ -1183,7 +1183,7 @@ function renderToday(garments, looks) {
   wear.classList.toggle('hidden', !!idea.missing);
   wear.classList.toggle('done', wornAll);
   wear.disabled = wornAll;
-  wear.textContent = wornAll ? 'Indossato oggi' : 'Indosso questo';
+  wear.textContent = wornAll ? 'Indossato oggi' : 'Indossa questo look';
 
   $('#cleanCount').textContent = clean.length;
   $('#washCount').textContent = dirty.length;
