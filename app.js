@@ -508,7 +508,7 @@ async function openDetail(id) {
   detailId = id;
   await loadPhotos();
   const real = photoSrc(id);
-  const src = real || illustrationSvg(item);
+  const src = real || pradaFallbackPhoto(item) || illustrationSvg(item);
   $('#detailImg').classList.toggle('hidden', !src);
   if (src) $('#detailImg').src = src;
   $('#detailImg').alt = item.tipo || 'Capo';
