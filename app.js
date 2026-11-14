@@ -123,13 +123,13 @@ const photoSrc = id => photoUrls.get(id) || '';
 function pradaFallbackPhoto(g) {
   if (!g) return '';
   const shape = illusShape(g);
-  const colour = norm(g.colore || '');
+  const colour = norm([g.colore, g.tipo, g.texture, g.materiale].filter(Boolean).join(' '));
   if (shape === 'knit' && /bordeaux|vinaccia|borgogna|burgundy|wine/.test(colour)) return '/assets/prada/knit-bordeaux.webp';
   if (shape === 'trousers' && /azzurro|blu chiaro|denim|jeans|light blue|celeste/.test(colour)) return '/assets/prada/denim-light-blue.webp';
-  if (shape === 'loafer' && /nero|nera|black/.test(colour)) return '/assets/prada/leather-loafers.webp';
-  if (shape === 'jacket' && /nero|nera|black/.test(colour)) return '/assets/prada/nylon-jacket.webp';
+  if (shape === 'loafer' && /nero|nera|neri|nere|black/.test(colour)) return '/assets/prada/leather-loafers.webp';
+  if (shape === 'jacket' && /nero|nera|neri|nere|black/.test(colour)) return '/assets/prada/nylon-jacket.webp';
   if (shape === 'shirt' && /avorio|panna|crema|bianco|bianca|white|ivory/.test(colour)) return '/assets/prada/poplin-shirt.webp';
-  if (shape === 'trousers' && /nero|nera|black/.test(colour)) return '/assets/prada/tailored-trousers.webp';
+  if (shape === 'trousers' && /nero|nera|neri|nere|black/.test(colour)) return '/assets/prada/tailored-trousers.webp';
   return '';
 }
 
