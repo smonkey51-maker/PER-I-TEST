@@ -118,4 +118,6 @@ dialog{border:1px solid var(--rule)!important;border-radius:0!important;backgrou
  .prada-moodboard-grid figcaption{font-size:7px}
  dialog[open]{position:fixed!important;inset:auto 0 0!important;width:100%!important;max-width:none!important;max-height:88dvh!important;margin:0!important;overflow-y:auto!important}
 }
+@media(min-width:1100px){#view-wardrobe:not(.hidden) .min-row{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:1099px){#view-wardrobe:not(.hidden) .min-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(prefers-reduced-motion:reduce){.prada-moodboard-grid img{transition:none!important}}
