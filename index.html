@@ -6,14 +6,14 @@
   <meta name="color-scheme" content="dark light">
   <script>try{var c=localStorage.getItem("atelier_theme")||"light";document.documentElement.dataset.theme=c==="light"||(c==="auto"&&matchMedia("(prefers-color-scheme: light)").matches)?"light":"dark"}catch(e){}</script>
   <meta name="theme-color" content="#f5f1ea">
-  <title>ATELIER · Personal Wardrobe</title>
+  <title>PRADA ATELIER · Personal Wardrobe</title>
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="ATELIER">
+  <meta name="apple-mobile-web-app-title" content="PRADA ATELIER">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/cormorant-garamond-latin-600-normal.woff2">
   <link rel="stylesheet" href="/style.css">
@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="/atelier-minimal.css">
   <link rel="stylesheet" href="/atelier-palette.css">
   <link rel="stylesheet" href="/atelier-v2.css">
-  <link rel="stylesheet" href="/atelier-euganeo.css">
+  <link rel="stylesheet" href="/atelier-euganeo.css">\n  <link rel="stylesheet" href="/atelier-prada.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..600;1,400..500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -43,7 +43,7 @@
 <body>
   <header class="top">
     <div class="top-inner">
-      <span class="brand">ATELIER</span>
+      <span class="brand" aria-label="Prada Atelier">PRADA</span>
       <button class="profile-btn" id="profileBtn" type="button" aria-label="Profilo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4s6.3 1.8 7.5 5.4"/></svg></button>
       <nav class="tabs" role="tablist" aria-label="Sezioni">
         <button class="tab" role="tab" data-tab="today" aria-selected="true"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v8.5a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></svg></span><span class="nav-text">Oggi</span></button>
@@ -106,7 +106,7 @@
       </div>
       <div id="todayEmpty" class="empty hidden">
         <h2>Il tuo guardaroba comincia da qui</h2>
-        <p>Fotografa i capi che ami: ogni mattina ATELIER ti suggerisce come abbinarli, tenendo conto del tempo e dei tuoi impegni.</p>
+        <p>Fotografa i capi della tua collezione. Ogni mattina trovi una proposta costruita intorno al tuo stile, al meteo e ai tuoi impegni.</p>
         <button class="btn" id="goAddToday">Aggiungi il primo capo</button>
       </div>
       <div id="todayContent" class="hidden">
