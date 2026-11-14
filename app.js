@@ -125,24 +125,30 @@ function pradaFallbackPhoto(g) {
   const shape = illusShape(g);
   const colour = norm([g.colore, g.tipo, g.texture, g.materiale].filter(Boolean).join(' '));
   if (shape === 'knit' && /bordeaux|vinaccia|borgogna|burgundy|wine/.test(colour)) return '/assets/prada/knit-bordeaux.webp';
+  if (shape === 'knit' && /lilla|lavanda|violet|lilac/.test(colour)) return '/assets/prada/knit-lilac.webp';
+  if (shape === 'trousers' && /sabbia|beige|khaki|cammello|sand/.test(colour) && /gurkha/.test(colour)) return '/assets/prada/gurkha-sand.webp';
   if (shape === 'trousers' && /azzurro|blu chiaro|denim|jeans|light blue|celeste/.test(colour)) return '/assets/prada/denim-light-blue.webp';
   if (shape === 'loafer' && /nero|nera|neri|nere|black/.test(colour)) return '/assets/prada/leather-loafers.webp';
+  if (shape === 'sneaker' && /panna|crema|avorio|offwhite|off white/.test(colour)) return '/assets/prada/sneakers-cream.webp';
   if (shape === 'jacket' && /nero|nera|neri|nere|black/.test(colour)) return '/assets/prada/nylon-jacket.webp';
+  if (shape === 'shirt' && /grigio.?blu|blu.?grigio|slate.?blue|azzurro|grigio-blu/.test(colour)) return '/assets/prada/shirt-slate-blue.webp';
   if (shape === 'shirt' && /avorio|panna|crema|bianco|bianca|white|ivory/.test(colour)) return '/assets/prada/poplin-shirt.webp';
   if (shape === 'trousers' && /nero|nera|neri|nere|black/.test(colour)) return '/assets/prada/tailored-trousers.webp';
   return '';
 }
 
 function photoHtml(id, cls, alt) {
-  const garment = garmentById.get(id);
-  const outdatedIllustration = garment?.fotoIllustrativa && garment?.fotoIllustrativaVersion !== 'prada-editorial-1';
+  // Se un look referenzia un capo non caricato, ricava una forma provvisoria dalla descrizione
+  // invece di lasciare una scheda vuota o un blocco grigio.
+  const garment = garmentById.get(id) || { id, tipo: alt || 'Capo', colore: alt || '' };
+  const outdatedIllustration = garment.fotoIllustrativa && garment.fotoIllustrativaVersion !== 'prada-editorial-1';
+  const vector = illustrationSvg(garment);
+  const fallback = pradaFallbackPhoto(garment) || vector;
   const src = outdatedIllustration ? '' : photoSrc(id);
-  if (src) return '<img class="' + cls + '" src="' + src + '" alt="' + esc(alt) + '" loading="lazy" decoding="async">';
+  if (src) return '<img class="' + cls + '" src="' + src + '" data-fallback="' + esc(fallback) + '" alt="' + esc(alt) + '" loading="lazy" decoding="async">';
   const editorial = pradaFallbackPhoto(garment);
-  if (editorial) return '<img class="' + cls.replace(' fade', '') + ' high-fashion" src="' + editorial + '" alt="' + esc(alt) + '" loading="lazy" decoding="async">';
-  const drawn = outdatedIllustration ? '' : illusSrc(id);
-  if (drawn) return '<img class="' + cls.replace(' fade', '') + ' illus" src="' + drawn + '" alt="' + esc(alt) + '">';
-  return '<div class="' + cls.replace(' fade', '') + ' ph"><span>' + esc(alt) + '</span></div>';
+  if (editorial) return '<img class="' + cls.replace(' fade', '') + ' high-fashion" src="' + editorial + '" data-fallback="' + esc(vector) + '" alt="' + esc(alt) + '" loading="lazy" decoding="async">';
+  return '<img class="' + cls.replace(' fade', '') + ' illus" src="' + vector + '" alt="' + esc(alt) + '" loading="lazy" decoding="async">';
 }
 
 /* ---------- Disegno automatico per i capi senza foto ---------- */
@@ -377,6 +383,14 @@ const washing = d => d.stato === 'lavatrice';
 
 // Le immagini compaiono con una dissolvenza quando sono pronte
 document.addEventListener('load', e => { if (e.target.classList?.contains('fade')) e.target.classList.add('ready'); }, true);
+document.addEventListener('error', e => {
+  const img = e.target;
+  if (img?.tagName !== 'IMG' || !img.dataset.fallback || img.dataset.fallbackUsed) return;
+  img.dataset.fallbackUsed = '1';
+  img.classList.remove('high-fashion', 'fade');
+  img.classList.add('illus', 'ready');
+  img.src = img.dataset.fallback;
+}, true);
 const revealImages = () => document.querySelectorAll('img.fade').forEach(i => { if (i.complete) i.classList.add('ready'); });
 
 async function renderAll() {
