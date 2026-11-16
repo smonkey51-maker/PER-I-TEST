@@ -514,3 +514,19 @@ html body .tabs .tab svg { stroke-width: 1.5; }
   html body .atelier-editorial-hero .atelier-hero-top { text-shadow: 0 1px 12px rgba(0,0,0,.45); }
   html body .tabs::before { display: block !important; height: 44px; }
 }
+
+/* Barra come nella foto di riferimento: piatta, senza riquadro né bordo, sfumata verso la foto */
+@media (max-width: 759px) {
+  html body .tabs {
+    left: 0 !important; right: 0 !important; bottom: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+    background: var(--bg) !important; -webkit-backdrop-filter: none; backdrop-filter: none;
+    padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  html:root[data-theme="light"] body .tabs { background: var(--bg) !important; }
+  html body main { bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important; }
+  html:has(#view-today:not(.hidden)) body .atelier-editorial-hero { min-height: calc(100svh - 72px - env(safe-area-inset-bottom, 0px)) !important; }
+}
+@media (max-width: 759px) {
+  html body .atelier-editorial-hero .atelier-hero-top span:first-child::before, html body .atelier-editorial-hero .atelier-hero-top span:first-child::after { background: rgba(245,241,234,.8) !important; }
+  html body .atelier-editorial-hero .atelier-hero-top { text-shadow: 0 1px 14px rgba(0,0,0,.55); }
+}
