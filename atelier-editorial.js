@@ -28,8 +28,8 @@ const nav=document.querySelector('.tabs');if(!nav)return;
 const labels={today:'Home',wardrobe:'Guardaroba',looks:'Look',analysis:'Analisi',week:'Calendario'};
 const icons={
 today:'<path d="m3 10 9-7 9 7v11h-6v-7H9v7H3z"/>',
-wardrobe:'<path d="M12 7.2V6a2 2 0 1 1 2 2M12 7.2 3.4 14.1a1 1 0 0 0 .6 1.9h16a1 1 0 0 0 .6-1.9z"/>',
-looks:'<rect x="8" y="3" width="13" height="13" rx="2"/><path d="M16 19.5H5.5A2.5 2.5 0 0 1 3 17V7"/>',
+wardrobe:'<path d="M12 9.2V6.9A2.8 2.8 0 1 1 14.8 9.7M12 9.2 3 17.2a1.2 1.2 0 0 0 .8 2.1h16.4a1.2 1.2 0 0 0 .8-2.1z"/>',
+looks:'<rect x="8.5" y="3.5" width="12" height="12" rx="2"/><path d="M15.5 20.5H6A2.5 2.5 0 0 1 3.5 18V8.5"/>',
 analysis:'<path d="M4 20V12h3v8M10.5 20V5h3v15M17 20v-9h3v9"/>',
 week:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/>'};
 const ordered=['today','wardrobe','looks','analysis','week'];
