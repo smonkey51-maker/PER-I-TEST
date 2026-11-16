@@ -10,7 +10,7 @@ const nav=document.querySelector('.tabs');if(!nav||nav.dataset.editorialSix)retu
 const make=(tab,label,icon)=>{const b=document.createElement('button');b.type='button';b.className='tab atelier-extra-tab';b.dataset.editorialTab=tab;b.setAttribute('role','tab');b.setAttribute('aria-selected','false');b.innerHTML='<span class="nav-icon" aria-hidden="true">'+icon+'</span><span class="nav-text">'+label+'</span>';b.addEventListener('click',()=>{if(typeof showTab==='function')showTab(tab);else{document.querySelectorAll('main > section[role="tabpanel"]').forEach(s=>s.classList.toggle('hidden',s.id!=='view-'+tab))}update()});return b};
 const chart='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20V11h3v9M10.5 20V5h3v15M17 20v-8h3v8"/></svg>';
 const cal='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg>';
-const analysis=make('analysis','Analisi',chart),calendar=make('week','Calendario',cal);nav.append(analysis,calendar);
+const analysis=make('analysis','Analisi',chart);nav.querySelector('[data-tab="week"]')?.remove();nav.append(analysis);const calendar=make('week','Calendario',cal);nav.append(calendar);
 const profile=document.querySelector('#view-profile .view-head h1');if(profile)profile.textContent='Il tuo profilo di stile';
 const analytics=document.querySelector('#view-analysis .view-head h1');if(analytics)analytics.textContent='Analisi';
 const week=document.querySelector('#view-week .view-head h1');if(week)week.textContent='Calendario';
@@ -21,3 +21,23 @@ const observer=new MutationObserver(update);for(const p of document.querySelecto
 const profileButton=document.getElementById('profileBtn');if(profileButton){profileButton.setAttribute('aria-label','Profilo di stile e account')}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});else ready()})();
+
+/* Exact five-destination information architecture of the approved reference. */
+(()=>{const run=()=>{
+const nav=document.querySelector('.tabs');if(!nav)return;
+const labels={today:'Home',wardrobe:'Guardaroba',looks:'Look',analysis:'Analisi',week:'Calendario'};
+const icons={
+today:'<path d="m3 10 9-7 9 7v11h-6v-7H9v7H3z"/>',
+wardrobe:'<path d="M9 4h6l1 3 5 3v11H3V10l5-3zM9 4c0 2 1 3 3 3s3-1 3-3"/>',
+looks:'<path d="M12 3c1.7 2.8 4.3 3.3 8 3v6c0 5-3.3 8-8 10-4.7-2-8-5-8-10V6c3.7.3 6.3-.2 8-3z"/>',
+analysis:'<path d="M4 20V12h3v8M10.5 20V5h3v15M17 20v-9h3v9"/>',
+week:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/>'};
+const ordered=['today','wardrobe','looks','analysis','week'];
+for(const key of ordered){let b=nav.querySelector('[data-editorial-tab="'+key+'"],[data-tab="'+key+'"]');if(!b)continue;nav.append(b);const t=b.querySelector('.nav-text');if(t)t.textContent=labels[key];const ico=b.querySelector('.nav-icon');if(ico)ico.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+icons[key]+'</svg>'}
+document.documentElement.classList.add('atelier-reference-layout');
+const home=document.querySelector('.atelier-editorial-hero h2');if(home)home.innerHTML='Il tuo<br>Guardaroba<br>Intelligente';
+const wardrobe=document.querySelector('#view-wardrobe .view-head h1');if(wardrobe)wardrobe.childNodes.forEach(n=>{if(n.nodeType===3)n.textContent='Guardaroba '});
+const look=document.querySelector('#view-looks .view-head h1');if(look)look.childNodes.forEach(n=>{if(n.nodeType===3)n.textContent='Look '});
+const profile=document.querySelector('#view-profile .view-head h1');if(profile)profile.textContent='Il tuo profilo di stile';
+const profileButton=document.querySelector('#profileBtn');if(profileButton)profileButton.setAttribute('title','Profilo di stile');
+};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run()})();
