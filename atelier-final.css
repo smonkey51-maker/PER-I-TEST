@@ -98,3 +98,23 @@ html body dialog#detail[open] {
   border-radius: 0 !important; overflow-y: auto !important;
 }
 html body dialog#detail .dialog-img { margin-top: 0 !important; }
+
+/* ---- Angoli arrotondati ovunque: niente più punte ----
+   controlli 14 px, schede 16 px, immagini 12 px; chip e selettori restano a pillola. */
+html body #v2FilterBtn, html body #wardAdd, html body #weekAdd, html body .v2-add,
+html body #view-looks:not(.hidden) #newLook { border-radius: 14px !important; }
+html body #wardSearch, html body #lookSearch, html body label.search,
+html body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+html body select, html body textarea { border-radius: 14px !important; }
+html body .studio-link, html body .studio-toggle, html body .studio-card, html body .v2-usage, html body .v2-block,
+html body .v2-agenda, html body .v2-note, html body .idea-card, html body .parsed-box, html body .look-form,
+html body .empty, html body .v2-menu, html body .toast, html body .v2-linkrow { border-radius: 16px !important; }
+html body .studio-seg, html body .studio-seg button { border-radius: 999px !important; }
+html body img { border-radius: 12px; }
+html body .v3-stage, html body .v3-piece, html body .card, html body .mini, html body .draft,
+html body .atelier-category, html body .v2-top-img, html body .v2-swap, html body .v2-suggest .v2-swap,
+html body .editorial-insights, html body .editorial-purchase, html body .editorial-calendar-weather { border-radius: 16px !important; }
+html body .atelier-category img, html body .editorial-look-art img { border-radius: 0; }
+html body dialog:not(.v2-sheet) { border-radius: 20px; }
+html body dialog#detail[open] { border-radius: 0 !important; }
+html body .v2-sheet { border-radius: 24px 24px 0 0 !important; }
