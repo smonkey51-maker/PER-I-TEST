@@ -118,3 +118,64 @@ html body .atelier-category img, html body .editorial-look-art img { border-radi
 html body dialog:not(.v2-sheet) { border-radius: 20px; }
 html body dialog#detail[open] { border-radius: 0 !important; }
 html body .v2-sheet { border-radius: 24px 24px 0 0 !important; }
+
+/* ================= Rifinitura estetica: dimensioni, spazi, proporzioni ================= */
+
+/* ---- Home (telefono): l'outfit come immagine unica in alto (capi in colonne uguali), poi titolo e frasi;
+   «Indossa» con accanto il pulsante-icona «Cambia look» (48 px), come nel disegno di atelier-prada.css ---- */
+@media (max-width: 759px) {
+  html body #view-today #idea { display: flex !important; flex-direction: column; }
+  html body #view-today #idea .strip {
+    order: -1; display: grid !important; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);
+    gap: 8px !important; height: auto !important; aspect-ratio: auto !important; min-height: 0 !important;
+    padding: 12px !important; margin: 0 0 18px !important; border-radius: 20px !important;
+    background: var(--plate) !important; overflow: hidden;
+  }
+  html body #view-today #idea .strip figure { margin: 0 !important; height: auto !important; aspect-ratio: 3 / 4; display: block !important; transform: none !important; filter: none !important; }
+  html body #view-today #idea .strip figcaption { display: none !important; }
+  html body #view-today #idea .strip .strip-img, html body #view-today #idea .strip .ph {
+    width: 100% !important; height: 100% !important; max-height: none !important;
+    object-fit: cover !important; border-radius: 12px !important; filter: none !important;
+  }
+  html body #view-today #idea > h3 { margin: 0 2px 6px !important; }
+  html body #view-today #idea .v2-meta { margin: 0 2px 8px !important; }
+  html body #view-today #idea .v2-why { margin: 0 2px 4px !important; }
+  html body #view-today #todayContent > .idea-card:first-child > .actions { grid-template-columns: 1fr 48px !important; margin: 14px 0 0 !important; }
+  html body #view-today #todayContent > .idea-card:first-child { margin-top: 22px !important; }
+  html body #view-today #idea > h3, html body #view-today #idea > p { align-self: stretch !important; text-align: left !important; }
+  html body #view-today #todayContent > .idea-card:first-child > .actions #wearIdea { grid-column: 1 !important; width: 100% !important; }
+  html body #view-today #todayContent > .idea-card:first-child > .actions #anotherIdea { grid-column: 2 !important; width: 48px !important; min-width: 48px !important; padding: 0 !important; margin: 0 !important; font-size: 0 !important; overflow: hidden !important; border-radius: 14px !important; }
+  html body #anotherIdea::before { margin: 0 !important; font-size: 20px !important; vertical-align: baseline; }
+}
+
+/* ---- Look: collage ordinato, tutti i capi della stessa dimensione ---- */
+html body #view-looks .look .board {
+  display: grid !important; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px !important;
+  padding: 10px !important; margin: 0 0 12px !important; height: auto !important; aspect-ratio: auto !important;
+  border-radius: 16px !important; background: var(--plate) !important; overflow: hidden;
+}
+html body #view-looks .look .board figure { margin: 0 !important; width: auto !important; transform: none !important; aspect-ratio: 3 / 4; }
+html body #view-looks .look .board img, html body #view-looks .look .board .ph, html body #view-looks .look .board .board-img {
+  width: 100% !important; height: 100% !important; max-height: none !important; aspect-ratio: auto !important;
+  object-fit: cover !important; border-radius: 10px !important; filter: none !important;
+}
+html body #view-looks .look .board .ph { display: grid; place-items: center; padding: 6px; background: var(--surface-2) !important; color: var(--muted); font: 500 11px/1.25 Inter, sans-serif; text-align: center; }
+html body #view-looks .look.is-open .board { aspect-ratio: auto !important; height: auto !important; }
+
+/* ---- Pulsante principale dell'Agenda: leggibile in entrambi i temi ---- */
+html body .btn.v2-wide:not(.secondary) { background: var(--text) !important; color: var(--bg) !important; }
+html body .btn.v2-wide.secondary { background: transparent !important; color: var(--text) !important; box-shadow: inset 0 0 0 1.5px var(--text) !important; }
+
+/* ---- Dimensioni dei testi: niente sotto i 11–12 px ---- */
+html body .tab .nav-text { font-size: 11px !important; letter-spacing: 0 !important; }
+html body .atelier-category-count, html body #editorialLookKicker { font-size: 11px !important; }
+html body .chip, html body .v2-seg button, html body #view-analysis #analysisTabs button,
+html body #view-looks #v2LookSeg button { font-size: 12.5px !important; }
+html body .min-group > h3, html body .look-group > h3 { font-size: 12px !important; }
+html body .editorial-ring span, html body .editorial-analysis-metrics > div,
+html body .editorial-analysis-metrics span { font-size: 12px !important; }
+html body #editorialCalendarAdvice, html body #editorialInsightText, html body #editorialPurchaseText,
+html body .editorial-insights p, html body .editorial-purchase p,
+html body .editorial-profile-list small, html body .v2-foot, html body .v2-stats span,
+html body .v2-donut-t small { font-size: 12.5px !important; line-height: 1.5 !important; }
+html body .editorial-profile-list strong { font-size: 13.5px !important; }
