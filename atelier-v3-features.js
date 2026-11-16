@@ -107,6 +107,7 @@
       data[p*4+3]=Math.round(255*(a>.99?1:a));
     }
     ctx.putImageData(frame,0,0);
+    try{window.atelierFixWhite?.(c);}catch{/* facoltativo */}
     return canvasBlob(c);
   }
   photo = async function(file){
