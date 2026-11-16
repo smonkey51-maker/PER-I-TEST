@@ -179,3 +179,28 @@ html body .editorial-insights p, html body .editorial-purchase p,
 html body .editorial-profile-list small, html body .v2-foot, html body .v2-stats span,
 html body .v2-donut-t small { font-size: 12.5px !important; line-height: 1.5 !important; }
 html body .editorial-profile-list strong { font-size: 13.5px !important; }
+
+/* ---- Finestre di dialogo: schede dal basso, come nel resto dell'app (stile ereditato da atelier-prada.css) ---- */
+html body dialog { background: var(--surface) !important; color: var(--text) !important; border: 1px solid var(--rule) !important; box-shadow: 0 -22px 70px rgba(20, 20, 18, .2) !important; }
+html body dialog[open]:not(#detail) {
+  position: fixed !important; inset: auto 0 0 !important; width: 100% !important; max-width: none !important;
+  max-height: 88dvh !important; margin: 0 !important; overflow-y: auto !important;
+  border-radius: 20px 20px 0 0 !important; border-bottom: 0 !important;
+}
+html body dialog::backdrop { background: rgba(0, 0, 0, .5) !important; -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+
+/* ---- Niente frasi tagliate che spuntano da sotto la barra ----
+   1) il blocco iniziale della Home arriva esattamente al bordo superiore della barra (il suo margine superiore è -8 px)
+      e il contenuto successivo parte più in basso, quindi a riposo non ne spunta nulla;
+   2) una dissolvenza sopra la barra fa sfumare ciò che scorre, invece di tranciarlo. */
+@media (max-width: 759px) {
+  html body .atelier-editorial-hero {
+    min-height: calc(100svh - 57px - env(safe-area-inset-bottom, 0px)) !important;
+    margin-bottom: 36px !important;
+  }
+}
+html body .tabs { overflow: visible !important; }
+html body .tabs::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 28px; pointer-events: none;
+  background: linear-gradient(to top, var(--bg), color-mix(in srgb, var(--bg) 0%, transparent));
+}
