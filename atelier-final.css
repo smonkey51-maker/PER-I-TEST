@@ -530,3 +530,14 @@ html body .tabs .tab svg { stroke-width: 1.5; }
   html body .atelier-editorial-hero .atelier-hero-top span:first-child::before, html body .atelier-editorial-hero .atelier-hero-top span:first-child::after { background: rgba(245,241,234,.8) !important; }
   html body .atelier-editorial-hero .atelier-hero-top { text-shadow: 0 1px 14px rgba(0,0,0,.55); }
 }
+
+/* Foto dei capi: tutte dello stesso riquadro, stessa proporzione, stesso riempimento (Guardaroba, Look, Home, Analisi) */
+html body .v3-stage { aspect-ratio: 4 / 5; background: var(--plate) !important; overflow: hidden; border-radius: 12px !important; }
+html body .v3-stage img, html body .v3-stage .ph, html body .v3-piece-img { width: 100% !important; height: 100% !important; object-fit: cover !important; object-position: center !important; display: block; border-radius: 0 !important; }
+@media (max-width: 759px) {
+  html body #wardrobe .v3-piece .v3-stage { aspect-ratio: auto !important; height: 100% !important; width: 100% !important; }
+  html body #wardrobe .v3-piece .v3-stage img, html body #wardrobe .v3-piece img { object-fit: cover !important; }
+}
+@media (max-width: 759px) {
+  html body #wardrobe .v3-piece strong { display: -webkit-box !important; -webkit-box-orient: vertical; overflow: hidden; height: 2.7em; min-height: 2.7em; line-height: 1.3 !important; }
+}
