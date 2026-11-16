@@ -291,3 +291,114 @@ html body #view-wardrobe .v3-segments button { flex: none; }
 html { background: var(--bg); }
 html body .tabs { background: var(--bg) !important; padding-bottom: env(safe-area-inset-bottom, 0px); }
 html:root[data-theme="light"] body .tabs { background: var(--bg) !important; }
+
+@media (max-width: 759px) {
+  /* ---- Guardaroba: categorie compatte, poi i capi in una riga a due piani da scorrere di lato ---- */
+  html body #view-wardrobe .view-head { margin-bottom: 8px !important; }
+  html body #view-wardrobe .v2-searchrow { margin-bottom: 8px; }
+  html body .atelier-wardrobe-editorial { margin: 0 0 8px !important; padding: 0 !important; }
+  html body .atelier-wardrobe-editorial > h2 { display: none !important; }
+  html body .atelier-category-grid { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 8px !important; }
+  html body .atelier-category { height: clamp(54px, 8.4dvh, 72px) !important; aspect-ratio: auto !important; border-radius: 14px !important; }
+  html body .atelier-category > span { font-size: 13px !important; }
+  html body #view-wardrobe .v3-refine { margin: 0 0 8px !important; }
+  html body #v2ActiveFilter { align-self: flex-start; min-height: 36px !important; margin: 0 0 8px; }
+  html body #wardrobe {
+    flex: 1 1 auto; min-height: 0; display: grid !important; grid-auto-flow: column; grid-template-rows: repeat(2, minmax(0, 1fr));
+    grid-auto-columns: minmax(112px, 31vw); gap: 10px !important; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; scrollbar-width: none;
+    margin: 0 -20px !important; padding: 0 20px !important;
+  }
+  html body #wardrobe::-webkit-scrollbar { display: none; }
+  html body #wardrobe .min-group, html body #wardrobe .min-row { display: contents !important; }
+  html body #wardrobe .min-group > h3 { display: none !important; }       /* le categorie sono già nei riquadri */
+  html body #wardrobe .v3-piece { scroll-snap-align: start; display: grid !important; grid-template-rows: minmax(0, 1fr) auto; min-height: 0; }
+  html body #wardrobe .v3-piece[hidden], html body #wardrobe .min-group[hidden] { display: none !important; }
+  html body #wardrobe .v3-piece .v3-stage { aspect-ratio: auto !important; height: 100% !important; min-height: 0; }
+  html body #wardrobe .v3-piece .v3-piece-img { height: 100% !important; }
+  html body #wardrobe .v3-piece strong { font-size: 12.5px !important; -webkit-line-clamp: 2 !important; padding: 4px 2px 0; }
+  html body #wardrobe .v3-piece small { display: none !important; }
+
+  /* ---- Look: i look in una riga da scorrere di lato ---- */
+  html body #editorialLook, html body #v2LookChips, html body #lookStatus, html body #lookEmpty { display: none !important; }
+  html body #view-looks .view-head { margin-bottom: 8px !important; }
+  html body #v2LookSeg { margin: 0 0 10px !important; }
+  html body #view-looks label.search { margin: 0 0 10px !important; }
+  html body #looks {
+    flex: 1 1 auto; min-height: 0; display: flex !important; gap: 12px !important; overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 -20px !important; padding: 0 20px 4px !important;
+  }
+  html body #looks::-webkit-scrollbar { display: none; }
+  html body #looks > .look-group, html body #looks .look-grid { display: contents !important; }
+  html body #looks .look-group > h3 { display: none !important; }
+  html body #view-looks .look { flex: 0 0 min(76vw, 290px); scroll-snap-align: start; display: flex !important; flex-direction: column; min-height: 0; }
+  html body #view-looks .look .board { flex: 1 1 auto; min-height: 0; }
+  html body #view-looks .look.is-open { grid-column: auto; }
+  html body #view-looks .look .v2-lookactions { display: flex; }
+
+  /* ---- Agenda: una sola vista, senza ripetizioni ---- */
+  html body #view-week .view-head { margin-bottom: 4px !important; }
+  html body #weekRange { margin: 0 !important; }
+  html body #weekList { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+  html body #weekList .v2-cal { margin: 4px 0 !important; padding-bottom: 8px !important; }
+  html body .v2-calday { min-height: 62px !important; }
+  html body #weekList .v2-daytitle { margin: 4px 0 !important; font-size: 20px !important; }
+  html body #weekList .v2-h3 { display: none !important; }
+  html body #weekList .v2-agenda { padding: 10px 14px !important; }
+  html body #weekList .v2-suggest { flex: 1 1 auto; min-height: 96px; max-height: 210px; }
+  html body #weekList .v2-suggest .v2-swap { aspect-ratio: auto !important; height: 100%; }
+  html body #weekList .v2-sub { margin: 0 !important; font-size: 12.5px !important; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  html body #weekList .v2-state:not(.is-conf) { display: none; }
+  html body #weekList .v2-wide { margin: 0 !important; }
+  html body #weekList .v2-textbtn { min-height: 36px !important; margin: 0 !important; }
+
+  /* ---- Analisi: ricapitolo compatto ---- */
+  html body #view-analysis .view-head { display: flex !important; align-items: center; gap: 10px; margin-bottom: 8px !important; }
+  html body #view-analysis .view-head h1 { font-size: 30px !important; margin: 0 !important; }
+  html body #editorialAnalysis { display: none !important; }            /* metriche ripetute: restano quelle di Utilizzo */
+  html body #analysisBody .v2-wide, html body #analysisBody .v2-foot { display: none !important; }
+  html body #analysisBody .v2-usage { padding: 12px !important; }
+  html body #analysisBody .v2-donut { width: 104px !important; height: 104px !important; }
+  html body #analysisBody .v2-block { margin-top: 10px !important; padding: 12px !important; }
+  html body #analysisBody .v2-top-img { aspect-ratio: 4 / 3 !important; }
+  html body #view-analysis .v2-period { margin: 0 0 8px !important; }
+
+  /* ---- Profilo: sezioni apribili, una alla volta ---- */
+  html body .editorial-profile { display: none !important; }            /* segnaposto ripetuti dalle sezioni sotto */
+  html body #profileBody .studio-card { padding: 0 !important; margin: 0 0 8px !important; }
+  html body #profileBody .studio-card > h2 {
+    display: flex; justify-content: space-between; align-items: center; min-height: 52px; margin: 0 !important; padding: 0 16px;
+    font: 600 15px Inter, sans-serif !important; cursor: pointer;
+  }
+  html body #profileBody .studio-card > h2::after { content: ""; width: 8px; height: 8px; border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor; transform: rotate(45deg); transition: transform .18s; }
+  html body #profileBody .studio-card.is-open > h2::after { transform: rotate(-135deg); }
+  html body #profileBody .studio-card:not(.is-open) > *:not(h2) { display: none !important; }
+  html body #profileBody .studio-card.is-open > *:not(h2) { margin-left: 16px; margin-right: 16px; }
+  html body #profileBody .studio-card.is-open { padding-bottom: 14px !important; }
+}
+
+@media (max-width: 759px) {
+  html body #profileBody { gap: 0 !important; align-content: start; }
+  html body #profileBody .studio-card { margin: 0 0 6px !important; }
+  html body #profileBody .studio-card > h2 { min-height: 46px; }
+}
+
+@media (max-width: 759px) {
+  html body #wardrobe { grid-auto-columns: 30vw !important; }
+  html body #wardrobe .v3-piece { width: 100%; min-width: 0; }
+  html body #looks { scroll-padding-left: 20px; }
+  html body .atelier-category-count { display: none !important; }
+  html body .atelier-category > span { left: 10px !important; bottom: 8px !important; right: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+
+@media (max-width: 759px) {
+  html body #wardrobe .v3-piece { grid-column: auto !important; grid-row: auto !important; }
+  html body #wardrobe .v3-piece .v3-stage img, html body #wardrobe .v3-piece img { width: 100% !important; height: 100% !important; object-fit: contain !important; }
+  html body .atelier-category { background: var(--surface-2) !important; display: grid !important; place-items: center !important; }
+  html body .atelier-category img, html body .atelier-category::before, html body .atelier-category::after { display: none !important; }
+  html body .atelier-category > span { position: static !important; color: var(--text) !important; font: 600 13px Inter, sans-serif !important; text-shadow: none !important; }
+}
+
+@media (max-width: 759px) {
+  html body #wardrobe { grid-template-columns: none !important; }
+  html body .atelier-category { width: 100% !important; }
+}

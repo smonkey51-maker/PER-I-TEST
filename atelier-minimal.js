@@ -113,6 +113,20 @@
   const chipsBox = document.getElementById('chips');
   if (chipsBox) new MutationObserver(syncActiveFilter).observe(chipsBox, { subtree: true, attributes: true, attributeFilter: ['aria-pressed'], childList: true });
 
+  /* Profilo: sezioni che si aprono una alla volta (tutto il Profilo sta in una vista) */
+  document.addEventListener('click', e => {
+    const h = e.target.closest('#profileBody .studio-card > h2');
+    if (!h) return;
+    const card = h.parentElement, open = !card.classList.contains('is-open');
+    document.querySelectorAll('#profileBody .studio-card.is-open').forEach(c => c.classList.remove('is-open'));
+    card.classList.toggle('is-open', open);
+    h.setAttribute('aria-expanded', String(open));
+    if (open) setTimeout(() => card.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 30);
+  });
+  new MutationObserver(() => document.querySelectorAll('#profileBody .studio-card > h2:not([role])').forEach(h => { h.setAttribute('role', 'button'); h.setAttribute('tabindex', '0'); h.setAttribute('aria-expanded', 'false'); }))
+    .observe(document.getElementById('profileBody') || document.body, { childList: true });
+  document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('#profileBody .studio-card > h2')) { e.preventDefault(); e.target.click(); } });
+
   /* Barra superiore: trasparente sopra la foto della Home, piena quando si scorre oltre */
   const onScroll = () => document.body.classList.toggle('is-scrolled', window.scrollY > window.innerHeight * 0.55);
   window.addEventListener('scroll', onScroll, { passive: true });
