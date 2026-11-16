@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Con il telefono in modalità scura le barre di sistema (stato e navigazione) sono nel marrone scuro dell'app -->
+    <color name="atelier_bg">#191A17</color>
+</resources>
