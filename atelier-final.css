@@ -485,3 +485,24 @@ html body .tabs .tab svg { stroke-width: 1.5; }
 @media (max-width: 759px) {
   html body .atelier-editorial-hero::before { background: linear-gradient(180deg, var(--bg) 0%, var(--bg) 11%, rgba(25,26,23,0) 30%, rgba(0,0,0,0) 52%, rgba(12,12,10,.88) 88%, var(--bg) 100%) !important; }
 }
+
+/* ---- Barra flottante arrotondata come da mockup ---- */
+@media (max-width: 759px) {
+  html body .tabs {
+    left: 14px !important; right: 14px !important; bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important; width: auto !important;
+    border: 1px solid color-mix(in srgb, var(--text) 14%, transparent) !important; border-radius: 28px !important;
+    background: color-mix(in srgb, var(--bg) 88%, transparent) !important;
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    padding: 7px 6px !important; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+  html:root[data-theme="light"] body .tabs { background: color-mix(in srgb, var(--bg) 90%, transparent) !important; }
+  html body .tabs::before { display: none !important; }
+  html body main { bottom: calc(86px + env(safe-area-inset-bottom, 0px)) !important; }
+  html:has(#view-today:not(.hidden)) body main { padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)) !important; }
+  html:has(#view-today:not(.hidden)) body .atelier-editorial-hero { min-height: calc(100svh - 86px - env(safe-area-inset-bottom, 0px)) !important; }
+  html body .atelier-editorial-hero .atelier-hero-top { top: calc(20px + env(safe-area-inset-top, 0px)) !important; }
+  html body .atelier-editorial-hero > button { margin-bottom: 6px; }
+}
+@media (max-width: 759px) {
+  html:has(#view-today:not(.hidden)) body .atelier-editorial-hero { margin-bottom: 120px !important; }
+}
