@@ -272,7 +272,7 @@
       const id = el.querySelector('[data-look-fav]')?.dataset.lookFav;
       const i = info.get(id);
       q('.v2-incomplete', el)?.remove(); q('.v2-count', el)?.remove();
-      if (i) { const c = document.createElement('span'); c.className = 'v2-count'; c.textContent = i.n + ' ' + tr(i.n === 1 ? 'capo' : 'capi', i.n === 1 ? 'item' : 'items'); q('h3', el)?.after(c); }
+      if (i) { const c = document.createElement('span'); c.className = 'v2-count'; c.textContent = i.n + ' ' + tr(i.n === 1 ? 'capo' : 'capi', i.n === 1 ? 'item' : 'items') + ' · ' + (i.formal ? tr('Formale', 'Formal') : 'Casual'); q('h3', el)?.after(c); }
       if (i && i.missing.length) {
         const b = document.createElement('span');
         b.className = 'v2-incomplete';
