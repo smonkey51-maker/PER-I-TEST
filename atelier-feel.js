@@ -36,6 +36,8 @@
   const baseShowTab = showTab;
   showTab = function (name) {
     if (!document.startViewTransition || reduced()) return baseShowTab(name);
-    document.startViewTransition(() => baseShowTab(name));
+    const vt = document.startViewTransition(() => baseShowTab(name));
+    // se parte una nuova transizione la precedente viene saltata: non è un errore
+    for (const k of ['ready', 'finished', 'updateCallbackDone']) vt[k]?.catch?.(() => {});
   };
 })();

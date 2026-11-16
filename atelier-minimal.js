@@ -80,6 +80,18 @@
   document.addEventListener('atelier:languagechange', sync);
   document.addEventListener('click', e => { const g = e.target.closest('[data-v2-go]'); if (g) showTab(g.dataset.v2Go); });
 
+  /* Riquadri delle categorie in cima al Guardaroba: filtrano l'elenco dei capi */
+  const CAT_FILTER = { Maglieria: 'Maglieria', Camicie: 'Camicie e T-shirt', Capispalla: 'Giacche e capispalla', Pantaloni: 'Pantaloni e jeans', Scarpe: 'Scarpe', Accessori: 'Accessori' };
+  document.addEventListener('click', e => {
+    const t = e.target.closest('.atelier-category[data-category]');
+    if (!t) return;
+    const key = CAT_FILTER[t.dataset.category];
+    const chip = key && [...document.querySelectorAll('#chips [data-filter]')].find(c => c.dataset.filter === key);
+    if (!chip) { toast(document.documentElement.lang === 'en' ? 'No items in this category yet' : 'Ancora nessun capo in questa categoria'); return; }
+    chip.click();
+    setTimeout(() => document.querySelector('#chips')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+  });
+
   function init() {
     initWardrobe();
     const body = $('#profileBody');

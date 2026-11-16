@@ -19,3 +19,82 @@ html body .v2-seg button[aria-selected="true"],
 html body #v2DetailTabs button[aria-selected="true"] {
   background: var(--text) !important; color: var(--bg) !important; font-weight: 600 !important;
 }
+
+/* ---- Barra di navigazione ----
+   backdrop-filter sull'header lo rende il contenitore degli elementi position:fixed al suo interno:
+   la tab bar finiva 65 px sopra lo schermo. La sfocatura resta sul ::before dell'header. */
+html body .top { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+
+/* ---- Tema scuro: i componenti di atelier-reference.css hanno colori fissi da tema chiaro ---- */
+html[data-theme="dark"] body {
+  --ref-ink: var(--text); --ref-paper: var(--surface); --ref-line: var(--rule); --ref-surface: var(--surface-2);
+}
+html[data-theme="dark"] body .editorial-calendar-weather,
+html[data-theme="dark"] body .editorial-analysis-metrics > div,
+html[data-theme="dark"] body .editorial-insights,
+html[data-theme="dark"] body .editorial-purchase { background: var(--surface) !important; color: var(--text) !important; border-color: var(--rule) !important; }
+html[data-theme="dark"] body .editorial-calendar-weather p { border-left-color: var(--rule); color: var(--muted); }
+html[data-theme="dark"] body .editorial-ring { background: conic-gradient(var(--ref-gold) calc(var(--score) * 1%), var(--surface-2) 0) !important; }
+html[data-theme="dark"] body .editorial-ring > div { background: var(--surface) !important; color: var(--text); }
+html[data-theme="dark"] body .editorial-insights img { mix-blend-mode: normal; }
+html[data-theme="dark"] body .editorial-day { color: var(--text); }
+html[data-theme="dark"] body .editorial-day.is-active { background: var(--text); color: var(--bg); }
+html[data-theme="dark"] body .editorial-profile-list > button { color: var(--text); border-bottom-color: var(--rule); }
+html[data-theme="dark"] body .editorial-profile-list strong { color: var(--text); }
+html[data-theme="dark"] body .editorial-profile-list small { color: var(--muted); }
+html[data-theme="dark"] body .editorial-row-symbol { color: var(--text); }
+html body #view-looks #v2LookSeg { background: color-mix(in srgb, var(--text) 9%, var(--bg)) !important; }
+html body #view-looks #v2LookSeg button { color: var(--muted) !important; }
+html body #view-looks #v2LookSeg button[aria-selected="true"] { background: var(--text) !important; color: var(--bg) !important; }
+
+/* ---- Agenda: una sola striscia dei giorni (quella statica di atelier-reference è un duplicato) ---- */
+html body .editorial-calendar-days { display: none !important; }
+
+/* ---- Aree di tocco ≥ 44 px ---- */
+html body .chip, html body .v3-segments button, html body #v3SortColor, html body #lookFavFilter,
+html body .back-btn, html body #profileLocate, html body .editorial-look-next, html body .editorial-add-swatch { min-height: 44px; }
+html body .editorial-look-next, html body .editorial-add-swatch { min-width: 44px; }
+html body .chip, html body #lookFavFilter { padding-inline: 14px; }
+
+/* ---- Selettori e barra di navigazione secondo i token del tema ---- */
+html body #view-analysis #analysisTabs { background: color-mix(in srgb, var(--text) 9%, var(--bg)) !important; }
+html body #view-analysis #analysisTabs button { color: var(--muted) !important; background: transparent !important; }
+html body #view-analysis #analysisTabs button[aria-selected="true"] { background: var(--text) !important; color: var(--bg) !important; }
+html[data-theme="dark"] body .tabs { background: var(--bg) !important; border-top-color: var(--rule) !important; }
+html[data-theme="dark"] body .tab { color: var(--muted) !important; }
+html[data-theme="dark"] body .tab[aria-selected="true"] { color: var(--text) !important; }
+
+/* ---- Guardaroba: i gruppi per tipologia stanno uno sotto l'altro, ciascuno con la sua griglia a 2 colonne ----
+   (atelier-editorial.css imponeva a #wardrobe una griglia a 2 colonne pensata per l'elenco piatto) */
+html body #wardrobe { display: block !important; }
+html body #wardrobe .min-group { width: 100%; margin: 0 0 18px; }
+html body #wardrobe .min-row { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 12px !important; }
+
+/* ---- Tema scuro: schede dei capi e dei look ---- */
+html[data-theme="dark"] body #wardrobe .v3-piece { background: var(--surface) !important; color: var(--text) !important; }
+html[data-theme="dark"] body #wardrobe .v3-stage,
+html[data-theme="dark"] body #wardrobe .v3-piece img { background: var(--surface-2) !important; }
+html[data-theme="dark"] body #wardrobe .v3-piece strong { color: var(--text) !important; }
+html[data-theme="dark"] body #wardrobe .v3-piece small { color: var(--muted) !important; }
+html[data-theme="dark"] body #view-looks .look { background: var(--surface) !important; color: var(--text) !important; }
+html[data-theme="dark"] body #view-looks .look h3 { color: var(--text) !important; }
+html[data-theme="dark"] body #view-looks .look .v2-count,
+html[data-theme="dark"] body #view-looks .look .v2-incomplete { color: var(--muted) !important; }
+
+/* ---- Chip e selettori: altezza minima di tocco e testo inattivo più leggibile ---- */
+html body .chip, html body #lookFavFilter, html body .v3-segments button { height: auto !important; min-height: 44px !important; }
+html body .v2-seg button, html body #v2DetailTabs button, html body #view-looks #v2LookSeg button,
+html body #view-analysis #analysisTabs button { color: color-mix(in srgb, var(--text) 74%, var(--bg)) !important; }
+
+/* ---- Schermi larghi: colonna di lettura centrata (l'app è pensata per il telefono) ---- */
+@media (min-width: 760px) {
+  html body main { max-width: 720px !important; margin-left: auto !important; margin-right: auto !important; }
+}
+
+/* ---- Scheda capo: a tutto schermo, sempre dall'alto ---- */
+html body dialog#detail[open] {
+  position: fixed !important; inset: 0 !important; margin: 0 !important;
+  width: 100% !important; max-width: none !important; height: 100dvh !important; max-height: none !important;
+  border-radius: 0 !important; overflow-y: auto !important;
+}
+html body dialog#detail .dialog-img { margin-top: 0 !important; }
