@@ -1,0 +1,21 @@
+/* Controlli segmentati (Dettagli / Abbinamenti / Utilizzo, Capi / Look, Utilizzo / Colori…):
+   niente verde salvia né doppio bordo; il fondo e la scheda attiva seguono i token del tema (ivory su scuro, carbone su chiaro). */
+html body .v2-seg,
+html body #view-week .v2-seg,
+html body #view-analysis .v2-seg,
+html body #view-looks .v2-seg,
+html body #v2DetailTabs {
+  background: color-mix(in srgb, var(--text) 9%, var(--bg)) !important;
+  border: 0 !important; box-shadow: none !important;
+  padding: 4px !important; border-radius: 999px !important;
+}
+html body .v2-seg button,
+html body #v2DetailTabs button {
+  min-height: 44px; border: 0 !important; border-radius: 999px !important;
+  background: transparent !important; color: var(--muted) !important; box-shadow: none !important;
+  font: 500 14px Inter, system-ui, sans-serif !important;
+}
+html body .v2-seg button[aria-selected="true"],
+html body #v2DetailTabs button[aria-selected="true"] {
+  background: var(--text) !important; color: var(--bg) !important; font-weight: 600 !important;
+}
