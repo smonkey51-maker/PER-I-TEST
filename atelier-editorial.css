@@ -1,0 +1,22 @@
+/* ATELIER — editorial fidelity layer. Loaded after legacy styles. */
+:root[data-theme="light"]{--bg:#f8f5f0!important;--surface:#fdfbf8!important;--text:#1b1714!important;--muted:#736d68!important;--rule:#e7e0d8!important;--accent:#211a17!important;--accent-ink:#fff!important}
+.atelier-editorial-hero{position:relative;isolation:isolate;overflow:hidden;min-height:min(78svh,680px);display:flex;flex-direction:column;justify-content:flex-end;padding:38px 28px;margin:-18px 0 34px;border-radius:18px;color:#fff;background:#30251e url('/assets/prada/look-campaign.webp') center 40%/cover no-repeat}
+.atelier-editorial-hero:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(0,0,0,.04) 15%,rgba(0,0,0,.08) 38%,rgba(0,0,0,.8) 100%)}
+.atelier-editorial-hero .atelier-hero-top{position:absolute;top:26px;left:28px;right:28px;display:flex;align-items:center;justify-content:space-between;font:400 23px/1 Georgia,serif;letter-spacing:.13em}
+.atelier-editorial-hero .atelier-hero-top span:last-child{font:400 10px/1.4 Inter,sans-serif;letter-spacing:.17em}
+.atelier-editorial-hero h2{font:italic 400 clamp(44px,9vw,72px)/.99 "Cormorant Garamond",Georgia,serif;letter-spacing:-.025em;max-width:490px;margin:0 0 16px;color:#fff}
+.atelier-editorial-hero p{max-width:310px;font:400 13px/1.55 Inter,sans-serif;color:#f4ece5;margin:0 0 24px}
+.atelier-editorial-hero button{width:100%;max-width:350px;min-height:48px;background:#181513!important;border:1px solid rgba(255,255,255,.38)!important;border-radius:999px!important;color:#fff!important;font:500 13px Inter,sans-serif;cursor:pointer}
+.atelier-editorial-hero button span{margin-left:14px}
+#view-today:has(.atelier-editorial-hero)>.greet{display:none!important}
+.atelier-wardrobe-editorial{margin:24px 0 28px}
+.atelier-wardrobe-editorial h2{font:400 29px/1.1 "Cormorant Garamond",Georgia,serif;margin:0 0 16px}
+.atelier-category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.atelier-category{position:relative;display:flex;align-items:flex-end;text-align:left;overflow:hidden;aspect-ratio:4/4.4;border:0;border-radius:13px;background:#e8e0d6;padding:0;cursor:pointer}
+.atelier-category img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.atelier-category:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 50%,rgba(0,0,0,.64))}
+.atelier-category span{position:relative;z-index:1;color:white;padding:14px;font:500 16px/1.2 "Cormorant Garamond",Georgia,serif}
+.atelier-category:hover img{transform:scale(1.035)}
+.atelier-category:focus-visible,.atelier-editorial-hero button:focus-visible{outline:3px solid #a78a68;outline-offset:3px}
+@media(max-width:759px){html body #view-today{margin-top:-8px}.atelier-editorial-hero{min-height:calc(100svh - 178px);margin:0 0 30px;padding:28px 22px;border-radius:16px;background-position:center}.atelier-editorial-hero .atelier-hero-top{left:22px;right:22px;top:23px}.atelier-editorial-hero h2{font-size:49px}.atelier-category-grid{gap:9px}}
+@media(prefers-reduced-motion:reduce){.atelier-category img{transition:none}}
