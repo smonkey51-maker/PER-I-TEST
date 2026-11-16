@@ -1,0 +1,84 @@
+/* ATELIER / six-screen editorial reference / baseline 390 x 844 CSS px */
+:root{--ref-ink:#181512;--ref-paper:#faf7f4;--ref-line:#e9e2dc;--ref-surface:#f1ece7;--ref-gold:#ae8753}
+html body #view-looks .editorial-look{margin:0 0 28px}
+html body .editorial-look-art{position:relative;overflow:hidden;isolation:isolate;border-radius:13px;background:#75614e;aspect-ratio:1/1.04}
+html body .editorial-look-art>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;z-index:-2}
+html body .editorial-look-art:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 42%,rgba(0,0,0,.73));z-index:-1}
+html body .editorial-look-weather{position:absolute;top:15px;left:14px;display:flex;align-items:center;gap:7px;padding:8px 11px;border-radius:999px;background:rgba(23,20,18,.77);color:#fff;font-size:12px}
+html body .editorial-look-weather[hidden]{display:none}
+html body .editorial-look-weather svg{width:17px;height:17px}
+html body .editorial-look-bottom{position:absolute;left:20px;right:14px;bottom:17px;display:flex;align-items:end;justify-content:space-between;color:#fff}
+html body .editorial-look-bottom span{font:500 9px Inter,sans-serif;letter-spacing:.12em;color:#f3eae3}
+html body .editorial-look-bottom h2{font:400 27px/1.05 "Cormorant Garamond",Georgia,serif;color:#fff;margin:5px 0 0}
+html body .editorial-look-next{width:39px;height:39px;display:grid;place-items:center;border:0;border-radius:50%;background:#fff;color:#1b1714;cursor:pointer}
+html body .editorial-dots{display:flex;justify-content:center;gap:7px;padding:13px 0}
+html body .editorial-dots b{width:6px;height:6px;border-radius:50%;background:#cfc6c0}
+html body .editorial-dots b:first-child{background:#181512}
+html body #view-looks .view-head{margin-bottom:12px!important}
+html body #view-looks .view-head .small{display:none}
+html body #view-looks #v2LookSeg{position:relative;z-index:1;margin-bottom:15px!important}
+html body #view-looks #v2LookSeg button{font-size:12px!important}
+html body #view-profile .editorial-profile{margin:0 0 22px}
+html body .editorial-palette{display:flex;align-items:center;gap:12px;margin:8px 0 24px;padding:0 2px 20px;border-bottom:1px solid var(--ref-line)}
+html body .editorial-swatch{width:39px;height:39px;border-radius:50%;flex:none}
+html body .editorial-add-swatch{width:39px;height:39px;border-radius:50%;flex:none;border:1px solid var(--ref-line);background:#fff;color:#171514;font-size:24px;font-weight:300}
+html body .editorial-profile-list{display:grid}
+html body .editorial-profile-list>button{display:grid;grid-template-columns:36px 1fr 20px;align-items:center;gap:13px;min-height:64px;padding:10px 0;border:0;border-bottom:1px solid var(--ref-line);background:transparent;text-align:left;color:#1d1917}
+html body .editorial-row-symbol{display:grid;place-items:center;width:28px;font-size:23px;font-family:Georgia,serif}
+html body .editorial-profile-list strong{display:block;font:600 12px/1.3 Inter,sans-serif}
+html body .editorial-profile-list small{display:block;font:400 11px/1.5 Inter,sans-serif;color:#403a36}
+html body .editorial-profile-list>button>svg:last-child{width:16px;height:16px;color:#8e7352}
+html body .editorial-profile-photo{width:100%;height:210px;object-fit:cover;object-position:center;border-radius:15px;margin-top:23px;background:#58292b}
+html body #view-profile #profileBody{margin-top:26px}
+html body .editorial-analysis-overview{display:grid;grid-template-columns:140px 1fr;align-items:center;gap:12px;margin:10px 0 24px}
+html body .editorial-ring{--score:0;display:grid;place-items:center;width:140px;height:140px;border-radius:50%;background:conic-gradient(var(--ref-gold) calc(var(--score)*1%),#e9e3dc 0);transform:rotate(-90deg)}
+html body .editorial-ring>div{width:127px;height:127px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--ref-paper);transform:rotate(90deg)}
+html body .editorial-ring strong{font:400 38px/.95 "Cormorant Garamond",Georgia,serif}
+html body .editorial-ring span{font:400 10px Inter,sans-serif;margin-top:4px}
+html body .editorial-analysis-metrics{display:grid;gap:8px}
+html body .editorial-analysis-metrics>div{display:flex;justify-content:space-between;align-items:center;gap:4px;padding:10px 12px;border-radius:999px;background:#f1ece7;font:500 11px Inter,sans-serif}
+html body .editorial-analysis-metrics strong{font-weight:700}
+html body .editorial-insights{display:grid;grid-template-columns:1fr 85px;gap:12px;min-height:104px;padding:13px;border-radius:13px;background:#f1ece7;margin-bottom:14px}
+html body .editorial-insights h2,html body .editorial-purchase h2{font:500 23px/1.1 "Cormorant Garamond",Georgia,serif;margin:0 0 8px}
+html body .editorial-insights p{font:400 11px/1.4 Inter,sans-serif;margin:0}
+html body .editorial-insights img{width:85px;height:90px;object-fit:contain;mix-blend-mode:multiply}
+html body .editorial-purchase{padding:13px;border-radius:13px;background:#f5f1ec}
+html body .editorial-purchase>div{display:grid;grid-template-columns:55px 1fr 18px;gap:12px;align-items:center}
+html body .editorial-purchase img{width:55px;height:62px;object-fit:contain}
+html body .editorial-purchase p{font:500 11px/1.45 Inter,sans-serif}
+html body .editorial-purchase svg{width:16px;color:#957450}
+html body #view-analysis #analysisTabs{margin-top:24px!important}
+html body .editorial-calendar-days{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:3px 0 22px}
+html body .editorial-day{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:65px;padding:9px 2px;border:0;border-radius:9px;background:transparent;color:#1d1916}
+html body .editorial-day small{font:500 10px Inter,sans-serif}
+html body .editorial-day strong{font:600 17px Inter,sans-serif}
+html body .editorial-day.is-active{background:#1b1715;color:white}
+html body .editorial-calendar-weather{margin:20px 0 24px;padding:15px;border:1px solid var(--ref-line);border-radius:13px;background:#f8f5f2}
+html body .editorial-calendar-weather h2{font:500 23px "Cormorant Garamond",Georgia,serif;margin:0 0 12px}
+html body .editorial-calendar-weather>div{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:14px}
+html body .editorial-calendar-weather>div>span{display:flex;align-items:center;gap:9px}
+html body .editorial-calendar-weather>div>span svg{color:#c58b29;width:31px;height:31px}
+html body .editorial-calendar-weather strong{font:500 24px "Cormorant Garamond",Georgia,serif}
+html body .editorial-calendar-weather p{margin:0;padding-left:14px;border-left:1px solid #ded6ce;font:400 11px/1.5 Inter,sans-serif}
+html body #view-week #weekList .ios-day{border-radius:13px!important;background:#f7f3ef!important;border:1px solid var(--ref-line)!important;margin-bottom:9px!important;overflow:hidden!important}
+html body #view-week #weekList .ios-day summary{min-height:75px!important;padding:11px 14px!important}
+@media(max-width:759px){
+ html body #view-looks .editorial-look-art{aspect-ratio:1/1.06}
+ html body #view-profile .editorial-palette{gap:10px}
+ html body #view-profile .editorial-swatch,html body #view-profile .editorial-add-swatch{width:38px;height:38px}
+ html body #view-analysis .editorial-analysis-overview{grid-template-columns:135px 1fr}
+ html body #view-analysis .editorial-ring{width:135px;height:135px}
+ html body #view-analysis .editorial-ring>div{width:123px;height:123px}
+ html body #view-week .editorial-calendar-weather{margin-top:20px}
+}
+@media(max-width:360px){html body .editorial-swatch,html body .editorial-add-swatch{width:32px!important;height:32px!important}html body .editorial-analysis-overview{grid-template-columns:120px 1fr!important}html body .editorial-ring{width:120px!important;height:120px!important}html body .editorial-ring>div{width:108px!important;height:108px!important}}
+
+html body .atelier-category{isolation:isolate}
+html body .atelier-category span{align-self:flex-end;padding-bottom:28px!important}
+html body .atelier-category-count{position:absolute;z-index:2;left:14px;bottom:12px;color:#fff;font:400 10px/1.2 Inter,sans-serif}
+html body .atelier-category img{object-fit:contain!important;background:#e9e1d8!important}
+html body .atelier-category:after{background:linear-gradient(transparent 46%,rgba(0,0,0,.53))!important}
+html body #view-wardrobe .atelier-wardrobe-editorial h2{display:none}
+html body #view-wardrobe .atelier-wardrobe-editorial{margin:0 0 18px!important}
+html body #view-wardrobe .atelier-category-grid{gap:6px!important}
+@media(max-width:759px){html body #view-wardrobe .atelier-category{aspect-ratio:1.25!important}}

@@ -23,7 +23,7 @@ async function checkAccount(req) {
 
 const text = (v, max) => (typeof v === 'string' && !/^non determinabile$/i.test(v.trim()) ? v.trim().slice(0, max) : '');
 
-// Foto prodotto neutra: un solo capo, sfondo grigio uniforme (così lo scontorno sul dispositivo lo isola)
+// Immagine di prodotto con art direction da editoriale di alta moda, fedele al capo inserito.
 function prompt(g) {
   const details = [
     'Capo: ' + text(g.tipo, 80),
@@ -33,11 +33,11 @@ function prompt(g) {
     text(g.texture, 60) && 'Fantasia o texture: ' + text(g.texture, 60),
     text(g.vestibilita, 40) && 'Vestibilità: ' + text(g.vestibilita, 40)
   ].filter(Boolean).join('. ');
-  return 'Studio e-commerce product photo of a single garment, described in Italian: ' + details + '. ' +
-    'Show exactly this garment as a standard, classic version of it, faithful to the stated colour and pattern. ' +
-    'Front view, the whole item visible and centred, neatly laid flat or on an invisible mannequin (shoes and accessories as a product shot). ' +
-    'Plain uniform light grey seamless background, soft even lighting, gentle shadow. ' +
-    'No person, no hands, no hanger, no text, no logo, no brand label, no props.';
+  return 'High-fashion Italian luxury house editorial still-life photograph of one garment, described in Italian: ' + details + '. ' +
+    'Preserve the exact item category, silhouette, construction, colour, material and pattern from the description; do not invent embellishments, hardware or branding. ' +
+    'Show the complete garment in a refined front view, neatly laid flat or on an invisible form; shoes and accessories as a precise luxury product still life. ' +
+    'Art direction: sculptural pale travertine and warm ivory plaster, restrained Milanese modernist architecture, tactile natural stone, precise composition, directional late-afternoon sunlight, rich but believable shadows, nuanced fabric detail, quiet cinematic contrast, high-end fashion campaign photography. ' +
+    'Keep the item clearly legible and centred, with enough negative space for a polished wardrobe catalogue. No person, hands, hanger, text, watermark, logo or brand label.';
 }
 
 async function generate(model, body) {
@@ -61,7 +61,7 @@ export default async function handler(req, res) {
   const g = req.body || {};
   if (!text(g.tipo, 80)) return res.status(400).json({ error: 'Manca il tipo di capo' });
 
-  const body = { prompt: prompt(g), n: 1, size: '1024x1536', quality: 'low', output_format: 'jpeg', output_compression: 85 };
+  const body = { prompt: prompt(g), n: 1, size: '1024x1536', quality: 'medium', output_format: 'jpeg', output_compression: 85 };
   try {
     let { ok, result } = await generate(MODEL, body);
     if (!ok && MODEL !== 'gpt-image-1' && /model/i.test(result.error?.message || '')) ({ ok, result } = await generate('gpt-image-1', body));

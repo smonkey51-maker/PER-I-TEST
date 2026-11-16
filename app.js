@@ -120,12 +120,35 @@ function forgetPhoto(id) {
 
 const photoSrc = id => photoUrls.get(id) || '';
 
+function pradaFallbackPhoto(g) {
+  if (!g) return '';
+  const shape = illusShape(g);
+  const colour = norm([g.colore, g.tipo, g.texture, g.materiale].filter(Boolean).join(' '));
+  if (shape === 'knit' && /bordeaux|vinaccia|borgogna|burgundy|wine/.test(colour)) return '/assets/prada/knit-bordeaux.webp';
+  if (shape === 'knit' && /lilla|lavanda|violet|lilac/.test(colour)) return '/assets/prada/knit-lilac.webp';
+  if (shape === 'trousers' && /sabbia|beige|khaki|cammello|sand/.test(colour) && /gurkha/.test(colour)) return '/assets/prada/gurkha-sand.webp';
+  if (shape === 'trousers' && /azzurro|blu chiaro|denim|jeans|light blue|celeste/.test(colour)) return '/assets/prada/denim-light-blue.webp';
+  if (shape === 'loafer' && /nero|nera|neri|nere|black/.test(colour)) return '/assets/prada/leather-loafers.webp';
+  if (shape === 'sneaker' && /panna|crema|avorio|offwhite|off white/.test(colour)) return '/assets/prada/sneakers-cream.webp';
+  if (shape === 'jacket' && /nero|nera|neri|nere|black/.test(colour)) return '/assets/prada/nylon-jacket.webp';
+  if (shape === 'shirt' && /grigio.?blu|blu.?grigio|slate.?blue|azzurro|grigio-blu/.test(colour)) return '/assets/prada/shirt-slate-blue.webp';
+  if (shape === 'shirt' && /avorio|panna|crema|bianco|bianca|white|ivory/.test(colour)) return '/assets/prada/poplin-shirt.webp';
+  if (shape === 'trousers' && /nero|nera|neri|nere|black/.test(colour)) return '/assets/prada/tailored-trousers.webp';
+  return '';
+}
+
 function photoHtml(id, cls, alt) {
-  const src = photoSrc(id);
-  if (src) return '<img class="' + cls + '" src="' + src + '" alt="' + esc(alt) + '" loading="lazy" decoding="async">';
-  const drawn = illusSrc(id);
-  if (drawn) return '<img class="' + cls.replace(' fade', '') + ' illus" src="' + drawn + '" alt="' + esc(alt) + '">';
-  return '<div class="' + cls.replace(' fade', '') + ' ph"><span>' + esc(alt) + '</span></div>';
+  // Se un look referenzia un capo non caricato, ricava una forma provvisoria dalla descrizione
+  // invece di lasciare una scheda vuota o un blocco grigio.
+  const garment = garmentById.get(id) || { id, tipo: alt || 'Capo', colore: alt || '' };
+  const outdatedIllustration = garment.fotoIllustrativa && garment.fotoIllustrativaVersion !== 'prada-editorial-1';
+  const vector = illustrationSvg(garment);
+  const fallback = pradaFallbackPhoto(garment) || vector;
+  const src = outdatedIllustration ? '' : photoSrc(id);
+  if (src) return '<img class="' + cls + '" src="' + src + '" data-fallback="' + esc(fallback) + '" alt="' + esc(alt) + '" loading="lazy" decoding="async">';
+  const editorial = pradaFallbackPhoto(garment);
+  if (editorial) return '<img class="' + cls.replace(' fade', '') + ' high-fashion" src="' + editorial + '" data-fallback="' + esc(vector) + '" alt="' + esc(alt) + '" loading="lazy" decoding="async">';
+  return '<img class="' + cls.replace(' fade', '') + ' illus" src="' + vector + '" alt="' + esc(alt) + '" loading="lazy" decoding="async">';
 }
 
 /* ---------- Disegno automatico per i capi senza foto ---------- */
@@ -360,6 +383,14 @@ const washing = d => d.stato === 'lavatrice';
 
 // Le immagini compaiono con una dissolvenza quando sono pronte
 document.addEventListener('load', e => { if (e.target.classList?.contains('fade')) e.target.classList.add('ready'); }, true);
+document.addEventListener('error', e => {
+  const img = e.target;
+  if (img?.tagName !== 'IMG' || !img.dataset.fallback || img.dataset.fallbackUsed) return;
+  img.dataset.fallbackUsed = '1';
+  img.classList.remove('high-fashion', 'fade');
+  img.classList.add('illus', 'ready');
+  img.src = img.dataset.fallback;
+}, true);
 const revealImages = () => document.querySelectorAll('img.fade').forEach(i => { if (i.complete) i.classList.add('ready'); });
 
 async function renderAll() {
@@ -404,7 +435,7 @@ async function illustrateMissing() {
     const day = todayStr();
     const quota = readJson('atelier_illustrate_quota', {});
     let used = quota.day === day ? quota.n : 0;
-    const todo = (await all()).filter(g => (!withPhoto.has(g.id) || g.fotoDaRigenerare) && known(g.tipo) && Date.now() - (fails[g.id] || 0) > 864e5);
+    const todo = (await all()).filter(g => (!withPhoto.has(g.id) || g.fotoDaRigenerare || (g.fotoIllustrativa && g.fotoIllustrativaVersion !== 'prada-editorial-1')) && known(g.tipo) && Date.now() - (fails[g.id] || 0) > 864e5);
     for (const g of todo) {
       if (used >= ILLUSTRATE_DAILY) break;
       const r = await fetch('/api/illustrate', {
@@ -429,7 +460,7 @@ async function illustrateMissing() {
       if (!now || (hasPhoto && !now.fotoIllustrativa)) continue;
       const blob = await (await fetch(j.image)).blob();
       await put({ id: g.id, blob: await photo(new File([blob], 'illustrazione.jpg', { type: 'image/jpeg' })), at: Date.now() }, 'photos');
-      await update('garments', g.id, { fotoIllustrativa: true, fotoDaRigenerare: undefined });
+      await update('garments', g.id, { fotoIllustrativa: true, fotoIllustrativaVersion: 'prada-editorial-1', fotoDaRigenerare: undefined });
       forgetPhoto(g.id);
       made++;
     }
@@ -491,7 +522,7 @@ async function openDetail(id) {
   detailId = id;
   await loadPhotos();
   const real = photoSrc(id);
-  const src = real || illustrationSvg(item);
+  const src = real || pradaFallbackPhoto(item) || illustrationSvg(item);
   $('#detailImg').classList.toggle('hidden', !src);
   if (src) $('#detailImg').src = src;
   $('#detailImg').alt = item.tipo || 'Capo';
