@@ -40,3 +40,79 @@ html body .tabs .atelier-extra-tab .nav-icon svg{width:20px;height:20px}
  html body #view-week #weekList,html body #view-analysis #analysisBody,html body #view-profile #profileBody{display:grid;gap:14px}
  html body #view-week .v2-week-day,html body #view-week .week-day{border-radius:14px!important}
 }
+
+/* ATELIER — approved six-screen reference / precision pass
+   Viewport baseline: 390 × 844 CSS px, 5 destinations, 20px gutters.
+   Keep all metrics data-driven. No fabricated counts, weather or scores. */
+:root[data-theme="light"]{--bg:#f9f6f3!important;--surface:#fdfaf7!important;--surface-2:#f1ece7!important;--text:#171514!important;--muted:#655f5b!important;--rule:#e8e0d9!important;--plate:#e8dfd5!important;--accent:#211b19!important;--accent-ink:#fff!important}
+html body{background:var(--bg)!important;font-size:13px!important}
+html body .top{background:var(--bg)!important;border:0!important;box-shadow:none!important}
+html body main{max-width:1180px!important}
+html body .brand{font:400 26px/1 "Cormorant Garamond",Georgia,serif!important;letter-spacing:.13em!important}
+html body .brand::after{display:none!important}
+html body .view-head h1{font:500 38px/1.04 "Cormorant Garamond",Georgia,serif!important;letter-spacing:-.03em!important}
+html body .view-head h1 .muted{font:400 13px Inter,sans-serif!important;vertical-align:middle!important;color:var(--muted)!important}
+html body .view-head>.small{font-size:12px!important;line-height:1.5!important}
+html body .tabs{gap:0!important}
+html body .tab[aria-selected=true]{background:transparent!important;box-shadow:none!important}
+html body .tab[aria-selected=true] .nav-text{font-weight:700!important}
+html body .tab .nav-icon svg{fill:none!important;stroke:currentColor!important}
+html body #view-wardrobe .view-head,html body #view-looks .view-head,html body #view-week .view-head,html body #view-analysis .view-head,html body #view-profile .view-head{margin:0 0 22px!important}
+html body #view-wardrobe .view-head h1,html body #view-looks .view-head h1,html body #view-week .view-head h1,html body #view-analysis .view-head h1,html body #view-profile .view-head h1{font:500 39px/1.05 "Cormorant Garamond",Georgia,serif!important}
+html body #view-wardrobe #chips{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:none;gap:20px!important;padding:0 0 10px!important;margin:0 0 16px!important;border-bottom:1px solid var(--rule)}
+html body #view-wardrobe #chips::-webkit-scrollbar{display:none}
+html body #view-wardrobe #chips .chip{background:none!important;border:0!important;border-radius:0!important;padding:0 1px 10px!important;white-space:nowrap;font-size:11px!important;color:var(--text)!important}
+html body #view-wardrobe #chips .chip[aria-pressed=true]{border-bottom:2px solid #191615!important;font-weight:700!important}
+html body #wardrobe{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+html body #wardrobe .v3-piece,html body #wardrobe .min-row,html body #wardrobe .v3-stage{border-radius:12px!important;overflow:hidden!important}
+html body #wardrobe img{object-fit:contain!important;background:#e9e0d6!important}
+html body #view-looks #v2LookSeg{display:flex!important;gap:0!important;padding:4px!important;margin:0 0 18px!important;border-radius:999px!important;background:#efebe8!important}
+html body #view-looks #v2LookSeg button{flex:1!important;min-height:35px!important;border:0!important;border-radius:999px!important;font-size:12px!important;background:transparent!important;color:#292523!important}
+html body #view-looks #v2LookSeg button[aria-selected=true]{background:#181514!important;color:white!important}
+html body #view-looks .look{border-radius:12px!important;overflow:hidden!important}
+html body #view-looks .look .board{background:#e9e0d6!important;border-radius:12px!important}
+html body #view-profile #profileBody,html body #view-analysis #analysisBody,html body #view-week #weekList{gap:12px!important}
+html body #view-profile #profileBody>*,html body #view-analysis #analysisBody>*,html body #view-week #weekList>*{border-color:var(--rule)!important;box-shadow:none!important}
+html body #view-analysis #analysisTabs{display:flex!important;gap:5px!important;background:#efebe8!important;border-radius:999px!important;padding:4px!important;margin:0 0 24px!important}
+html body #view-analysis #analysisTabs button{flex:1!important;font-size:11px!important;border-radius:999px!important}
+html body #view-analysis #analysisTabs button[aria-selected=true]{background:#191615!important;color:white!important}
+html body .idea-card{box-shadow:none!important}
+html body #view-week .idea-card{border-radius:14px!important}
+html body .atelier-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+html body .atelier-category{aspect-ratio:1.18!important}
+html body .atelier-category span{font:500 18px/1.15 "Cormorant Garamond",Georgia,serif!important}
+html body .atelier-editorial-hero{border-radius:0!important}
+html body .atelier-editorial-hero h2{font:400 52px/.97 "Cormorant Garamond",Georgia,serif!important;letter-spacing:-.02em!important}
+html body .atelier-editorial-hero p{font:400 13px/1.5 Inter,sans-serif!important}
+@media(max-width:759px){
+ html body .top{height:0!important;min-height:0!important;overflow:visible!important}
+ html body .top-inner{min-height:0!important;height:0!important;padding:0!important}
+ html body .top .brand{display:none!important}
+ html body .top .profile-btn{position:fixed!important;z-index:65!important;right:20px!important;top:15px!important;width:36px!important;height:36px!important;border:0!important;background:transparent!important}
+ html body main{width:calc(100% - 40px)!important;padding:52px 0 calc(100px + env(safe-area-inset-bottom))!important}
+ html body:has(#view-today:not(.hidden)) main{padding-top:0!important}
+ html body .atelier-editorial-hero{width:calc(100% + 40px)!important;margin:0 -20px 0!important;border-radius:0!important;min-height:calc(100svh - 72px - env(safe-area-inset-bottom))!important;padding:30px 26px 32px!important;background-position:center center!important}
+ html body .atelier-editorial-hero:before{background:linear-gradient(180deg,rgba(0,0,0,.25),transparent 23%,rgba(0,0,0,.05) 40%,rgba(0,0,0,.78) 100%)!important}
+ html body .atelier-editorial-hero .atelier-hero-top{top:56px!important;left:26px!important;right:26px!important;justify-content:center!important;font:400 28px Georgia,serif!important}
+ html body .atelier-editorial-hero .atelier-hero-top span:last-child{display:none!important}
+ html body .atelier-editorial-hero h2{font-size:43px!important;line-height:.99!important;margin-bottom:12px!important}
+ html body .atelier-editorial-hero p{font-size:12px!important;max-width:270px!important;margin-bottom:28px!important}
+ html body .atelier-editorial-hero button{max-width:none!important;height:48px!important;font-size:12px!important;background:#141210!important}
+ html body .tabs{position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:70!important;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;width:100%!important;max-width:none!important;height:calc(65px + env(safe-area-inset-bottom))!important;min-height:0!important;padding:7px 8px env(safe-area-inset-bottom)!important;border:0!important;border-top:1px solid #e7dfd8!important;border-radius:0!important;background:#faf7f4!important;box-shadow:none!important;backdrop-filter:none!important}
+ html body .tab{min-width:0!important;min-height:52px!important;padding:4px 0!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important;color:#4b4540!important}
+ html body .tab[aria-selected=true]{color:#171514!important}
+ html body .tab .nav-icon{width:21px!important;height:21px!important}
+ html body .tab .nav-icon svg{width:20px!important;height:20px!important}
+ html body .tab .nav-text{font-size:9px!important;letter-spacing:-.015em!important}
+ html body .view-head h1{font-size:36px!important}
+ html body #view-wardrobe .view-head,html body #view-looks .view-head,html body #view-analysis .view-head,html body #view-week .view-head,html body #view-profile .view-head{margin-bottom:20px!important}
+ html body .atelier-wardrobe-editorial{margin-top:12px!important}
+ html body .atelier-category-grid{gap:6px!important}
+ html body .atelier-category{aspect-ratio:1.13!important;border-radius:9px!important}
+ html body #view-wardrobe #wardrobe{gap:7px!important}
+ html body #view-wardrobe #chips{gap:18px!important}
+ html body #view-wardrobe .v2-add,html body #view-looks #newLook{min-height:38px!important}
+ html body #view-week #weekList,html body #view-analysis #analysisBody,html body #view-profile #profileBody{gap:12px!important}
+ html body #view-looks .palette{display:none!important}
+ html body #view-today .atelier-context{margin-top:24px!important}
+}
