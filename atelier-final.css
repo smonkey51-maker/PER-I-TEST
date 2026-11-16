@@ -458,3 +458,51 @@ html body #view-today .atelier-context #weatherInfo + * hr, html body #view-toda
 /* Composizione del look nell'Agenda: sempre per intero, mai tagliata a metà riga */
 html body #weekList .v2-sub { display: block !important; overflow: visible !important; height: auto !important; max-height: none !important; -webkit-line-clamp: unset !important; white-space: normal !important; text-overflow: clip !important; font-size: 13px !important; line-height: 1.4 !important; padding-bottom: 2px; }
 html body #weekList .v2-suggest, html body #weekList .v2-suggest > * { overflow: visible; min-height: 0; }
+
+/* ---- Home «Guardaroba Intelligente»: marchio centrato, titolo e sottotitolo centrati, filetto oro, pulsante panna ---- */
+:root { --gold: #c9985a; }
+@media (max-width: 759px) {
+  html body .atelier-editorial-hero { align-items: center; text-align: center; background-position: center 30% !important; }
+  html body .atelier-editorial-hero::before { background: linear-gradient(180deg, rgba(0,0,0,.18) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 52%, rgba(12,12,10,.88) 88%, var(--bg) 100%) !important; }
+  html body .atelier-editorial-hero .atelier-hero-top { justify-content: center !important; gap: 0; font: 400 26px/1 "Cormorant Garamond", Georgia, serif !important; letter-spacing: .26em !important; }
+  html body .atelier-editorial-hero .atelier-hero-top span:first-child { display: inline-flex; align-items: center; gap: 14px; padding-left: .26em; }
+  html body .atelier-editorial-hero .atelier-hero-top span:first-child::before, html body .atelier-editorial-hero .atelier-hero-top span:first-child::after { content: ""; display: block; width: 14vw; max-width: 64px; height: 1px; background: rgba(245,241,234,.55); }
+  html body .atelier-editorial-hero .atelier-hero-top span:last-child { display: none !important; }
+  html body .atelier-editorial-hero h2 { text-align: center; font: 400 clamp(40px, 12.4vw, 54px)/1.02 "Cormorant Garamond", Georgia, serif !important; letter-spacing: -.01em !important; color: #f5f1ea !important; margin: 0 0 14px !important; }
+  html body .atelier-editorial-hero h2 .hero-kicker { display: block; margin-bottom: 10px; font: 500 13px/1 Inter, sans-serif; letter-spacing: .42em; text-transform: uppercase; color: rgba(245,241,234,.85); }
+  html body .atelier-editorial-hero > p { font: italic 400 19px/1.35 "Cormorant Garamond", Georgia, serif !important; color: rgba(245,241,234,.92) !important; max-width: 17em; margin: 0 auto 18px !important; }
+  html body .atelier-editorial-hero > p::after { content: ""; display: block; width: 48px; height: 2px; margin: 16px auto 0; background: var(--gold); }
+  html body .atelier-editorial-hero > button { width: 100%; justify-content: center; min-height: 56px; border: 0 !important; border-radius: 999px !important; background: linear-gradient(180deg, #f6ecdc, #e8d6bb) !important; color: #1c1713 !important; font: 500 16px Inter, sans-serif !important; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+}
+/* barra: icone sottili, voce attiva con filetto oro */
+html body .tabs .tab { position: relative; }
+html body .tabs .tab[aria-selected="true"]::after { content: ""; position: absolute; left: 50%; bottom: 4px; width: 28px; height: 2px; margin-left: -14px; border-radius: 2px; background: var(--gold); }
+html body .tabs .tab svg { stroke-width: 1.5; }
+@media (max-width: 759px) {
+  html body .atelier-editorial-hero { background-color: var(--bg) !important; background-size: auto 90% !important; background-position: center bottom !important; }
+  html body .atelier-editorial-hero > p { max-width: 15em; }
+}
+@media (max-width: 759px) {
+  html body .atelier-editorial-hero::before { background: linear-gradient(180deg, var(--bg) 0%, var(--bg) 11%, rgba(25,26,23,0) 30%, rgba(0,0,0,0) 52%, rgba(12,12,10,.88) 88%, var(--bg) 100%) !important; }
+}
+
+/* ---- Barra flottante arrotondata come da mockup ---- */
+@media (max-width: 759px) {
+  html body .tabs {
+    left: 14px !important; right: 14px !important; bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important; width: auto !important;
+    border: 1px solid color-mix(in srgb, var(--text) 14%, transparent) !important; border-radius: 28px !important;
+    background: color-mix(in srgb, var(--bg) 88%, transparent) !important;
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    padding: 7px 6px !important; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+  html:root[data-theme="light"] body .tabs { background: color-mix(in srgb, var(--bg) 90%, transparent) !important; }
+  html body .tabs::before { display: none !important; }
+  html body main { bottom: calc(86px + env(safe-area-inset-bottom, 0px)) !important; }
+  html:has(#view-today:not(.hidden)) body main { padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)) !important; }
+  html:has(#view-today:not(.hidden)) body .atelier-editorial-hero { min-height: calc(100svh - 86px - env(safe-area-inset-bottom, 0px)) !important; }
+  html body .atelier-editorial-hero .atelier-hero-top { top: calc(20px + env(safe-area-inset-top, 0px)) !important; }
+  html body .atelier-editorial-hero > button { margin-bottom: 6px; }
+}
+@media (max-width: 759px) {
+  html:has(#view-today:not(.hidden)) body .atelier-editorial-hero { margin-bottom: 120px !important; }
+}
