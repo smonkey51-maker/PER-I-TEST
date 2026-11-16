@@ -244,6 +244,42 @@
   let cutting = false, cutTimer = null, cutWarned = false;
   function scheduleCutouts() { clearTimeout(cutTimer); cutTimer = setTimeout(runCutouts, 2500); }
   const toDataUrl = blob => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
+  /* Residui bianchi: pezzi chiari e neutri attaccati all'esterno del capo (sfondo non tolto) diventano trasparenti, riempiendo dal fuori verso dentro.
+     Non si tocca nulla se il capo stesso è chiaro/bianco o se la parte da togliere è troppo grande. Restituisce la frazione tolta. */
+  function fixWhite(c) {
+    const w = c.width, h = c.height, ctx = c.getContext('2d', { willReadFrequently: true });
+    const frame = ctx.getImageData(0, 0, w, h), d = frame.data, N = w * h;
+    const solid = p => d[p * 4 + 3] >= 128;
+    const light = p => { const r = d[p * 4], g = d[p * 4 + 1], b = d[p * 4 + 2], mn = Math.min(r, g, b); return mn >= 170 && Math.max(r, g, b) - mn <= 34; };
+    let total = 0, sr = 0, sg = 0, sb = 0, lightCount = 0;
+    for (let p = 0; p < N; p++) if (solid(p)) { total++; sr += d[p * 4]; sg += d[p * 4 + 1]; sb += d[p * 4 + 2]; if (light(p)) lightCount++; }
+    if (total < N * 0.04) return 0;
+    const mr = sr / total, mg = sg / total, mb = sb / total;
+    if (Math.min(mr, mg, mb) >= 150 && Math.max(mr, mg, mb) - Math.min(mr, mg, mb) <= 26) return 0;   // capo chiaro: lo si lascia com'è
+    const seen = new Uint8Array(N), stack = new Int32Array(N); let sp = 0;
+    const seed = p => { if (!seen[p] && solid(p) && light(p)) { seen[p] = 1; stack[sp++] = p; } };
+    for (let p = 0; p < N; p++) {
+      if (solid(p)) continue;
+      const x = p % w; // vicini del vuoto
+      if (x > 0) seed(p - 1); if (x < w - 1) seed(p + 1); if (p >= w) seed(p - w); if (p < N - w) seed(p + w);
+    }
+    let removed = 0; const list = [];
+    while (sp) {
+      const q = stack[--sp]; list.push(q); removed++;
+      const x = q % w;
+      if (x > 0) seed(q - 1); if (x < w - 1) seed(q + 1); if (q >= w) seed(q - w); if (q < N - w) seed(q + w);
+      if (x > 0 && q >= w) seed(q - w - 1); if (x < w - 1 && q >= w) seed(q - w + 1); if (x > 0 && q < N - w) seed(q + w - 1); if (x < w - 1 && q < N - w) seed(q + w + 1);
+    }
+    if (!removed || removed > total * 0.25) return 0;
+    for (const q of list) d[q * 4 + 3] = 0;
+    // bordo: un pixel di tolleranza per togliere l'alone chiaro rimasto
+    const halo = [];
+    for (let p = 0; p < N; p++) { if (!solid(p) || d[p * 4 + 3] === 0) continue; const x = p % w; if ((x > 0 && d[(p - 1) * 4 + 3] === 0) || (x < w - 1 && d[(p + 1) * 4 + 3] === 0) || (p >= w && d[(p - w) * 4 + 3] === 0) || (p < N - w && d[(p + w) * 4 + 3] === 0)) if (light(p)) halo.push(p); }
+    for (const p of halo) d[p * 4 + 3] = 0;
+    ctx.putImageData(frame, 0, 0);
+    return (removed + halo.length) / total;
+  }
+  window.atelierFixWhite = fixWhite;
   /* Pulizia del ritaglio AI: toglie i pezzi staccati (chiazze, residui di sfondo), riempie i buchi e ammorbidisce il bordo.
      Se ciò che resta non assomiglia a un capo (troppo poco o quasi tutta la foto) il ritaglio viene scartato. */
   function cleanAlpha(c) {
@@ -299,6 +335,7 @@
     const s = Math.min(w / img.width, h / img.height);
     c.getContext('2d').drawImage(img, (w - img.width * s) / 2, (h - img.height * s) / 2, img.width * s, img.height * s);
     cleanAlpha(c);
+    fixWhite(c);
     return new Promise((res, rej) => c.toBlob(b => (b ? res(b) : rej(Error('Immagine non elaborabile'))), 'image/png'));
   }
   async function runCutouts() {
@@ -367,6 +404,29 @@
       };
     }
   }
+
+  /* Una tantum: toglie i residui bianchi dalle foto già ritagliate (PNG trasparenti) */
+  async function repairWhite() {
+    if (localStorage.getItem('atelier_whitefix') === '1') return;
+    let changed = 0;
+    try {
+      for (const row of await all('photos')) {
+        if (!row.blob || row.blob.type !== 'image/png') continue;
+        const img = await new Promise((res, rej) => { const i = new Image(), u = URL.createObjectURL(row.blob); i.onload = () => { URL.revokeObjectURL(u); res(i); }; i.onerror = rej; i.src = u; }).catch(() => null);
+        if (!img) continue;
+        const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+        c.getContext('2d').drawImage(img, 0, 0);
+        if (!fixWhite(c)) continue;
+        const blob = await new Promise(res => c.toBlob(res, 'image/png'));
+        if (!blob) continue;
+        await corePut({ ...row, blob, originalBlob: row.originalBlob || row.blob, at: Date.now() }, 'photos');
+        forgetPhoto(row.id); changed++;
+      }
+      localStorage.setItem('atelier_whitefix', '1');
+    } catch { /* si riprova al prossimo avvio */ }
+    if (changed) { await renderAll(); await window.atelierDriveSync?.(); }
+  }
+  setTimeout(repairWhite, 6000);
 
   /* ---------- Aggiornamenti ---------- */
 
