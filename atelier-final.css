@@ -221,3 +221,6 @@ html body:has(#view-today:not(.hidden)):not(.is-scrolled) .top::before,
 html body:has(#view-today:not(.hidden)):not(.is-scrolled) .top::after { display: none; }
 html body:not(:has(#view-today:not(.hidden))) main { padding-top: calc(60px + env(safe-area-inset-top, 0px)) !important; }
 html body .profile-btn { z-index: 66 !important; }
+
+/* ---- Nomi dei capi: fino a tre righe (a 320 px il nome lungo veniva tagliato) ---- */
+html body #wardrobe .v3-piece strong { -webkit-line-clamp: 3 !important; line-clamp: 3; overflow-wrap: anywhere; }
