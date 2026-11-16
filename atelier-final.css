@@ -454,3 +454,7 @@ html body #view-today .atelier-context #weatherInfo + * hr, html body #view-toda
   html:has(#view-today:not(.hidden)) body #suggestions { margin-top: 12px !important; }
   html body #wardrobe { scroll-padding-left: 20px; }
 }
+
+/* Composizione del look nell'Agenda: sempre per intero, mai tagliata a metà riga */
+html body #weekList .v2-sub { display: block !important; overflow: visible !important; height: auto !important; max-height: none !important; -webkit-line-clamp: unset !important; white-space: normal !important; text-overflow: clip !important; font-size: 13px !important; line-height: 1.4 !important; padding-bottom: 2px; }
+html body #weekList .v2-suggest, html body #weekList .v2-suggest > * { overflow: visible; min-height: 0; }
