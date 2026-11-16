@@ -20,3 +20,23 @@
 .atelier-category:focus-visible,.atelier-editorial-hero button:focus-visible{outline:3px solid #a78a68;outline-offset:3px}
 @media(max-width:759px){html body #view-today{margin-top:-8px}.atelier-editorial-hero{min-height:calc(100svh - 178px);margin:0 0 30px;padding:28px 22px;border-radius:16px;background-position:center}.atelier-editorial-hero .atelier-hero-top{left:22px;right:22px;top:23px}.atelier-editorial-hero h2{font-size:49px}.atelier-category-grid{gap:9px}}
 @media(prefers-reduced-motion:reduce){.atelier-category img{transition:none}}
+
+/* Six-view visual polish */
+html body #view-week .view-head,html body #view-analysis .view-head,html body #view-profile .view-head,html body #view-looks .view-head,html body #view-wardrobe .view-head{margin-bottom:26px!important}
+html body #view-week .view-head h1,html body #view-analysis .view-head h1,html body #view-profile .view-head h1,html body #view-looks .view-head h1,html body #view-wardrobe .view-head h1{font:500 clamp(37px,7vw,52px)/1.06 "Cormorant Garamond",Georgia,serif!important;letter-spacing:-.025em!important}
+html body #view-week .idea-card,html body #view-analysis .idea-card,html body #view-profile .idea-card{background:var(--surface)!important;border:1px solid var(--rule)!important;border-radius:15px!important;padding:20px!important}
+html body #view-week .v2-seg,html body #view-analysis .v2-seg,html body #view-looks .v2-seg{border-radius:999px!important;background:#ede8e2!important;padding:4px!important;border:0!important}
+html body .v2-seg button{border-radius:999px!important}
+html body #view-looks .look,html body #view-wardrobe .v3-piece{border:0!important;background:#eee9e2!important}
+html body #view-profile .palette{display:flex;gap:8px}
+html body .tabs .atelier-extra-tab .nav-icon svg{width:20px;height:20px}
+@media(max-width:759px){
+ html body .tabs{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:0!important;padding-left:4px!important;padding-right:4px!important}
+ html body .tab{padding:4px 0!important}
+ html body .tab .nav-text{font-size:8px!important;letter-spacing:-.02em!important}
+ html body .tab .nav-icon{width:18px!important;height:18px!important}
+ html body .tabs .atelier-extra-tab .nav-icon svg{width:18px;height:18px}
+ html body #view-week .view-head h1,html body #view-analysis .view-head h1,html body #view-profile .view-head h1{font-size:40px!important}
+ html body #view-week #weekList,html body #view-analysis #analysisBody,html body #view-profile #profileBody{display:grid;gap:14px}
+ html body #view-week .v2-week-day,html body #view-week .week-day{border-radius:14px!important}
+}
