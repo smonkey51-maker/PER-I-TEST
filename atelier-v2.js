@@ -147,15 +147,14 @@
       return '<button type="button" role="tab" class="v2-calday' + (p.key === selDay ? ' is-sel' : '') + '" data-day="' + esc(p.key) + '" aria-selected="' + (p.key === selDay) + '"><small>' + esc(d.toLocaleDateString(appLocale(), { weekday: 'narrow' }).toUpperCase()) + '</small><b>' + d.getDate() + '</b><i class="' + (dot ? 'on' : '') + '" aria-hidden="true"></i></button>';
     }).join('') + '</div>';
     html += '<h2 class="v2-daytitle">' + esc((selDay === list[0].key ? tr('Oggi', 'Today') + ' · ' : '') + cap(d0.toLocaleDateString(appLocale(), { weekday: 'long', day: 'numeric', month: 'long' }))) + '</h2>';
-    html += '<section class="v2-agenda">' +
-      '<p class="v2-aw">' + (sel.wx ? wxIcon(sel.wx, 'v2-wx-ico') + '<span>' + esc(wxText(sel.wx)) + '</span>' : '<span>' + esc(tr('Meteo non disponibile', 'Weather unavailable')) + '</span>') + '</p>' +
+    const agendaInner = (sel.wx ? '<p class="v2-aw">' + wxIcon(sel.wx, 'v2-wx-ico') + '<span>' + esc(wxText(sel.wx)) + '</span></p>' : '') +
       (allEvents === null ? '' : sel.events.length
         ? '<ul class="v2-events">' + sel.events.map(ev => '<li><strong>' + esc(ev.title) + '</strong><small>' + esc(ev.allDay ? tr('Tutto il giorno', 'All day') : eventTime(ev)) + '</small></li>').join('') + '</ul>'
-        : '<p class="v2-sub">' + esc(tr('Nessun impegno', 'No events')) + '</p>') +
-      '</section>';
+        : '<p class="v2-sub">' + esc(tr('Nessun impegno', 'No events')) + '</p>');
+    if (agendaInner) html += '<section class="v2-agenda">' + agendaInner + '</section>';
     html += '<h3 class="v2-h3">' + esc(tr('Look suggerito', 'Suggested look')) + '</h3>';
     html += '<div class="v2-suggest">' + (ids.length ? ids.slice(0, 4).map((id, i) => '<button type="button" class="v2-swap" data-swap="' + esc(sel.key) + '" data-i="' + i + '" aria-label="' + esc(tr('Sostituisci ', 'Swap ') + (byId.get(id)?.tipo || '')) + '">' + thumb(id, 'v2-hero-img') + '</button>').join('') : '<p class="v2-empty">' + esc(tr('Nessun look disponibile per questo giorno.', 'No look available for this day.')) + '</p>') + '</div>';
-    if (ids.length) html += '<p class="v2-sub">' + esc(ids.map(id => byId.get(id)?.tipo).filter(Boolean).slice(0, 4).join(' · ')) + '</p><p class="v2-state ' + (conf ? 'is-conf' : '') + '">' + esc(conf ? tr('✓ Outfit confermato', '✓ Outfit confirmed') : tr('Suggerimento · tocca un capo per sostituirlo', 'Suggestion · tap an item to swap it')) + '</p>';
+    if (ids.length) html += '<p class="v2-sub">' + esc(ids.map(id => byId.get(id)?.tipo).filter(Boolean).slice(0, 4).join(' · ')) + '</p><p class="v2-state ' + (conf ? 'is-conf' : '') + '">' + esc(conf ? tr('✓ Outfit confermato', '✓ Outfit confirmed') : tr('Suggerito', 'Suggested')) + '</p>';
     if (ids.length) html += '<button type="button" class="btn v2-wide' + (conf ? ' secondary' : '') + '" data-conf="' + esc(sel.key) + '">' + esc(conf ? tr('Annulla conferma', 'Undo confirm') : tr("Aggiungi all'agenda", 'Add to agenda')) + '</button>';
     html += '<button type="button" class="v2-textbtn" data-regen="' + esc(sel.key) + '">' + esc(tr('Cambia look', 'Change look')) + '</button>';
     box.innerHTML = html;
@@ -234,11 +233,14 @@
     dlg.innerHTML = '<div class="v2-sheet-body"><h2 id="v2FilterTitle">' + esc(tr('Filtri', 'Filters')) + '</h2>' +
       '<h3>' + esc(tr('Colore', 'Colour')) + '</h3><div class="v2-chips">' + (colors.length ? colors.map(c => '<button type="button" class="chip" data-fc="' + esc(c) + '" aria-pressed="' + filters.colors.has(c) + '">' + esc(c) + '</button>').join('') : '<span class="v2-empty">' + esc(tr('Nessun colore registrato', 'No colours recorded')) + '</span>') + '</div>' +
       '<h3>' + esc(tr('Stagione', 'Season')) + '</h3><div class="v2-chips">' + seasons.map(([k, it, e]) => '<button type="button" class="chip" data-fs="' + k + '" aria-pressed="' + filters.seasons.has(k) + '">' + esc(tr(it, e)) + '</button>').join('') + '</div>' +
+      '<h3>' + esc(tr('Ordinamento', 'Sort')) + '</h3><div class="v2-chips"><button type="button" class="chip" data-sort-color aria-pressed="' + (q('#v3SortColor')?.getAttribute('aria-pressed') === 'true') + '">' + esc(tr('Per colore', 'By colour')) + '</button></div>' +
       '<div class="v2-actions"><button type="button" class="btn secondary" id="v2FReset">' + esc(tr('Azzera', 'Reset')) + '</button><button type="button" class="btn" id="v2FApply">' + esc(tr('Applica', 'Apply')) + '</button></div></div>';
   }
   dlg.addEventListener('click', e => {
     const c = e.target.closest('[data-fc]'), s = e.target.closest('[data-fs]');
     if (c) { const k = c.dataset.fc; filters.colors.has(k) ? filters.colors.delete(k) : filters.colors.add(k); c.setAttribute('aria-pressed', String(filters.colors.has(k))); }
+    const so = e.target.closest('[data-sort-color]');
+    if (so) { q('#v3SortColor')?.click(); so.setAttribute('aria-pressed', String(q('#v3SortColor')?.getAttribute('aria-pressed') === 'true')); }
     if (s) { const k = s.dataset.fs; filters.seasons.has(k) ? filters.seasons.delete(k) : filters.seasons.add(k); s.setAttribute('aria-pressed', String(filters.seasons.has(k))); }
     if (e.target.closest('#v2FReset')) { filters.colors.clear(); filters.seasons.clear(); renderFilterSheet(); }
     if (e.target.closest('#v2FApply') || e.target === dlg) { dlg.close(); syncFilterBadge(); window.__v2Refresh?.(); }
@@ -499,7 +501,8 @@
     const items = ids.map(id => byId.get(id)).filter(Boolean);
     const parts = [];
     const w = typeof weather !== 'undefined' ? weather : null;
-    parts.push(w ? tr('Adatto a ', 'Suited to ') + w.tmin + '–' + w.tmax + ' °C' : tr('Meteo non disponibile: scelto in base a stagione e disponibilità', 'Weather unavailable: chosen by season and availability'));
+    if (!w) return ''; // senza meteo non c'è una motivazione concreta da mostrare
+    parts.push(tr('Adatto a ', 'Suited to ') + w.tmin + '–' + w.tmax + ' °C');
     if (w && w.rain >= 50) {
       const outer = items.find(g => catOf(g) === 'Giacche e capispalla');
       const shoe = items.find(g => catOf(g) === 'Scarpe');

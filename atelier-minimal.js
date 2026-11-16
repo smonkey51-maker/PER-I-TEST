@@ -89,8 +89,29 @@
     const chip = key && [...document.querySelectorAll('#chips [data-filter]')].find(c => c.dataset.filter === key);
     if (!chip) { toast(document.documentElement.lang === 'en' ? 'No items in this category yet' : 'Ancora nessun capo in questa categoria'); return; }
     chip.click();
-    setTimeout(() => document.querySelector('#chips')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    setTimeout(() => document.querySelector('#wardrobe')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
   });
+
+  /* Filtro di categoria attivo: un'unica etichetta «Sopra ✕» sopra l'elenco (le chip sono nascoste) */
+  function syncActiveFilter() {
+    const pressed = document.querySelector('#chips [data-filter][aria-pressed="true"]');
+    let pill = document.getElementById('v2ActiveFilter');
+    if (!pressed || pressed.dataset.filter === 'Tutti') { pill?.remove(); return; }
+    if (!pill) {
+      pill = document.createElement('button');
+      pill.id = 'v2ActiveFilter'; pill.type = 'button'; pill.className = 'chip'; pill.setAttribute('aria-pressed', 'true');
+      document.querySelector('#wardrobe')?.before(pill);
+    }
+    const label = (pressed.firstChild?.textContent || pressed.textContent).trim();
+    pill.textContent = label + '  ✕';
+    pill.setAttribute('aria-label', (document.documentElement.lang === 'en' ? 'Remove filter ' : 'Rimuovi il filtro ') + label);
+  }
+  document.addEventListener('click', e => {
+    if (e.target.closest('#v2ActiveFilter')) { document.querySelector('#chips [data-filter="Tutti"]')?.click(); }
+    setTimeout(syncActiveFilter, 40);
+  });
+  const chipsBox = document.getElementById('chips');
+  if (chipsBox) new MutationObserver(syncActiveFilter).observe(chipsBox, { subtree: true, attributes: true, attributeFilter: ['aria-pressed'], childList: true });
 
   /* Barra superiore: trasparente sopra la foto della Home, piena quando si scorre oltre */
   const onScroll = () => document.body.classList.toggle('is-scrolled', window.scrollY > window.innerHeight * 0.55);
