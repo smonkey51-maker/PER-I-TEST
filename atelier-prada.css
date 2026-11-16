@@ -121,3 +121,52 @@ dialog{border:1px solid var(--rule)!important;border-radius:0!important;backgrou
 @media(min-width:1100px){#view-wardrobe:not(.hidden) .min-row{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:1099px){#view-wardrobe:not(.hidden) .min-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(prefers-reduced-motion:reduce){.prada-moodboard-grid img{transition:none!important}}
+
+
+/* ATELIER — Luxury Editorial 2026: mobile-first visual system
+   Reference: six-screen cream / burgundy / charcoal concept.
+   Pure presentation layer: data, auth, calendar and wardrobe logic untouched. */
+:root[data-theme="light"]{
+ --bg:#f8f5f0!important;--surface:#fffcf8!important;
+ --surface-2:#eee9e2!important;--plate:#e9e2da!important;
+ --text:#171412!important;--muted:#706a65!important;
+ --rule:#e5dfd8!important;--accent:#332821!important;
+ --accent-rgb:51,40,33!important;--accent-ink:#fffaf4!important;
+ --r-card:16px;
+}
+html body{font-family:Inter,-apple-system,BlinkMacSystemFont,sans-serif!important}
+html body .brand{font-family:"Cormorant Garamond",Georgia,serif!important;letter-spacing:.095em!important}
+html body .brand::after{content:"PERSONAL WARDROBE"!important;letter-spacing:.22em!important}
+html body .view-head h1,html body .greet h1{font-family:"Cormorant Garamond",Georgia,serif!important;font-weight:500!important}
+html body .idea-card,html body .empty,html body .v3-piece,html body .look{
+ border-radius:16px!important;box-shadow:none!important;
+}
+html body .btn{border-radius:999px!important;letter-spacing:.015em!important;text-transform:none!important;font-size:13px!important}
+html body .chip{border-radius:999px!important;letter-spacing:0!important;text-transform:none!important;font-size:12px!important}
+html body input,html body textarea,html body select{border-radius:12px!important}
+html body .prada-moodboard-grid figure{border-radius:12px!important}
+html body .prada-moodboard-head h3{font-size:34px!important}
+html body .top{border-bottom:0!important}
+html body #view-today .greet::after{border-radius:14px!important}
+html body #view-today #idea .strip{border-radius:16px!important;background:#e9e2da!important}
+html body .min-row .v3-piece,html body .v3-piece,html body #view-looks .look{border-radius:14px!important}
+html body .min-row .v3-piece .v3-stage,html body .v3-piece .v3-stage{border-radius:12px!important}
+@media(max-width:759px){
+ html body main{width:calc(100% - 40px)!important;padding:30px 0 116px!important}
+ html body .top-inner{width:calc(100% - 40px)!important}
+ html body .tabs{
+  left:0!important;right:0!important;bottom:0!important;
+  max-width:none!important;width:100%!important;height:calc(66px + env(safe-area-inset-bottom))!important;
+  padding:5px 12px env(safe-area-inset-bottom)!important;
+  border:0!important;border-top:1px solid var(--rule)!important;
+  border-radius:0!important;box-shadow:none!important;background:var(--surface)!important;
+ }
+ html body .tab[aria-selected="true"]{background:transparent!important;color:var(--text)!important}
+ html body .tab[aria-selected="true"] .nav-text{font-weight:700!important}
+ html body .tab .nav-text{font-size:10px!important}
+ html body .view-head h1{font-size:40px!important}
+ html body #view-today .greet{margin-bottom:26px!important}
+ html body #view-today #idea .strip{border-radius:16px!important}
+ html body .prada-moodboard-grid{gap:10px!important}
+ html body .prada-moodboard-grid figure{border-radius:12px!important}
+}
