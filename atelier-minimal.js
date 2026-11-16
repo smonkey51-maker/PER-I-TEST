@@ -92,6 +92,11 @@
     setTimeout(() => document.querySelector('#chips')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
   });
 
+  /* Barra superiore: trasparente sopra la foto della Home, piena quando si scorre oltre */
+  const onScroll = () => document.body.classList.toggle('is-scrolled', window.scrollY > window.innerHeight * 0.55);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
   function init() {
     initWardrobe();
     const body = $('#profileBody');

@@ -204,3 +204,20 @@ html body .tabs::before {
   content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 28px; pointer-events: none;
   background: linear-gradient(to top, var(--bg), color-mix(in srgb, var(--bg) 0%, transparent));
 }
+
+/* ---- Barra superiore piena nelle schermate interne (il contenuto non si taglia più sotto il bordo) ----
+   Nella Home resta trasparente sopra la foto finché non si scorre oltre. */
+html body .top::before {
+  content: ""; position: fixed; top: 0; left: 0; right: 0; z-index: 64; pointer-events: none;
+  height: calc(56px + env(safe-area-inset-top, 0px));
+  background: var(--bg);
+  box-shadow: 0 1px 0 var(--rule);
+}
+html body .top::after {
+  content: "ATELIER."; position: fixed; z-index: 66; left: 20px; top: calc(17px + env(safe-area-inset-top, 0px)); pointer-events: none;
+  font: 500 19px/1 "Cormorant Garamond", Georgia, serif; letter-spacing: .22em; color: var(--text);
+}
+html body:has(#view-today:not(.hidden)):not(.is-scrolled) .top::before,
+html body:has(#view-today:not(.hidden)):not(.is-scrolled) .top::after { display: none; }
+html body:not(:has(#view-today:not(.hidden))) main { padding-top: calc(60px + env(safe-area-inset-top, 0px)) !important; }
+html body .profile-btn { z-index: 66 !important; }
