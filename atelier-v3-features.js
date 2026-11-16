@@ -173,7 +173,7 @@
     let tried;try{tried=new Set(JSON.parse(localStorage.getItem('atelier_cut_tried')||'[]'));}catch{tried=new Set();}
     await new Promise(r=>setTimeout(r,2500));
     // Versione dell'algoritmo: la precedente poteva cancellare parti di capi dal colore simile allo sfondo
-    const CUT_VER='4';
+    const CUT_VER='5';
     if(localStorage.getItem('atelier_cut_ver')!==CUT_VER){
       try{
         let back=0;

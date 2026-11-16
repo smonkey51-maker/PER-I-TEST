@@ -244,12 +244,61 @@
   let cutting = false, cutTimer = null, cutWarned = false;
   function scheduleCutouts() { clearTimeout(cutTimer); cutTimer = setTimeout(runCutouts, 2500); }
   const toDataUrl = blob => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
+  /* Pulizia del ritaglio AI: toglie i pezzi staccati (chiazze, residui di sfondo), riempie i buchi e ammorbidisce il bordo.
+     Se ciò che resta non assomiglia a un capo (troppo poco o quasi tutta la foto) il ritaglio viene scartato. */
+  function cleanAlpha(c) {
+    const w = c.width, h = c.height, ctx = c.getContext('2d', { willReadFrequently: true });
+    const frame = ctx.getImageData(0, 0, w, h), d = frame.data, N = w * h;
+    const on = new Uint8Array(N);
+    for (let p = 0; p < N; p++) on[p] = d[p * 4 + 3] >= 64 ? 1 : 0;
+    const erode = m => { const o = new Uint8Array(N); for (let y = 2; y < h - 2; y++) for (let x = 2; x < w - 2; x++) { const p = y * w + x; let k = 1; for (let dy = -2; dy <= 2 && k; dy++) for (let dx = -2; dx <= 2; dx++) if (!m[p + dy * w + dx]) { k = 0; break; } o[p] = k; } return o; };
+    const dilate = m => { const o = new Uint8Array(N); for (let y = 2; y < h - 2; y++) for (let x = 2; x < w - 2; x++) { const p = y * w + x; if (!m[p]) continue; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) o[p + dy * w + dx] = 1; } return o; };
+    const opened = dilate(erode(on));
+    for (let p = 0; p < N; p++) if (!opened[p]) on[p] = 0;
+    const label = new Int32Array(N), areas = [0], stack = new Int32Array(N);
+    let nl = 0;
+    for (let p0 = 0; p0 < N; p0++) {
+      if (!on[p0] || label[p0]) continue;
+      nl++; let sp = 0, area = 0; stack[sp++] = p0; label[p0] = nl;
+      while (sp) {
+        const q = stack[--sp]; area++; const qx = q % w;
+        if (qx > 0 && on[q - 1] && !label[q - 1]) { label[q - 1] = nl; stack[sp++] = q - 1; }
+        if (qx < w - 1 && on[q + 1] && !label[q + 1]) { label[q + 1] = nl; stack[sp++] = q + 1; }
+        if (q >= w && on[q - w] && !label[q - w]) { label[q - w] = nl; stack[sp++] = q - w; }
+        if (q < N - w && on[q + w] && !label[q + w]) { label[q + w] = nl; stack[sp++] = q + w; }
+      }
+      areas.push(area);
+    }
+    if (!nl) throw Error('Ritaglio vuoto');
+    const biggest = Math.max(...areas.slice(1));
+    const solid = new Uint8Array(N);
+    for (let p = 0; p < N; p++) if (label[p] && areas[label[p]] >= biggest * 0.15) solid[p] = 1;
+    const out = new Uint8Array(N); let sp2 = 0;
+    const seed = p => { if (!solid[p] && !out[p]) { out[p] = 1; stack[sp2++] = p; } };
+    for (let x = 0; x < w; x++) { seed(x); seed((h - 1) * w + x); }
+    for (let y = 0; y < h; y++) { seed(y * w); seed(y * w + w - 1); }
+    while (sp2) { const q = stack[--sp2], qx = q % w; if (qx > 0) seed(q - 1); if (qx < w - 1) seed(q + 1); if (q >= w) seed(q - w); if (q < N - w) seed(q + w); }
+    let count = 0;
+    for (let p = 0; p < N; p++) { if (!out[p]) { solid[p] = 1; count++; } }
+    const fraction = count / N;
+    if (fraction < 0.06 || fraction > 0.92) throw Error('Ritaglio non plausibile');
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const p = y * w + x; let a = 0;
+      if (solid[p]) {
+        const edge = x === 0 || y === 0 || x === w - 1 || y === h - 1 || !solid[p - 1] || !solid[p + 1] || !solid[p - w] || !solid[p + w];
+        a = edge ? 140 : 255;
+      }
+      d[p * 4 + 3] = a;
+    }
+    ctx.putImageData(frame, 0, 0);
+  }
   async function toPng(dataUrl) {
     const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = dataUrl; });
     const w = 480, h = 600, c = document.createElement('canvas');
     c.width = w; c.height = h;
     const s = Math.min(w / img.width, h / img.height);
     c.getContext('2d').drawImage(img, (w - img.width * s) / 2, (h - img.height * s) / 2, img.width * s, img.height * s);
+    cleanAlpha(c);
     return new Promise((res, rej) => c.toBlob(b => (b ? res(b) : rej(Error('Immagine non elaborabile'))), 'image/png'));
   }
   async function runCutouts() {
@@ -281,7 +330,9 @@
         const now = (await all('photos')).find(p => p.id === row.id);
         if (!now || (now.at || 0) !== (row.at || 0)) continue;
         const { cutPending, cutFailedAt, ...rest } = row;
-        await corePut({ ...rest, blob: await toPng(j.image), originalBlob: row.originalBlob || row.blob, at: Date.now() }, 'photos');
+        let png;
+        try { png = await toPng(j.image); } catch { await corePut({ ...row, cutFailedAt: Date.now() }, 'photos'); continue; }   // risultato non plausibile: resta l'originale
+        await corePut({ ...rest, blob: png, originalBlob: row.originalBlob || row.blob, at: Date.now() }, 'photos');
         forgetPhoto(row.id);
         done++;
       }
