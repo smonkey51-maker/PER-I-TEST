@@ -385,6 +385,7 @@
       : '<p class="v2-empty">' + esc(tr('Questo capo non è ancora in nessun look.', 'This item is not in any look yet.')) + '</p>') + '</div>' +
       '<div data-dp="use" hidden><p class="v2-stat"><b>' + worn.length + '</b> ' + esc(tr(worn.length === 1 ? 'utilizzo registrato' : 'utilizzi registrati', worn.length === 1 ? 'recorded use' : 'recorded uses')) + '</p>' +
       (worn.length ? '<ul class="v2-list">' + worn.slice(0, 10).map(d => '<li>' + esc(new Date(d + 'T12:00:00').toLocaleDateString(appLocale(), { day: 'numeric', month: 'long', year: 'numeric' })) + '</li>').join('') + '</ul>' : '<p class="v2-empty">' + esc(tr('Nessun utilizzo registrato.', 'No recorded use.')) + '</p>') + '</div>';
+    detail.scrollTop = 0; // il focus sul primo pulsante non deve far scorrere la scheda
     q('#detailFields', body).before(tabs);
     q('#detailFields', body).after(panels);
     tabs.addEventListener('click', e => {
