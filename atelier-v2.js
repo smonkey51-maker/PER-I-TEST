@@ -43,6 +43,7 @@
       const byId = new Map(gs.map(g => [g.id, g]));
       items = (window.__v2LastIdeaIds || []).map(id => byId.get(id)).filter(Boolean);
     } catch { /* senza metadati */ }
+    if (q('.v2-meta', idea)) return; // un'altra esecuzione, partita nel frattempo, l'ha già inserito
     const names = items.map(g => (g.tipo || '').toLowerCase()).filter(Boolean);
     const sentence = names.length ? cap(names.length > 1 ? names.slice(0, -1).join(', ') + tr(' e ', ' and ') + names[names.length - 1] : names[0]) + '.' : '';
     const h = q('h3', idea);
