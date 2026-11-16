@@ -72,3 +72,13 @@ html body #view-week #weekList .ios-day summary{min-height:75px!important;paddin
  html body #view-week .editorial-calendar-weather{margin-top:20px}
 }
 @media(max-width:360px){html body .editorial-swatch,html body .editorial-add-swatch{width:32px!important;height:32px!important}html body .editorial-analysis-overview{grid-template-columns:120px 1fr!important}html body .editorial-ring{width:120px!important;height:120px!important}html body .editorial-ring>div{width:108px!important;height:108px!important}}
+
+html body .atelier-category{isolation:isolate}
+html body .atelier-category span{align-self:flex-end;padding-bottom:28px!important}
+html body .atelier-category-count{position:absolute;z-index:2;left:14px;bottom:12px;color:#fff;font:400 10px/1.2 Inter,sans-serif}
+html body .atelier-category img{object-fit:contain!important;background:#e9e1d8!important}
+html body .atelier-category:after{background:linear-gradient(transparent 46%,rgba(0,0,0,.53))!important}
+html body #view-wardrobe .atelier-wardrobe-editorial h2{display:none}
+html body #view-wardrobe .atelier-wardrobe-editorial{margin:0 0 18px!important}
+html body #view-wardrobe .atelier-category-grid{gap:6px!important}
+@media(max-width:759px){html body #view-wardrobe .atelier-category{aspect-ratio:1.25!important}}
