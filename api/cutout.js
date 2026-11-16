@@ -35,7 +35,7 @@ async function edit(image, fidelity) {
   form.append('background', 'transparent');
   form.append('output_format', 'webp');
   form.append('output_compression', '85');
-  form.append('quality', 'low');
+  form.append('quality', 'medium');
   form.append('size', '1024x1536');
   if (fidelity) form.append('input_fidelity', 'high');
   const response = await fetch('https://api.openai.com/v1/images/edits', {
